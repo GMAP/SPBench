@@ -1,0 +1,19 @@
+Copyright (c) 2021 Parallel Applications Modelling Group - GMAP
+
+SPBench is under GPLv3. You can find a copy of the license in this same folder.
+
+This project is comprised of three main parts, each under its respective license.
+
+(1) The command-line interface, which includes all python files inside the src/ folder.
+This part is under GPLv3 and you can find a copy of the GPLv3 inside src/.
+
+(2) Benchmark applications, which includes all files inside sys/apps/ folder. We kept all modifications
+under the original lincenses for each individual application.
+Here is the list of applications and licenses:
+    - Lane Detection: MIT
+    - Ferret: GPLv3
+    - Bzip2: BSD + zlib (hybrid)
+    - Person Recognition: no original license available (application temporarily removed from SPBench)
+
+(3) A metric library used by all applications. This file located in libs/bench_metrics/ folder.
+This library is under LGPLv3 license and you can find a copy of it in the respective folder.

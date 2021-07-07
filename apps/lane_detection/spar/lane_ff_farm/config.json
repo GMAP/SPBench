@@ -1,0 +1,20 @@
+{
+    "compiler"		:"g++ -std=c++1y",
+    "pkgconfig"		:"pkg-config --cflags --libs opencv",
+    "macros"		:"-DBLOCKING_MODE -DNO_DEFAULT_MAPPING",
+    "pre_src_cmd"	:"",
+    "post_src_cmd"	:"",
+    "flags"			:"-O3",
+    "includes" : {
+    	"myINC_1"	:"",
+        "myINC_2"	:"",
+        "myINC_N"	:"",
+        "ff"		:"-I $BENCH_DIR/ppis/fastflow",
+        "opencv"	:"-I $BENCH_DIR/libs/opencv/opencv-2.4.13.6/include/"
+    },
+    "libs" : {
+        "myLIB_1"	:"",
+        "myLIB_2"	:"",
+        "myLIB_N"	:"-lpthread"
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "compiler"		:"g++ -std=c++1y",
+    "pkgconfig"		:"pkg-config --cflags --libs opencv",
+    "macros"		:"",
+    "pre_src_cmd"	:"",
+    "post_src_cmd"	:"",
+    "flags"		:"-O3",
+    "includes" : {
+	"myINC_1"	:"",
+        "myINC_2"	:"",
+        "myINC_N"	:"-I $BENCH_DIR/ppis/tbb/tbb/include/",
+        "opencv"	:"-I $BENCH_DIR/libs/opencv/opencv-2.4.13.6/include/"
+    },
+    "libs" : {
+        "myLIB_1"	:"-L $BENCH_DIR/ppis/tbb/tbb/",
+        "myLIB_2"	:"-ltbb",
+        "myLIB_N"	:"-lpthread"
+    }
+}

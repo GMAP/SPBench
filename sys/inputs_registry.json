@@ -1,0 +1,16 @@
+{
+    "bzip2": {
+        "small": "$BENCH_DIR/inputs/bzip2/small.mp4", 
+        "medium": "$BENCH_DIR/inputs/bzip2/FC-6-x86_64-disc1.iso"
+    }, 
+    "lane_detection": {
+        "small": "$BENCH_DIR/inputs/lane_detection/small.mp4", 
+        "large": "$BENCH_DIR/inputs/lane_detection/large.mp4", 
+        "medium": "$BENCH_DIR/inputs/lane_detection/medium.mp4"
+    }, 
+    "ferret": {
+        "small": "$BENCH_DIR/inputs/ferret/small/corel/ lsh $BENCH_DIR/inputs/ferret/small/queries/ 50", 
+        "large": "$BENCH_DIR/inputs/ferret/large/corel/ lsh $BENCH_DIR/inputs/ferret/large/queries/ 50", 
+        "medium": "$BENCH_DIR/inputs/ferret/medium/corel/ lsh $BENCH_DIR/inputs/ferret/medium/queries/ 50"
+    }
+}

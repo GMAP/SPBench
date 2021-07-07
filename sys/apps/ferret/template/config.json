@@ -1,0 +1,26 @@
+{
+        "compiler"		:"g++ -std=c++1y",
+        "cflags"                :"-no-pie -O3",
+        "pre_src_cmd"		:"",
+        "post_src_cmd"		:"",
+        "macros"                :"",
+        "ldflags"               :"-ljpeg -lgsl -lgslcblas",        
+        "pkg-config" : {
+                "myPKG_1"       :"",
+                "myPKG_2"       :"",
+                "myPKG_N"       :"",
+                "gsl"           :"pkg-config --cflags --libs gsl",
+                "jpeg"          :"pkg-config --cflags --libs libjpeg"
+        },
+        "includes" : {
+        	"myINC_1"	:"",
+                "myINC_2"	:"",
+                "myINC_N"	:"",
+                "opencv"	:"-I $BENCH_DIR/libs/opencv/opencv-2.4.13.6/include/"
+        },
+        "libs" : {
+                "myLIB_1"	:"",
+                "myLIB_2"	:"",
+                "myLIB_N"	:""
+        }
+}

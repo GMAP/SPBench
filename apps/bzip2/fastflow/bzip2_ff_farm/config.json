@@ -1,0 +1,21 @@
+{
+    "compiler"		:"g++ -std=c++1y",
+    "pkgconfig"		:"",
+    "macros"		:"-DNO_CMAKE_CONFIG -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -DBLOCKING_MODE -DNO_DEFAULT_MAPPING",
+    "pre_src_cmd"	:"",
+    "post_src_cmd"	:"",
+    "flags"		:"-O3 -finline-functions",
+    "includes" : {
+	"myINC_1"	:"",
+        "myINC_2"	:"",
+        "myINC_N"	:"",
+        "ff"		:"-I $BENCH_DIR/ppis/fastflow/",
+        "bzlib"		:"-I $BENCH_DIR/libs/bzlib/include/"
+    },
+    "libs" : {
+        "myLIB_1"	:"",
+        "myLIB_2"	:"",
+        "myLIB_N"	:"-lpthread",
+        "bzlib"		:"-L $BENCH_DIR/libs/bzlib/lib/ -lbz2"
+    }
+}

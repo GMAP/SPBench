@@ -1,0 +1,20 @@
+{
+    "compiler"		:"$BENCH_DIR/ppis/SPar/bin/spar",
+    "pkgconfig"		:"",
+    "macros"		:"-DNO_CMAKE_CONFIG -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64",
+    "pre_src_cmd"	:"-spar_file",
+    "post_src_cmd"	:"",
+    "flags"		:"-O3 -finline-functions -spar_ordered -spar_ondemand -spar_blocking -DNO_DEFAULT_MAPPING",
+    "includes" : {
+	"myINC_1"	:"",
+        "myINC_2"	:"",
+        "myINC_N"	:"",
+        "bzlib"		:"-I $BENCH_DIR/libs/bzlib/include/"
+    },
+    "libs" : {
+        "myLIB_1"	:"",
+        "myLIB_2"	:"",
+        "myLIB_N"	:"",
+        "bzlib"		:"-L $BENCH_DIR/libs/bzlib/lib/ -lbz2"
+    }
+}

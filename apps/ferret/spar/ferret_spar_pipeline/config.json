@@ -1,0 +1,25 @@
+{
+        "compiler"		:"$BENCH_DIR/ppis/SPar/bin/spar -std=c++1y ",
+        "cflags"                :"-no-pie -O3",
+        "pre_src_cmd"		:"-spar_ondemand -spar_blocking -spar_file",
+        "post_src_cmd"		:"",
+        "macros"                :"",
+        "ldflags"               :"-ljpeg -lgsl -lgslcblas -lpthread",        
+        "pkg-config" : {
+                "myPKG_1"       :"",
+                "myPKG_2"       :"",
+                "myPKG_N"       :"",
+                "gsl"           :"pkg-config --cflags --libs gsl",
+                "jpeg"          :"pkg-config --cflags --libs libjpeg"
+        },
+        "includes" : {
+        	"myINC_1"	:"",
+                "myINC_2"	:"",
+                "myINC_N"	:""
+        },
+        "libs" : {
+                "myLIB_1"	:"",
+                "myLIB_2"	:"",
+                "myLIB_N"	:""
+        }
+}

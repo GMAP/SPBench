@@ -1,0 +1,25 @@
+{
+        "compiler"		:"g++ -std=c++1y",
+        "cflags"                :"-no-pie -O3",
+        "pre_src_cmd"		:"",
+        "post_src_cmd"		:"",
+        "macros"                :"-DBLOCKING_MODE -DNO_DEFAULT_MAPPING",
+        "ldflags"               :"-ljpeg -lgsl -lgslcblas -lpthread",        
+        "pkg-config" : {
+                "myPKG_1"       :"",
+                "myPKG_2"       :"",
+                "myPKG_N"       :"",
+                "gsl"           :"pkg-config --cflags --libs gsl",
+                "jpeg"          :"pkg-config --cflags --libs libjpeg"
+        },
+        "includes" : {
+        	"myINC_1"	:"",
+                "myINC_2"	:"",
+                "fastflow"	:"-I $BENCH_DIR/ppis/fastflow/"
+        },
+        "libs" : {
+                "myLIB_1"	:"",
+                "myLIB_2"	:"",
+                "myLIB_N"	:""
+        }
+}
