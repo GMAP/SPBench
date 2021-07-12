@@ -2,7 +2,9 @@
 
 ![SPBench_logo](https://user-images.githubusercontent.com/11809226/121076611-fbef5300-c7ac-11eb-9213-5a30a284bec1.png)
 
-SPBench is a new Framework for Benchmarking Stream Processing Applications.
+SPBench is a new Framework for Benchmarking Stream Processing Applications. 
+It allows users to easily use parallel libraries to explore stream parallelism with different applications.
+SPBench manages the application execution and performance evaluation aspects, which allows the user to focus exclusively on the parallelism aspects.
 
 The applications set comprises the following stream processing applications and will be more in the future:
  - Ferret (PARSEC)
@@ -54,7 +56,16 @@ Try: `./spbench -h`
  
 See INSTRUCTIONS.md for more info about all SPBench commands.
 
+## COPYING
+
+SPBench is under GNU General Public License version 3 (GPLv3). See COPYING file for more details.
+Each application included by SPBench is also under their original license.
+The diagram bellow illustrates how the licenses are assigned.
+
+![SPBench-LICENSE](https://user-images.githubusercontent.com/31757740/125243394-6cb1ef80-e2c4-11eb-882e-fe2bd27f7a46.png)
+
+
 This is an ongoing project and you may face some bugs or other problems.
 Feel free to open an issue or contact me for any problem regarding the SPBench.
-adriano.garcia@edu.pucrs.br
+Contact: adriano.garcia@edu.pucrs.br
 
