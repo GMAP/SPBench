@@ -19,6 +19,10 @@ For each of them there are parallel versions implemented using the following par
  - GrPPI (forthcoming)
  - Standard C++ Threads (forthcoming)
 
+## How to cite
+
+ - A. M. Garcia, D. Griebler, L. G. L. Fernandes and C. Schepke, "Introducing a Stream Processing Framework for Assessing Parallel Programming Interfaces," 2021 29th Euromicro International Conference on Parallel, Distributed and Network-Based Processing (PDP), 2021, pp. 84-88, doi: 10.1109/PDP52278.2021.00021.
+
 ## How to install
 
 The folowing packages are required to install SPBench:
