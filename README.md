@@ -58,7 +58,7 @@ See INSTRUCTIONS.md for more info about all SPBench commands.
 
 ## COPYING
 
-SPBench is under GNU General Public License version 3 (GPLv3). See COPYING file for more details.
+SPBench is under GNU General Public License version 3 (see COPYING file for more details).
 Each application included by SPBench is also under their original license.
 The diagram bellow illustrates how the licenses are assigned.
 
