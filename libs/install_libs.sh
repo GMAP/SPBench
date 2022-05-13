@@ -10,7 +10,7 @@ BZIP2="bzlib upl"
 
 DEPENDENCIES=
 
-if [[ "$1" == "lane_detection" ]];then #|| [[ "$1" == "person_recognition" ]]; then
+if [[ "$1" == "lane_detection" ]] || [[ "$1" == "person_recognition" ]]; then
     DEPENDENCIES="ffmpeg opencv upl"
 elif [[ "$1" == "ferret" ]]; then
     DEPENDENCIES="gsl jpeg upl"

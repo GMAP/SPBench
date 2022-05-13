@@ -1,25 +1,27 @@
 {
-        "compiler"              :"$BENCH_DIR/ppis/SPar/bin/spar",
-        "cflags"                :"-std=c++1y -no-pie -O3",
-        "pre_src_cmd"           :"-spar_ondemand -spar_blocking -spar_file",
-        "post_src_cmd"          :"",
-        "macros"                :"-DNO_DEFAULT_MAPPING",
-        "ldflags"               :"-ljpeg -lgsl -lgslcblas -lpthread",
-        "pkg-config" : {
-                "myPKG_1"       :"",
-                "myPKG_2"       :"",
-                "myPKG_N"       :"",
-                "gsl"           :"pkg-config --cflags --libs gsl",
-                "jpeg"          :"pkg-config --cflags --libs libjpeg"
+        "CXX": "g++ -std=c++1y",
+        "CXX_FLAGS":"-no-pie -O3",
+        "PPI_CXX": "$BENCH_DIR/ppis/SPar/bin/spar",
+        "PPI_CXX_FLAGS":"-no-pie -O3 -spar_ondemand -spar_blocking ",
+        "PRE_SRC_CMD": "-spar_file",
+        "POST_SRC_CMD": "",
+        "MACROS": "-DNO_DEFAULT_MAPPING",
+        "PKG-CONFIG": {
+                "myPKG_1": "",
+                "myPKG_2": "",
+                "myPKG_N": "",
+                "gsl": "pkg-config --cflags --libs gsl",
+                "jpeg": "pkg-config --cflags --libs libjpeg"
+            },
+        "INCLUDES": {
+                "myINC_1": "",
+                "myINC_2": "",
+                "myINC_N": ""
         },
-        "includes" : {
-                "myINC_1"       :"",
-                "myINC_2"       :"",
-                "myINC_N"       :""
+        "LIBS": {
+                "myLIB_1": "",
+                "myLIB_2": "",
+                "myLIB_N": ""
         },
-        "libs" : {
-                "myLIB_1"       :"",
-                "myLIB_2"       :"",
-                "myLIB_N"       :""
-        }
-}
+        "LDFLAGS": "-ljpeg -lgsl -lgslcblas -lpthread"
+    }

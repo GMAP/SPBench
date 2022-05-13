@@ -1,27 +1,150 @@
 # !/bin/bash
 
-#ferret all
-wget https://gmap.pucrs.br/public_data/spbench/workloads/ferret/ferret_inputs.tar.gz
-tar -xf ferret_inputs.tar.gz
-rm -f ferret_inputs.tar.gz
 
-#lane all
-wget https://gmap.pucrs.br/public_data/spbench/workloads/lane/lane_inputs.tar.gz
-tar -xf lane_inputs.tar.gz
-rm -f lane_inputs.tar.gz
+THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+cd $THIS_DIR
 
-#person all
-wget https://gmap.pucrs.br/public_data/spbench/workloads/person/person_inputs.tar.gz
-tar -xf person_inputs.tar.gz
-rm -f person_inputs.tar.gz
+APP=''
+CLASS=''
 
-#Bzip temporary small
-mkdir bzip2
-cp lane_detection/large.mp4 bzip2/small.mp4
+if [ -z "$1" ]
+then
+    APP="all"
+else
+	APP=$1
+fi
 
-#Bzip2 ISO file
-wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/bzip2_inputs.tar.gz
-tar -xf bzip2_inputs.tar.gz
-mkdir bzip2
-mv FC-6-x86_64-disc1.iso bzip2/
-rm bzip2_inputs.tar.gz
+if [ -z "$2" ]
+then
+	CLASS="all"
+else
+    CLASS=$2
+fi
+
+if [[ $APP == "lane_detection" || $APP == "all" ]]; then
+
+	THIS_APP="lane_detection"
+
+	if [ ! -d "lane_detection" ]; then
+		mkdir $THIS_APP
+	fi
+
+	#cd $THIS_APP
+
+	FILE=lane_inputs.tar.gz
+
+	if [[ $3 == "force" ]]; then
+		rm $FILE
+	fi
+
+	if [ ! -f "$FILE" ]; then
+		echo " Downloading $FILE..."
+		wget https://gmap.pucrs.br/public_data/spbench/workloads/lane/$FILE
+	fi
+
+	tar -xf $FILE
+	#cd ..
+fi
+
+if [[ $APP == "person_recognition" || $APP == "all" ]]
+then
+	THIS_APP="person_recognition"
+
+	if [ ! -d "person_recognition" ]; then
+		mkdir $THIS_APP
+	fi
+
+	#cd $THIS_APP
+
+	FILE=person_inputs.tar.gz
+
+	if [[ $3 == "force" ]]; then
+		rm $FILE
+	fi
+	
+	if [ ! -f "$FILE" ]; then
+		echo " Downloading $FILE..."
+		wget https://gmap.pucrs.br/public_data/spbench/workloads/person/$FILE
+	fi
+
+	tar -xf $FILE
+	#cd ..
+fi
+
+if [[ $APP == "ferret" || $APP == "all" ]]
+then
+	THIS_APP="ferret"
+
+	if [ ! -d "ferret" ]; then
+		mkdir $THIS_APP
+	fi
+
+	#cd $THIS_APP
+
+	FILE=ferret_inputs.tar.gz
+
+	if [[ $3 == "force" ]]; then
+		rm $FILE
+	fi
+
+	if [ ! -f "$FILE" ]; then
+		echo " Downloading $FILE..."
+		wget https://gmap.pucrs.br/public_data/spbench/workloads/ferret/$FILE
+	fi
+
+	tar -xf $FILE
+	#cd ..
+fi
+
+if [[ $APP == "bzip2" || $APP == "all" ]]
+then
+
+	THIS_APP="bzip2"
+
+	if [ ! -d "bzip2" ]; then
+		mkdir $THIS_APP
+	fi
+
+	cd $THIS_APP
+
+	if [[ $CLASS == "small" || $CLASS == "all" ]]
+	then
+		FILE=bzip2_small.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+		fi
+		tar -xf $FILE
+	fi
+
+	if [[ $CLASS == "medium" || $CLASS == "all" ]]
+	then
+		FILE=bzip2_medium.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+		fi
+		tar -xf $FILE
+	fi
+	
+	if [[ $CLASS == "large" || $CLASS == "all" ]]
+	then
+		FILE=bzip2_large.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+		fi
+		tar -xf $FILE
+	fi
+
+	cd ..
+fi

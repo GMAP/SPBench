@@ -1,50 +1,59 @@
-#include <metrics.hpp>
 #include <bzip2.hpp>
 
-void compress(){
+using namespace spb;
 
-	data_metrics metrics = init_metrics(); //UPL and throughput
+Source source;
+Compress comp;
+Sink sink;
+
+void compress(){
+	
+	Metrics::init();
 
 	[[spar::ToStream]]
-	while (bytesLeft > 0)
+	while (1)
 	{
 		Item item;
 		
-		if(!read_comp_op(item)) break;
+		if(!source.op(item)) break;
 
 		[[spar::Stage, spar::Input(item), spar::Output(item), spar::Replicate()]]
 		{
-			compress_op(item);
+			comp.op(item);
 		}
 		[[spar::Stage,spar::Input(item)]]
 		{
-			write_comp_op(item);
+			sink.op(item);
 		}
 	}
-	stop_metrics(metrics);
+	Metrics::stop();
 }
+
+Source_d source_d;
+Decompress decomp;
+Sink_d sink_d;
 
 void decompress(){
 
-	data_metrics metrics = init_metrics();//UPL and throughput
+	Metrics::init();
 	
 	[[spar::ToStream]]
-	while(item_count < bz2NumBlocks)
+	while(1)
 	{
 		Item item;
 		
-		if(!read_decomp_op(item)) break;
+		if(!source_d.op(item)) break;
 
 		[[spar::Stage, spar::Input(item), spar::Output(item), spar::Replicate()]]
 		{
-			decompress_op(item);
+			decomp.op(item);
 		}
 		[[spar::Stage,spar::Input(item)]]
 		{
-			write_decomp_op(item);
+			sink_d.op(item);
 		}
 	}
-	stop_metrics(metrics);
+	Metrics::stop();
 }
 
 int main (int argc, char* argv[]){

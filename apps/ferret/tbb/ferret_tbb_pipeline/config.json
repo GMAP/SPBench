@@ -1,25 +1,29 @@
 {
-        "compiler"		:"g++ -std=c++1y",
-        "cflags"                :"-no-pie -O3",
-        "pre_src_cmd"		:"",
-        "post_src_cmd"		:"",
-        "macros"                :"",
-        "ldflags"               :"-ljpeg -lgsl -lgslcblas -ltbb -lpthread",     
-        "pkg-config" : {
-                "myPKG_1"       :"",
-                "myPKG_2"       :"",
-                "myPKG_N"       :"",
-                "gsl"           :"pkg-config --cflags --libs gsl",
-                "jpeg"          :"pkg-config --cflags --libs libjpeg"
+        "CXX": "g++ -std=c++1y",
+        "CXX_FLAGS":"-no-pie -O3",
+        "PPI_CXX": "g++ -std=c++1y",
+        "PPI_CXX_FLAGS":"-no-pie -O3",
+        "PRE_SRC_CMD": "",
+        "POST_SRC_CMD": "",
+        "MACROS": "",
+        "PKG-CONFIG": {
+                "myPKG_1": "",
+                "myPKG_2": "",
+                "myPKG_N": "",
+                "gsl": "pkg-config --cflags --libs gsl",
+                "jpeg": "pkg-config --cflags --libs libjpeg"
+            },
+        "INCLUDES": {
+                "myINC_1": "",
+                "myINC_2": "",
+                "myINC_N": "",
+                "tbb": "-I $BENCH_DIR/ppis/tbb/tbb/include"
         },
-        "includes" : {
-        	"myINC_1"	:"",
-                "myINC_2"	:"",
-                "myINC_N"	:"-I $BENCH_DIR/ppis/tbb/tbb/include/"
+        "LIBS": {
+                "myLIB_1": "",
+                "myLIB_2": "",
+                "myLIB_N": "",
+                "tbb": "-L $BENCH_DIR/ppis/tbb/tbb/ -ltbb"
         },
-        "libs" : {
-                "myLIB_1"	:"",
-                "myLIB_2"	:"",
-                "myLIB_N"	:"-L $BENCH_DIR/ppis/tbb/tbb/ -ltbb"
-        }
-}
+        "LDFLAGS": "-ljpeg -lgsl -lgslcblas -ltbb -lpthread"
+    }

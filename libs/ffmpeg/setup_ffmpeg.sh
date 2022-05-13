@@ -7,7 +7,7 @@ FILE=ffmpeg-3.4.8.tar.xz
 
 if [ ! -f "$FILE" ]; then
     echo "Downloading $FILE..."
-    wget https://gmap.pucrs.br/spbench/libs/ffmpeg/$FILE
+    wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/ffmpeg/$FILE
 fi
 
 LIB_DIR=ffmpeg-3.4.8

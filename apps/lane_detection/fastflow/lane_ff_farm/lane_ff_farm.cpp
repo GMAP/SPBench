@@ -1,38 +1,35 @@
-#include <metrics.hpp>
 #include <lane_detection.hpp>
 
 #include <ff/ff.hpp>
 
-using namespace ff;
+struct Emitter: ff::ff_node_t<spb::Item>{
 
-struct Emitter: ff_node_t<Item>{
-
-	Item * svc(Item * task){
+	spb::Item * svc(spb::Item * task){
 		while (1){
-			Item * item = new Item();
-			if (!source_op(*item)) break;
+			spb::Item * item = new spb::Item();
+			if (!spb::Source::op(*item)) break;
 		    ff_send_out(item);
 		}
 		return EOS;
 	}
 };
 
-struct Worker: ff_node_t<Item>{
-	Item * svc(Item * item){
-		segment_op(*item);
-		canny1_op(*item);
-		houghT_op(*item);
-		houghP_op(*item);
-		bitwise_op(*item);
-		canny2_op(*item);
-		overlap_op(*item);
+struct Worker: ff::ff_node_t<spb::Item>{
+	spb::Item * svc(spb::Item * item){
+		spb::Segment::op(*item);
+		spb::Canny1::op(*item);
+		spb::HoughT::op(*item);
+		spb::HoughP::op(*item);
+		spb::Bitwise::op(*item);
+		spb::Canny2::op(*item);
+		spb::Overlap::op(*item);
 		return item;
 	}
 };
 
-struct Collector: ff_node_t<Item>{
-	Item * svc(Item * item){
-		sink_op(*item);
+struct Collector: ff::ff_node_t<spb::Item>{
+	spb::Item * svc(spb::Item * item){
+		spb::Sink::op(*item);
 		return GO_ON;
 	}
 }Collector;
@@ -40,19 +37,19 @@ struct Collector: ff_node_t<Item>{
 int main (int argc, char* argv[]){
 
 	// Disabling internal OpenCV's support for multithreading.
-	setNumThreads(0);
+	cv::setNumThreads(0);
 
-	init_bench(argc, argv); //Initializations
+	spb::init_bench(argc, argv); //Initializations
 
-	data_metrics metrics = init_metrics(); //UPL and throughput
+	spb::Metrics::init();
 
-	vector<unique_ptr<ff_node>> workers;
+	std::vector<std::unique_ptr<ff::ff_node>> workers;
 
-	for(int i=0; i<nthreads; i++){
-		workers.push_back(make_unique<Worker>());
+	for(int i=0; i<spb::nthreads; i++){
+		workers.push_back(std::make_unique<Worker>());
 	}
 
-	ff_OFarm<Item> farm(move(workers));
+	ff::ff_OFarm<spb::Item> farm(move(workers));
 
 	Emitter E;
 	farm.add_emitter(E);
@@ -61,12 +58,11 @@ int main (int argc, char* argv[]){
 	farm.set_scheduling_ondemand();
 
 	if(farm.run_and_wait_end()<0){
-		cout << "error running pipe";
+		std::cout << "error running pipe";
 	}
 
-	stop_metrics(metrics);
-
-	end_bench();
+	spb::Metrics::stop();
+	spb::end_bench();
 
 	return 0;
 }

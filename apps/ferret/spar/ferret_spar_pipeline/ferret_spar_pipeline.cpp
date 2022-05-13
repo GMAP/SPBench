@@ -1,35 +1,44 @@
-#include <metrics.hpp>
 #include <ferret.hpp>
+
+using namespace spb;
+
+Source source;
+Segmentation segmentation;
+Extract extract;
+Vectorization vectorization;
+Rank rank;
+Sink sink;
+
 
 int main(int argc, char *argv[]) {
 	init_bench(argc, argv);
-	data_metrics metrics = init_metrics();
+	Metrics::init();
 
 	[[spar::ToStream]] while(1) {
 		Item item;
-		if(!source_op(item)) break;
+		if(!source.op(item)) break;
 		[[spar::Stage,spar::Input(item),spar::Output(item),spar::Replicate()]]
 		{
-			segmentation_op(item);
+			segmentation.op(item);
 		}
 		[[spar::Stage,spar::Input(item),spar::Output(item),spar::Replicate()]]
 		{
-			extract_op(item);
+			extract.op(item);
 		}
 		[[spar::Stage,spar::Input(item),spar::Output(item),spar::Replicate()]]
 		{
-			vectorization_op(item);
+			vectorization.op(item);
 		}
 		[[spar::Stage,spar::Input(item),spar::Output(item),spar::Replicate()]]
 		{
-			rank_op(item);
+			rank.op(item);
 		}      
 		[[spar::Stage,spar::Input(item)]]
 		{
-			sink_op(item);
+			sink.op(item);
 		}
 	}
-	stop_metrics(metrics);
+	Metrics::stop();
 	end_bench();
 	return 0;
 }

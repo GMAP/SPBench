@@ -7,7 +7,7 @@ FILE=libjpeg-turbo-1.5.2.tar.gz
 
 if [ ! -f "$FILE" ]; then
     echo "Downloading $FILE..."
-    wget https://gmap.pucrs.br/spbench/libs/jpeg/$FILE
+    wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/jpeg/$FILE
 fi
 
 LIB_DIR=libjpeg-turbo-1.5.2

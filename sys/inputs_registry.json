@@ -1,16 +1,82 @@
 {
     "bzip2": {
-        "small": "$BENCH_DIR/inputs/bzip2/small.mp4", 
-        "medium": "$BENCH_DIR/inputs/bzip2/FC-6-x86_64-disc1.iso"
+        "small": {
+            "input": "$BENCH_DIR/inputs/bzip2/enwiki-20211120-pages-articles-multistream-index9.txt",
+            "md5_test": "04ac83588e54e36ca9ba1597a35215a8"
+        },
+	"small_d": {
+            "input": "$BENCH_DIR/inputs/bzip2/enwiki-20211120-pages-articles-multistream-index9.txt.bz2",
+            "md5_test": "b76993a00c672fc41873ebd0d722f64f"
+        },
+	"medium": {
+            "input": "$BENCH_DIR/inputs/bzip2/enwiki-20211120-all-titles-in-ns0", 
+            "md5_test": "271ac6ec9638cc949bbd15ec453cbee7"
+        },
+	"medium_d": {
+            "input": "$BENCH_DIR/inputs/bzip2/enwiki-20211120-all-titles-in-ns0.bz2",
+            "md5_test": "5ccf271e68ebf19cbb5cb249d1f9fc5f"
+        },
+	"large_d": {
+            "input": "$BENCH_DIR/inputs/bzip2/enwiki-20211120-pages-articles-multistream9.xml.bz2",
+            "md5_test": "602fde64aab33f324413fc66abd994b8"
+        },
+	"large": {
+            "input": "$BENCH_DIR/inputs/bzip2/enwiki-20211120-pages-articles-multistream9.xml",
+            "md5_test": "3a85786dbf53f67061b6a841269ecad7"
+        }
     }, 
     "lane_detection": {
-        "small": "$BENCH_DIR/inputs/lane_detection/small.mp4", 
-        "large": "$BENCH_DIR/inputs/lane_detection/large.mp4", 
-        "medium": "$BENCH_DIR/inputs/lane_detection/medium.mp4"
+        "small": {
+            "input": "$BENCH_DIR/inputs/lane_detection/small.mp4", 
+            "md5_test": "44ca55d0d3de452858a28aa695a9798b"
+        }, 
+        "large": {
+            "input": "$BENCH_DIR/inputs/lane_detection/large.mp4", 
+            "md5_test": "f9e2a28c2cebcab8319f1680383bf915"
+        }, 
+        "medium": {
+            "input": "$BENCH_DIR/inputs/lane_detection/medium.mp4", 
+            "md5_test": "deefcef2f33714b4488ea239ff1dd579"
+        }, 
+        "small2": {
+            "input": "$BENCH_DIR/inputs/lane_detection/small2.mp4", 
+            "md5_test": "e2dcf363e92677278a2e2bd4e96956b9"
+        }
     }, 
     "ferret": {
-        "small": "$BENCH_DIR/inputs/ferret/small/corel/ lsh $BENCH_DIR/inputs/ferret/small/queries/ 50", 
-        "large": "$BENCH_DIR/inputs/ferret/large/corel/ lsh $BENCH_DIR/inputs/ferret/large/queries/ 50", 
-        "medium": "$BENCH_DIR/inputs/ferret/medium/corel/ lsh $BENCH_DIR/inputs/ferret/medium/queries/ 50"
+        "large": {
+            "input": "$BENCH_DIR/inputs/ferret/large/corel/ lsh $BENCH_DIR/inputs/ferret/large/queries/ 50", 
+            "md5_test": ""
+        }, 
+        "small": {
+            "input": "$BENCH_DIR/inputs/ferret/small/corel/ lsh $BENCH_DIR/inputs/ferret/small/queries/ 50", 
+            "md5_test": "d456639f7b44f2b3f7c524cc52b44551"
+        }, 
+        "medium": {
+            "input": "$BENCH_DIR/inputs/ferret/medium/corel/ lsh $BENCH_DIR/inputs/ferret/medium/queries/ 50", 
+            "md5_test": "70cc346ba4e96d62139d43685111c33b"
+        }, 
+        "small2": {
+            "input": "$BENCH_DIR/inputs/ferret/small2/corel/ lsh $BENCH_DIR/inputs/ferret/small2/queries/ 25", 
+            "md5_test": "2df48a3b1c9e89907b332efc90ed84d2"
+        }
+    }, 
+    "person_recognition": {
+        "small": {
+            "input": "$BENCH_DIR/inputs/person_recognition/input_vid/Obama1s.mp4 $BENCH_DIR/inputs/person_recognition/obama_faces/list $BENCH_DIR/inputs/person_recognition/cascades/haarcascade_frontalface_default.xml", 
+            "md5_test": "5d66d9e5bf3a4919898d2c4934d24083"
+        }, 
+        "large": {
+            "input": "$BENCH_DIR/inputs/person_recognition/input_vid/Obama15s.mp4 $BENCH_DIR/inputs/person_recognition/obama_faces/list $BENCH_DIR/inputs/person_recognition/cascades/haarcascade_frontalface_default.xml", 
+            "md5_test": "9ce808e215c95635384e35a917a14556"
+        }, 
+        "medium": {
+            "input": "$BENCH_DIR/inputs/person_recognition/input_vid/Obama3s.mp4 $BENCH_DIR/inputs/person_recognition/obama_faces/list $BENCH_DIR/inputs/person_recognition/cascades/haarcascade_frontalface_default.xml", 
+            "md5_test": "f2016dd37677432e4c4f723ae0665f9e"
+        }, 
+        "small2": {
+            "input": "$BENCH_DIR/inputs/person_recognition/input_vid/Obama1ss.mp4 $BENCH_DIR/inputs/person_recognition/obama_faces/list $BENCH_DIR/inputs/person_recognition/cascades/haarcascade_frontalface_default.xml", 
+            "md5_test": "5d66d9e5bf3a4919898d2c4934d24083"
+        }
     }
 }

@@ -1,30 +1,27 @@
-#include <metrics.hpp>
 #include <bzip2.hpp>
 #include <ff/ff.hpp>
-using namespace ff;
-using namespace std;
 
-struct Emitter_comp: ff_node_t<Item>{
-	Item * svc(Item * task){
-		while (bytesLeft > 0){
-			Item * item = new Item();
-			if (!read_comp_op(*item)) break;
+struct Emitter_comp: ff::ff_node_t<spb::Item>{
+	spb::Item * svc(spb::Item * task){
+		while (1){
+			spb::Item * item = new spb::Item();
+			if (!spb::Source::op(*item)) break;
 		    ff_send_out(item);
 		}
 		return EOS;
 	}
 };
 
-struct Worker_comp: ff_node_t<Item>{
-	Item * svc(Item * item){
-		compress_op(*item);
+struct Worker_comp: ff::ff_node_t<spb::Item>{
+	spb::Item * svc(spb::Item * item){
+		spb::Compress::op(*item);
 		return item;
 	}
 };
 
-struct Collector_comp: ff_node_t<Item>{
-	Item * svc(Item * item){
-		write_comp_op(*item);
+struct Collector_comp: ff::ff_node_t<spb::Item>{
+	spb::Item * svc(spb::Item * item){
+		spb::Sink::op(*item);
 		return GO_ON;
 	}
 }Collector_comp;
@@ -32,16 +29,16 @@ struct Collector_comp: ff_node_t<Item>{
 
 void compress(){
 
-	data_metrics metrics = init_metrics();
+	spb::Metrics::init();
 
 	/*--------FastFlow region-------*/
 
-	vector<unique_ptr<ff_node>> workers;
+	std::vector<std::unique_ptr<ff::ff_node>> workers;
 
-	for(int i=0; i<nthreads; i++){
-		workers.push_back(make_unique<Worker_comp>());
+	for(int i=0; i<spb::nthreads; i++){
+		workers.push_back(ff::make_unique<Worker_comp>());
 	}
-	ff_OFarm<Item> farm(move(workers));
+	ff::ff_OFarm<spb::Item> farm(move(workers));
 	Emitter_comp E;
 	farm.add_emitter(E);
 	farm.add_collector(Collector_comp);
@@ -49,52 +46,52 @@ void compress(){
 	farm.set_scheduling_ondemand();
 
 	if(farm.run_and_wait_end()<0){
-		cout << "error running pipe";
+		std::cout << "error running pipe";
 	}
 
 	/*------------------------------*/
 
-	stop_metrics(metrics);
+	spb::Metrics::stop();
 }
 
-struct Emitter_decomp: ff_node_t<Item>{
-	Item * svc(Item * task){
-		while (item_count < bz2NumBlocks){
-			Item * item = new Item();
-			if (!read_decomp_op(*item)) break;
+struct Emitter_decomp: ff::ff_node_t<spb::Item>{
+	spb::Item * svc(spb::Item * task){
+		while (1){
+			spb::Item * item = new spb::Item();
+			if (!spb::Source_d::op(*item)) break;
 		    ff_send_out(item);
 		}
 		return EOS;
 	}
 };
 
-struct Worker_decomp: ff_node_t<Item>{
-	Item * svc(Item * item){
-		decompress_op(*item);
+struct Worker_decomp: ff::ff_node_t<spb::Item>{
+	spb::Item * svc(spb::Item * item){
+		spb::Decompress::op(*item);
 		return item;
 	}
 };
 
-struct Collector_decomp: ff_node_t<Item>{
-	Item * svc(Item * item){
-		write_decomp_op(*item);
+struct Collector_decomp: ff::ff_node_t<spb::Item>{
+	spb::Item * svc(spb::Item * item){
+		spb::Sink_d::op(*item);
 		return GO_ON;
 	}
 }Collector_decomp;
 
 void decompress(){
 
-	data_metrics metrics = init_metrics();
+	spb::Metrics::init();
 
 	/*--------FastFlow region-------*/
 
-	vector<unique_ptr<ff_node>> workers;
+	std::vector<std::unique_ptr<ff::ff_node>> workers;
 
-	for(int i=0; i<nthreads; i++){
-		workers.push_back(make_unique<Worker_decomp>());
+	for(int i=0; i<spb::nthreads; i++){
+		workers.push_back(ff::make_unique<Worker_decomp>());
 	}
 
-	ff_OFarm<Item> farm(move(workers));
+	ff::ff_OFarm<spb::Item> farm(move(workers));
 
 	Emitter_decomp E;
 	farm.add_emitter(E);
@@ -103,13 +100,13 @@ void decompress(){
 	farm.set_scheduling_ondemand();
 
 	if(farm.run_and_wait_end()<0){
-		cout << "error running pipe";
+		std::cout << "error running pipe";
 	}
 	/*------------------------------*/
-	stop_metrics(metrics);
+	spb::Metrics::stop();
 }
 
 int main (int argc, char* argv[]){
-	bzip2_main(argc, argv);
+	spb::bzip2_main(argc, argv);
 	return 0;
 }

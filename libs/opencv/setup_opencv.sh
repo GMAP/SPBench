@@ -7,7 +7,7 @@ FILE=opencv-2.4.13.6.tar.gz
 
 if [ ! -f "$FILE" ]; then
     echo "Downloading $FILE..."
-    wget https://gmap.pucrs.br/spbench/libs/opencv/$FILE
+    wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/opencv/$FILE
 fi
 
 LIB_DIR=opencv-2.4.13.6
@@ -28,7 +28,7 @@ tar -xf $FILE
 cd $LIB_DIR
 mkdir build
 cd build
-cmake -DBUILD_PNG=ON -DBUILD_EXAMPLES=OFF -DWITH_FFMPEG=ON -DOPENCV_FFMPEG_SKIP_BUILD_CHECK=ON -DCMAKE_INSTALL_PREFIX=../ ..
+cmake -DBUILD_PNG=ON -DBUILD_EXAMPLES=OFF -DWITH_FFMPEG=ON -DOPENCV_FFMPEG_SKIP_BUILD_CHECK=ON -DWITH_CUDA=OFF -DCMAKE_INSTALL_PREFIX=../ ..
 make -j$(nproc)
 make install
 cd ..

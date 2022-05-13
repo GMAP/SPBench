@@ -1,16 +1,14 @@
-#include <metrics.hpp>
 #include <lane_detection.hpp>
 #include "tbb/pipeline.h"
 #include "tbb/task_scheduler_init.h"
-using namespace tbb;
 
 class stage1 : public tbb::filter{
 public:
 	stage1() : tbb::filter(tbb::filter::serial_in_order) {}
 	void* operator() (void*){
 		while(1){
-			Item * item = new Item();
-			if (!source_op(*item)) break;
+			spb::Item * item = new spb::Item();
+			if (!spb::Source::op(*item)) break;
 			return item;
 		}
 		return NULL;
@@ -21,25 +19,24 @@ class stage2 : public tbb::filter{
 public:
         stage2() : tbb::filter(tbb::filter::parallel) {}
         void* operator() (void* new_item){
-                Item * item = static_cast <Item*> (new_item);
-         	segment_op(*item);
-                canny1_op(*item);
-	 	houghT_op(*item);
-                houghP_op(*item);
-                bitwise_op(*item);
-                canny2_op(*item);
-                overlap_op(*item);
+                spb::Item * item = static_cast <spb::Item*> (new_item);
+         		spb::Segment::op(*item);
+				spb::Canny1::op(*item);
+				spb::HoughT::op(*item);
+				spb::HoughP::op(*item);
+				spb::Bitwise::op(*item);
+				spb::Canny2::op(*item);
+				spb::Overlap::op(*item);
                 return item;
         }
 };
-
 
 class stage3 : public tbb::filter{
 public:
 	stage3() : tbb::filter(tbb::filter::serial_in_order) {}
 	void* operator() (void* new_item){
-		Item * item = static_cast <Item*> (new_item);
-		sink_op(*item);
+		spb::Item * item = static_cast <spb::Item*> (new_item);
+		spb::Sink::op(*item);
 		return NULL;
 	}
 };
@@ -47,16 +44,16 @@ public:
 int main (int argc, char* argv[]){
 
 	// Disabling internal OpenCV's support for multithreading.
-	setNumThreads(0);
+	cv::setNumThreads(0);
 
-	init_bench(argc, argv); //Initializations
+	spb::init_bench(argc, argv); //Initializations
 
-	data_metrics metrics = init_metrics(); //UPL and throughput
-
+	spb::Metrics::init();
+	
 	//TBB code:
-	task_scheduler_init init_parallel(nthreads);
+	tbb::task_scheduler_init init_parallel(spb::nthreads);
 
-	pipeline pipeline;
+	tbb::pipeline pipeline;
 
 	stage1 read;
 	pipeline.add_filter(read);
@@ -65,11 +62,11 @@ int main (int argc, char* argv[]){
 	stage3 write;
 	pipeline.add_filter(write);
 
-	pipeline.run(nthreads*10);
+	pipeline.run(spb::nthreads*10);
 
-	stop_metrics(metrics);
+	spb::Metrics::stop();
 
-	end_bench();
+	spb::end_bench();
 
 	return 0;
 }

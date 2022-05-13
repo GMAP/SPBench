@@ -1,5 +1,17 @@
-#include <metrics.hpp>
 #include <lane_detection.hpp>
+
+using namespace spb;
+using namespace cv;
+
+Source source;
+Segment segment;
+Canny1 canny1;
+HoughT houghT;
+HoughP houghP;
+Bitwise bitwise;
+Canny2 canny2;
+Overlap overlap;
+Sink sink;
 
 int main (int argc, char* argv[]){
 
@@ -7,34 +19,29 @@ int main (int argc, char* argv[]){
 	setNumThreads(0);
 
 	init_bench(argc, argv); //Initializations
-
-	data_metrics metrics = init_metrics(); //UPL and throughput
+	Metrics::init();
 
 	[[spar::ToStream]]
 	while(1){
-
 		Item item;
-
-		if (!source_op(item)) break;
-
+		if (!source.op(item)) break;
 		[[spar::Stage,spar::Input(item),spar::Output(item),spar::Replicate()]]
 		{
-			segment_op(item);
-			canny1_op(item);
-			houghT_op(item);
-			houghP_op(item);
-			bitwise_op(item);
-			canny2_op(item);
-			overlap_op(item);
+			segment.op(item);
+			canny1.op(item);
+			houghT.op(item);
+			houghP.op(item);
+			bitwise.op(item);
+			canny2.op(item);
+			overlap.op(item);
 		}
 		[[spar::Stage,spar::Input(item)]]
 		{
-			sink_op(item);
+			sink.op(item);
 		}
 	}
 
-	stop_metrics(metrics);
-
+	Metrics::stop();
 	end_bench();
 	return 0;
 }

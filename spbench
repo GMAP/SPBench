@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 ## 
  ##############################################################################
@@ -29,110 +29,312 @@
 ##
 
 import argparse
+import sys
+import os
 
-from src.spb_options import *
+from argparse import RawTextHelpFormatter
 
-stream_path = os.path.dirname(os.path.realpath(__file__))#os.path.dirname(sys.argv[0])
+from sys import version_info 
+python_3 = version_info[0]
+
+from src.new_bench_option import new_func
+from src.delete_option import delete_reg_func
+from src.exec_option import execute_func
+from src.compile_option import compile_func
+from src.clean_option import clean_func
+from src.update_option import update_func
+from src.list_benchmarks_option import list_reg_func
+from src.install_option import install_func
+from src.configure_option import edit_json_func
+from src.edit_option import edit_source_func
+from src.list_inputs_option import list_inputs_func
+from src.new_input_option import new_input_func
+from src.delete_input_option import del_input_func
+from src.download_inputs_option import download_inputs_func
+from src.rename_bench_option import rename_bench_func
+from src.reset_option import reset_operators_func
+
+from src.utils import *
+
+from argparse import ArgumentParser,SUPPRESS
+
+spbench_version="v0.3-alpha"
+
+spbench_path = os.path.dirname(os.path.realpath(__file__))#os.path.dirname(sys.argv[0])
 
 def new(args):
-    new_func(stream_path, args)
+    new_func(spbench_path, args)
 def delete_reg(args):
-    delete_reg_func(stream_path, args)
+    delete_reg_func(spbench_path, args)
 def list_reg(args):
-    list_reg_func(stream_path)
+    list_reg_func(spbench_path, args)
 def edit_json(args):
-    edit_json_func(stream_path, args)
+    edit_json_func(spbench_path, args)
 def edit_source(args):
-    edit_source_func(stream_path, args)
+    edit_source_func(spbench_path, args)
 def execute(args):
-    execute_func(stream_path, args)
+    execute_func(spbench_path, args)
 def compile(args):
-    compile_func(stream_path, args)
-def register(args):
-    register_func(stream_path)
+    compile_func(spbench_path, args)
+def clean(args):
+    clean_func(spbench_path, args)
+def update(args):
+    update_func(spbench_path, args)
 def register_inputs(args):
-    new_input_func(stream_path, args)
+    new_input_func(spbench_path, args)
+def download_inputs(args):
+    download_inputs_func(spbench_path, args)
 def list_reg_inputs(args):
-    list_inputs_func(stream_path, args)
+    list_inputs_func(spbench_path, args)
+def delete_input(args):
+    del_input_func(spbench_path, args)
 def install(args):
-    install_func(stream_path, args)
+    install_func(spbench_path, args)
+def rename_bench(args):
+    rename_bench_func(spbench_path, args)
+def reset_operators(args):
+    reset_operators_func(spbench_path, args)
 
-parser = argparse.ArgumentParser()
-subparsers = parser.add_subparsers()
+def spb_version(args):
+    print("\n  SPBench " + spbench_version + "\n")
 
+
+if len(sys.argv) < 2:
+    print("  Error: No SPBench command given.\n  Run \'./spbench --help\' for more information.")
+    sys.exit()
+
+class SmartFormatter(argparse.HelpFormatter):
+    def _split_lines(self, text, width):
+        if text.startswith('R|'):
+            return text[2:].splitlines()  
+        # this is the RawTextHelpFormatter._split_lines
+        return argparse.HelpFormatter._split_lines(self, text, width)
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench [command] [subcommands]""",
+    description="""
+    Run \'./spbench --help\' for more information.
+
+    Or run ./spbench [command] --help to see more details for each command.
+    """, 
+    epilog="""
+    Available commands:\n
+-------------------------------------------------------------
+        COMMAND | DESCRIPTION
+-------------------------------------------------------------
+        install - Download and install the required libraries for the supported applications
+            new - Create a new benchmark 
+           edit - Open a benchmark to edit the main source code
+      configure - Open a JSON configuration file for adding compiling dependencies
+         update - Generate a new makefile based on the information provided in the JSON configuration file
+        compile - Compile a given benchmark
+          clean - Clean a benchmark (similar to make clean)
+           exec - Execute a given benchmark
+           list - List all available benchmarks
+         delete - Delete a given benchmark
+       reset-op - Reset to default the source code of all operators for a given benchmark
+    list-inputs - List all available inputs for running the benchmarks
+      new-input - Add a new input custom input for the benchmarks
+   delete-input - Delete a given input
+download-inputs - Download all available inputs provided by SPBench
+         rename - Rename a given benchmark
+        version - Print the current SPBench version
+-------------------------------------------------------------
+        """)
+
+#if(python_3 == 3):
+#    subparsers = parser.add_subparsers(required=True)
+#else:
+
+subparsers = parser.add_subparsers(dest=argparse.SUPPRESS, metavar=argparse.SUPPRESS, help=argparse.SUPPRESS)
 
 #subparser for 'install' option
-parser_inst = subparsers.add_parser('install')
+parser_inst = subparsers.add_parser('install', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench install [subcommands]""", 
+    description="""  Description: Download and install the required libraries for the supported applications.""")
+
+#subparser for 'new' option
+parser_new = subparsers.add_parser('new', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench new [subcommands]""", 
+    description="""  Description: Create a new benchmark.""")
+
+#subparser for 'edit' option
+parser_edit = subparsers.add_parser('edit', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench edit [subcommands]""", 
+    description="""  Description: Open a benchmark to edit the main source code.""")
+
+#subparser for 'configure' option
+parser_config = subparsers.add_parser('configure', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench configure [subcommands]""", 
+    description="""  Description: Open a JSON configuration file for adding compiling dependencies.""")
+
+#subpraser for 'update' option
+parser_update = subparsers.add_parser('update', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench update [subcommands]""", 
+    description="""  Description: Generate a new makefile based on the information provided in the JSON configuration file.""")
+
+#subparser for 'compile' option
+parser_cmp = subparsers.add_parser('compile', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench compile [subcommands]""", 
+    description="""  Description: Compile a given benchmark.""")
+
+#subparser for 'clean' option
+parser_clean = subparsers.add_parser('clean', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench clean [subcommands]""", 
+    description="""  Description: Clean a benchmark (similar to make clean)""")
+
+#subparser for 'exec' option
+parser_exec = subparsers.add_parser('exec', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench exec [subcommands]""", 
+    description="""  Description: Execute a given benchmark.""")
+
+#subparser for 'list' option
+parser_list = subparsers.add_parser('list', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench list [subcommands]""", 
+    description="""  Description: List all available benchmarks.""")
+
+#subparser for delete benchmark option
+parser_del = subparsers.add_parser('delete', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench delete [subcommands]""", 
+    description="""  Description: Delete a given benchmark""")
+
+#subparser for reset operators option
+parser_reset_op = subparsers.add_parser('reset-op', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench reset-op [subcommands]""", 
+    description="""  Description: Reset to default the source code of all operators for a given benchmark.""")
+
+#subparser for list registered inputs
+parser_list_inputs = subparsers.add_parser('list-inputs', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench list-inputs [subcommands]""", 
+    description="""  Description: List all available inputs for running the benchmarks.""")
+
+#subparser for register input
+parser_reg_inputs = subparsers.add_parser('new-input', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench new-input [subcommands]""", 
+    description="""  Description: Add a new input custom input for the benchmarks.""")
+
+#subparser for delete input
+parser_del_input = subparsers.add_parser('delete-input', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench delete-input [subcommands]""", 
+    description="""  Description: Delete a given input.""")
+
+#subparser for download inputs
+parser_get_inputs = subparsers.add_parser('download-inputs', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench download-inputs [subcommands]""", 
+    description="""  Description: Download all available inputs provided by SPBench.""")
+
+#subparser for rename benchmark
+parser_rename_bench = subparsers.add_parser('rename', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench rename [subcommands]""", 
+    description="""  Description: Rename a given benchmark.""")
+
+#subparser for 'version' option
+parser_version = subparsers.add_parser('version', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench version""", 
+    description="""  Print the current SPBench version.""")
+parser_version.set_defaults(func=spb_version)
+
+
+##
+# Install applications
+##
 parser_inst.add_argument('-app',
     action='store',
     type=str,
     dest='app_id',
     required=False,
     default='all',
-    choices=['bzip2', 'lane_detection', 'ferret', 'all'],
-    help='You can choose a specific application to install or you can use \'all\' to compile all versions.')
+    choices=apps_list,
+    help='You can choose a specific application to install or you can use \'all\' to compile all benchmarks.')
 parser_inst.set_defaults(func=install)
 
-#subparser for 'new' option
-parser_reg = subparsers.add_parser('new')
-parser_reg.add_argument('-version', 
+##
+# Add new benchmark
+##
+parser_new.add_argument('-benchmark', 
     action='store',
     type=str,
-    dest='version_id',
+    dest='benchmark_id',
     required=True,
-    help='Set a name for your new version')# (it must be the same name of the directory you created)')
+    help='Set a name for your new benchmark')# (it must be the same name of the directory you created)')
 
-parser_reg.add_argument('-app',
+parser_new.add_argument('-app',
     action='store',
     type=str,
     dest='app_id',
     required=True,
-    choices=['bzip2', 'lane_detection', 'ferret'],
-    help='You must choose one from the following applications: [bzip2] [lane_detection] [ferret] (mandatory)')
+    choices=apps_list,
+    help="You must choose one from the following applications:\n " + str(apps_list) + " (mandatory)")
 
-parser_reg.add_argument('-ppi',
+parser_new.add_argument('-ppi',
     action='store',
     type=str,
     dest='ppi_id',
     required=True,
     help="You must insert a name for the PPI you will use \n(e.g., fastflow, spar, tbb, etc...). You can choose \'sequential\', as well. (Mandatory)")
 
-parser_reg.add_argument('-from',
+parser_new.add_argument('-from',
     action='store',
     type=str,
     dest='copy_from',
     required=False,
     default='',
-    help="Use this option create your new version as a copy of an existent version. Insert the name of the version you want to copy from (Optional. Default: sequential)")
-parser_reg.set_defaults(func=new)
+    help="Use this option to create your new benchmark as a copy of an existent benchmark. Insert the name of the benchmark you want to copy from (Optional. Default: sequential)")
 
-#subparser for 'edit' option
-parser_edit = subparsers.add_parser('edit')
-parser_edit.add_argument('-version',
+parser_new.add_argument('-nsources', 
+     action='store_true',
+     default=False,
+     dest='nsources',
+     required=False,
+     help='Use this option to create a new benchmark with support for multiple sources (optional)')
+parser_new.set_defaults(func=new)
+
+##
+# Edit benchmark
+##
+parser_edit.add_argument('-benchmark',
     action='store',
     type=str,
-    dest='version_id',
+    dest='benchmark_id',
     required=True,
-    help='Enter the name of an application version to edit (mandatory)')
+    help='Enter the name of an application benchmark to edit (mandatory)')
 
 parser_edit.add_argument('-editor',
     action='store',
     type=str,
     dest='user_editor',
     required=False,
-    default='nano',
+    default='nano', 
     help='Enter the name of an text editor available in your machine, e.g. "vim", "nano", etc. (default: nano)')
 
 parser_edit.set_defaults(func=edit_source)
 
-#subparser for 'configure' option
-parser_config = subparsers.add_parser('configure')
-parser_config.add_argument('-version',
+##
+# Configure benchmark
+##
+parser_config.add_argument('-benchmark',
     action='store',
     type=str,
-    dest='version_id',
+    dest='benchmark_id',
     required=True,
-    help='Enter the name of an application version to configure (mandatory)')
+    help='Enter the name of an application benchmark to configure (mandatory)')
 
 parser_config.add_argument('-editor',
     action='store',
@@ -144,60 +346,121 @@ parser_config.add_argument('-editor',
 
 parser_config.set_defaults(func=edit_json)
 
-#subpraser for 'register' option
-parser_reg = subparsers.add_parser('register')
+##
+# Update benchmark
+##
+parser_update.add_argument('-benchmark', 
+     action='store',
+     type=str,
+     dest='benchmark_id',
+     required=False,
+     default='all',
+     help='Insert the name of a benchmark to update it (optional). Default: All')
 
-#parser_reg.add_argument('-all',
-#     action='store_true',
-#     dest='reg_all',
-#     required=False,
-#     help='Register all applications and updates the new current path.')
-
-# parser_reg.add_argument('-lib',
-#     action='store',
-#     type=str,
-#     dest='lib_id',
-#     #required=True,
-#     default='sequential',
-#     #choices=['sequential', 'spar'],
-#     help='You must insert the library name (same name as the directory, e.g., fastflow, spar, tbb, ...)')#one from the following options: [sequential] [spar] (mandatory)')
-parser_reg.set_defaults(func=register)
-
-#subparser for 'compile' option
-parser_cmp = subparsers.add_parser('compile')
-parser_cmp.add_argument('-version',
+parser_update.add_argument('-app',
     action='store',
     type=str,
-    dest='version_id',
-    required=True,
-    help='Insert the name of the version to compile (mandatory). You can use \'all\' to compile all versions.')
+    dest='app_id',
+    required=False,
+    choices=apps_list_all,
+    help="Update all benchmarks for a specific application: \n " + str(apps_list_all) + " (optional)")
+
+parser_update.add_argument('-ppi',
+    action='store',
+    type=str,
+    dest='ppi_id',
+    required=False,
+    help="Update all benchmarks for a specific PPI (optional)\n")
+parser_update.set_defaults(func=update)
+
+##
+# Compile benchmark
+##
+parser_cmp.add_argument('-benchmark',
+    action='store',
+    type=str,
+    dest='benchmark_id',
+    required=False,
+    help='Insert the name of a benchmark to compile (optional). You can use \'all\' to compile all benchmarks.')
+
+parser_cmp.add_argument('-app',
+    action='store',
+    type=str,
+    dest='app_id',
+    required=False,
+    choices=apps_list,
+    help="Compile all benchmarks based on a specific application: \n " + str(apps_list) + " (optional)")
+
+parser_cmp.add_argument('-ppi',
+    action='store',
+    type=str,
+    dest='ppi_id',
+    required=False,
+    help="Compile all benchmarks implemented with a specific PPI (optional)\n")
+
+parser_cmp.add_argument('-clean',
+     action='store_true',
+     default=False,
+     dest='clean',
+     required=False,
+     help='If used, it will run \'make clean\' and then \'make\' (optional)')
+
 parser_cmp.set_defaults(func=compile)
 
-#subparser for 'exec' option
-parser_exe = subparsers.add_parser('exec')
-parser_exe.add_argument('-version',
+##
+# Clean benchmark
+##
+parser_clean.add_argument('-benchmark',
     action='store',
     type=str,
-    dest='version_id',
-    required=True,
-    help='Name of the version to execute (mandatory). You can use \'all\' to execute all versions.')
+    dest='benchmark_id',
+    required=False,
+    help='Insert the name of a benchmark to clean (make clean) (optional). You can use \'all\' to clean all benchmarks.')
 
-parser_exe.add_argument('-input',
+parser_clean.add_argument('-app',
     action='store',
     type=str,
-    dest='input_file',
-    required=True,
-    help='Input file (mandatory)')
+    dest='app_id',
+    required=False,
+    choices=apps_list,
+    help="Clean all benchmarks based on a specific application:\n " + str(apps_list) + " (optional)")
 
-parser_exe.add_argument('-nthreads', 
+parser_clean.add_argument('-ppi',
+    action='store',
+    type=str,
+    dest='ppi_id',
+    required=False,
+    help="Clean all benchmarks implemented with a specific PPI (optional)\n")
+
+parser_clean.set_defaults(func=clean)
+
+##
+# Execute benchmark
+##
+parser_exec.add_argument('-benchmark',
+    action='store',
+    type=str,
+    dest='benchmark_id',
+    required=True,
+    help='Name of the benchmark to execute (mandatory). You can use \'all\' to execute all benchmarks.')
+
+parser_exec.add_argument('-input',
+    action='append',
+    nargs='+',
+    type=str,
+    dest='input_id',
+    required=True,
+    help='Input file (mandatory) - You can select more than one for multiple sources apps')
+
+parser_exec.add_argument('-nthreads', 
     action='store',
     type=str,
     dest='nthreads',
     required=False,
     default='1',
-    help='Number of threads. It can be used inside the parallel versions. Default value: 1. (Optional)')
+    help='Number of threads. It can be used inside the parallel benchmarks. Default value: 1. (Optional)')
 
-parser_exe.add_argument('-batch', 
+parser_exec.add_argument('-batch', 
     action='store',
     type=str,
     dest='batch_size',
@@ -205,7 +468,7 @@ parser_exe.add_argument('-batch',
     default='1',
     help='Batch size. It can be used to set a batch size. Default value: 1. (Optional)')
     
-parser_exe.add_argument('-monitor', 
+parser_exec.add_argument('-monitor', 
     action='store',
     type=str,
     dest='time_interval',
@@ -213,86 +476,146 @@ parser_exe.add_argument('-monitor',
     default='',
     help='Monitor latency, throughput, CPU and memory usage. You must indicate the monitoring time interval in milliseconds (e.g. 250. Optional).')
 
-parser_exe.add_argument('-frequency', 
+parser_exec.add_argument('-frequency', 
     action='store',
     type=str,
     dest='items_reading_frequency',
     required=False,
     default='',
-    help='Items will be read in a constant frequency. You must indicate a time interval in MICROseconds, e.g. 1000 (= 1 millisecond). The minimum frequency you can set is 0 microsecond, however the actual minimum limit will be defined by your system\'s memory access speed (the command [-frequency 0] is equivalent to [-in_memory]). (Optional).')
+    help='Items will be read in a constant frequency. You must indicate a time interval in MICROseconds, e.g. 1000 (= 1 millisecond). The minimum frequency you can set is 0 microsecond, however the actual minimum limit will be defined by your system\'s memory access speed (the command [-frequency 0] is equivalent to [-in-memory]). (Optional).')
 
-parser_exe.add_argument('-in_memory', 
+parser_exec.add_argument('-in-memory', 
     action='append_const',
     const="-k",
     dest='exec_arguments',
     required=False,
     help='Run the application in-memory (Optional)')
 
-parser_exe.add_argument('-latency', 
+parser_exec.add_argument('-latency', 
     action='append_const',
     const="-l",
     dest='exec_arguments',
     required=False,
     help='Print average latency and throughput results (Optional)')
 
-parser_exe.add_argument('-throughput', 
+parser_exec.add_argument('-throughput', 
     action='append_const',
     const="-x",
     dest='exec_arguments',
     required=False,
     help='Print average throughput results (Optional)')
 
-# parser_exe.add_argument('-f',
+# parser_exec.add_argument('-f',
 #     action='store',
 #     type=argparse.FileType('w'),
 #     dest='latency_file',
 #     required=False,
 #     help='Insert a file name to store latency results (Optional)')
 
-parser_exe.add_argument('-latency_monitor', 
+parser_exec.add_argument('-latency-monitor', 
     action='append_const',
     const="-f",
     dest='exec_arguments',
     required=False,
     help='Monitors latency per stage and per item and generates a log file (Optional)')
 
-parser_exe.add_argument('-resource_usage', 
+parser_exec.add_argument('-resource-usage', 
     action='append_const',
-    const='-u',
+    const='-r',
     dest='exec_arguments',
     required=False,
-    help='Print the global memory and CPU usage for this application (Optional)')
+    help='Print the global memory and CPU usage for this application (Optional). To use it is required to run the benchmark as root or adjust paranoid value.')
 
-parser_exe.add_argument('-d', 
+parser_exec.add_argument('-user-arg',
+    action='append',
+    nargs='+',
+    type=str,
+    dest='user_args',
+    required=False,
+    help='User custom argument (optional). Allow users to pass one or more arguments. Single argument: [-user-arg single_argument] or [-user-arg "single argument"]. Multiple arguments: [-user-arg two arguments] or [-user-arg two -user-args arguments]')
+
+parser_exec.add_argument('-d', 
     action='append_const',
     const='-d',
     dest='exec_arguments',
     required=False,
-    help='Decompress file (Use only for Bzip2. Optional)')
-parser_exe.set_defaults(func=execute)
+    help='Decompress mode (Use only for Bzip2. Optional)')
 
-parser_list = subparsers.add_parser('list')
-parser_list.set_defaults(func=list_reg)
-
-parser_del = subparsers.add_parser('delete')
-parser_del.add_argument('-version', 
-     action='store',
-     type=str,
-     dest='version_id',
-     required=False,
-     help='Insert the name of the programm to delete')
-
-parser_del.add_argument('-all', 
+parser_exec.add_argument('-test-result', 
      action='store_true',
      default=False,
-     dest='delete_all',
+     dest='test_result',
      required=False,
-     help='Delete all registered itens')
+     help='This option enables correctness test (optional)')
+parser_exec.set_defaults(func=execute)
+
+
+##
+# List benchmarks
+##
+parser_list.add_argument('-app',
+    action='store',
+    type=str,
+    dest='app_id',
+    required=False,
+    choices=apps_list,
+    help="You can filter by application:\n" + str(apps_list) + " (optional)")
+parser_list.add_argument('-ppi',
+    action='store',
+    type=str,
+    dest='ppi_id',
+    required=False,
+    help="Shows all the benchmarks for a specific PPI (optional)")
+parser_list.set_defaults(func=list_reg)
+
+##
+# Delete benchmark
+##
+parser_del.add_argument('-benchmark', 
+     action='store',
+     type=str,
+     dest='benchmark_id',
+     required=True,
+     help='Insert the name of the benchmark to delete')
 parser_del.set_defaults(func=delete_reg)
 
-# register input
-parser_reg_inputs = subparsers.add_parser('new_input')
-parser_reg_inputs.add_argument('-input_id', 
+##
+# Reset operators
+##
+parser_reset_op.add_argument('-benchmark', 
+     action='store',
+     type=str,
+     dest='benchmark_id',
+     required=False,
+     help='Insert the name of a benchmark to reset its operators. Caution: It will remove any current modifications on the operators.')
+
+parser_reset_op.add_argument('-app',
+    action='store',
+    type=str,
+    dest='app_id',
+    required=False,
+    choices=apps_list,
+    help="Reset operators for all benchmarks for a specific application: \n[bzip2] [lane_detection] [ferret] [person_recognition](optional)")
+
+parser_reset_op.add_argument('-ppi',
+    action='store',
+    type=str,
+    dest='ppi_id',
+    required=False,
+    help="Reset operators for all benchmarks for a specific PPI (optional)\n")
+
+#parser_reset.add_argument('-nsources', 
+#    action='store_true',
+#    default=False,
+#    dest='nsources',
+#    required=False,
+#    help='Use this option together with \'-app\' or \'-ppi\' to filter multi-source benchmarks (optional). Default: single source')
+parser_reset_op.set_defaults(func=reset_operators)
+
+##
+# register inputs
+##
+parser_reg_inputs.add_argument('-id', 
     action='store',
     type=str,
     dest='input_id',
@@ -304,30 +627,113 @@ parser_reg_inputs.add_argument('-app',
     type=str,
     dest='app_id',
     required=True,
-    choices=['bzip2', 'lane_detection', 'ferret'],
-    help="You must choose one from the following applications:\n[bzip2] [lane_detection] [ferret] (mandatory)")
+    choices=apps_list,
+    help="You must choose one from the following applications:\n " + str(apps_list) + " (mandatory)")
 
-parser_reg_inputs.add_argument('-input',
+parser_reg_inputs.add_argument('-input-string',
     action='store',
     type=str,
     dest='input',
     required=True,
     #default='sequential',
-    help="You must insert the input string \n(e.g., \"/home/user/my_input_file\")")
+    help="You must insert the input string \n(e.g., \"/home/user/my_input_file ...\")")
+
+parser_reg_inputs.add_argument('-md5',
+    action='store',
+    type=str,
+    dest='md5_hash',
+    required=False,
+    default="",
+    help="SPBench uses the associated md5 hash to check the correctness of the result for this input (Optional).\n ATTENTION: do not insert the input file resulting md5 hash here. You must insert the md5 hash regarding the output file. See the respective documentation for more details (LINK)(FORTHCOMING)")
 parser_reg_inputs.set_defaults(func=register_inputs)
 
-# list registered inputs
-parser_list_inputs = subparsers.add_parser('list_inputs')
+##
+# Delete inputs
+##
+parser_del_input.add_argument('-id', 
+    action='store',
+    type=str,
+    dest='input_id',
+    required=True,
+    help='Insert the ID of the input you want to remove from registry')
+
+parser_del_input.add_argument('-app',
+    action='store',
+    type=str,
+    dest='app_id',
+    required=True,
+    choices=apps_list,
+    help="You must choose from the applications list (mandatory).")
+parser_del_input.set_defaults(func=delete_input)
+
+##
+# Download inputs
+##
+parser_get_inputs.add_argument('-app',
+    action='store',
+    type=str,
+    dest='app_id',
+    required=False,
+    default="all",
+    choices=apps_list_all,
+    help="You can choose from the applications list or \n\n leave it empty to download all inputs.")
+
+parser_get_inputs.add_argument('-class', 
+    action='store',
+    type=str,
+    dest='class_id',
+    required=False,
+    default="all",
+    choices=['all', 'small', 'medium', 'large'],
+    help='R|(It applies only for Bzip2) You can insert the class of workload\nyou want to download or leave it empty to download all classes. Default: \'all\'')
+
+parser_get_inputs.add_argument('-force', 
+     action='store_true',
+     default=False,
+     dest='force',
+     required=False,
+     help='Use this option to overwrite any existing input file and download it again (optional).')
+parser_get_inputs.set_defaults(func=download_inputs)
+
+
+##
+# rename benchmark
+##
+parser_rename_bench.add_argument('-old-name',
+    action='store',
+    type=str,
+    dest='old_bench_id',
+    required=True,
+    help="Insert the old benchmark id you want to rename.")
+
+parser_rename_bench.add_argument('-new-name', 
+    action='store',
+    type=str,
+    dest='new_bench_id',
+    required=True,
+    help='Insert the new benchmark id.')
+parser_rename_bench.set_defaults(func=rename_bench)
+
+##
+# List inputs
+##
 parser_list_inputs.add_argument('-app',
     action='store',
     type=str,
     dest='app_id',
     required=False,
-    choices=['bzip2', 'lane_detection', 'ferret'],
-    help="You must choose one from the following applications:\n[bzip2] [lane_detection] [ferret] (mandatory)")
+    choices=apps_list_all,
+    help="R|You can filter by application:\n" + str(apps_list) + " (optional)")
 parser_list_inputs.set_defaults(func=list_reg_inputs)
 
+
+
 args = parser.parse_args()
+
+#if not parser:
+#    print("\n Error! No command selected. Run with --help to see all available options.")
+#    sys.exit()
+
 args.func(args)
 
 sys.exit()

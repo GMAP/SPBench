@@ -2,7 +2,9 @@
 
 Here we give some how-to-use instructions and tips.
 
-## Command-Line Interface: 
+Notice that these are basic, simplified instructions. For more details and the complete documentation, go to: [https://spbench-doc.rtfd.io](https://spbench-doc.rtfd.io)
+
+## Command-Line Interface:
 
 The framework works with a command-line interface (CLI).
 
@@ -14,19 +16,29 @@ For each command there is also a "help" guide. You can access it using:
 
 `./spbench [command] -h`
 
-## Framework commands:
+## Basic concepts:
 
- - **install**: It install the dependencies for the SPBench applications and parallel implementations.
- - **register**: It automatically generates makefiles for all benchmark versions available within the framework (You must install the dependencies first).
- - **new**: You use it to create new version of a given application from the framework. This command will create a fresh copy of the selected application for you to work on. See the 'help' option for this command to check the required arguments.
- - **edit**: You can use this comand to edit a given application version. See the 'help' option for this command to check the required arguments.
- - **configure**: You can use this command to configure the compiling dependencies of an application version. It opens a JSON configuration file for you to write the required dependencies. See the 'help' option for this command to check the required arguments.
- - **compile**: Use this command to compile a given version. See the 'help' option for this command to check the required arguments.
- - **exec**: Use this command to run an application version. See the 'help' option for this command to check the required arguments.
- - **list**: This command lists all applications versions of the framework. Your new versions will be added to this list.
- - **delete**: It completely deletes a given application version.
- - **new_input**: It allows you to add an alias for a custom input. See the 'help' option for this command to check the required arguments.
- - **list_inputs**: List all inputs registered for a given application and their respective alias. (Attention: You can only use these alias after downloading the respective inputs. See the section about inputs below).
+ - **Benchmark**: In this context, it means any application version registered in SPBench. Benchmarks can be the sequential applications, the parallel versions pre-available within SPBench, or any new custom implementations registered latter by users.
+ - **PPI**: It stands for Parallel Programming Interface, which means any library, framework, language, etc. that leverages parallelism.
+
+## Main command-line commands:
+
+The table bellow shows all commands that can be used through the CLI
+| Command | Description | Subcommands |
+|---|---|---|
+| **install** | It installs the dependencies for the SPBench benchmarks. | `-app <some_application>` |
+| **register** | It automatically sets the paths and generates new makefiles for all benchmarks. | None |
+| **new** | It allows for creating a new benchmark based on a SPBench application.<br /> This command will create a fresh copy of the selected application. | `-name <new_benchmark_id>`(any name)<br /> `-app <some_SPBench_application>`<br /> `-ppi <some_ppi>` (any name)<br /> `-replicate <other_benchmark_id>`(Optional) |
+| **edit** | It opens a choosen benchmark for code editing. | `-bench <benchmark_id>`<br /> `-editor <editor_name>`(Optional)(Default: nano) |
+| **configure** | It allows users to add compiling dependencies for a benchmark.<br /> It opens a JSON configuration file for you to write the required dependencies. | `-bench <benchmark_id>`<br /> `-editor <editor_name>`(Optional)(Default: nano) |
+| **compile** | It compiles a selected benchmark. | `-bench <benchmark_id>` |
+| **exec** | It runs a selected benchmark. | `-bench <benchmark_id>`<br /> `-input <input_id>`<br /> `-batch <batch_size>`(optional)<br /> `-frequency <item_delay>`(microsecond)(optional)<br /> `-nthreads <number_of_threads>`(optional)<br /> `-in-memory`(optional)<br /> `-latency`(optional)<br /> `-throughput`(optional)<br /> `-resource_usage`(optional)<br /> `-monitor <time_interval>`(millisecond)(optional)<br /> `-latency_monitor`(optional)<br /> `-user_arg <user_custom_argument>`(optional) |
+| **list** | This command lists all SPBench benchmarks. Users' new benchmark versions are added to this list. | None |
+| **delete** | It completely deletes the given benchmark. | `-bench <benchmark_id>` |
+| **new_input** | It allows for adding an alias for a custom input. | `-input_id <new_input_id>`<br /> `-app <SPBench_application>`<br /> `-input <"input info/string">` |
+| **list_input** | It lists all inputs registered for a given application and their respective alias.<br /> (Attention: You can only use pre-registered alias after downloading the respective inputs.<br /> See the section about inputs below). | `-app <SPBench_application>`(optional) |
+
+
 
 ## How to use
 
@@ -34,10 +46,9 @@ In this framework you can simply run the benchmarks that are already provided or
 
 To run a given benchmark version, you can follow these steps:
  - Run: `./spbench install` (you can use `-app <some application>` to install only a specific application)
- - Run: `./spbench register`
  - Run: `./spbench list` (this shows the list of available benchmarks)
- - Run: `./spbench compile -version [version_name]`
- - Run: `./spbench exec -version [version_name] -input [some_input] [other_args]`
+ - Run: `./spbench compile -benchmark <benchmark_id>`
+ - Run: `./spbench exec -benchmark <benchmark_id> -input <input_id> ... <optional_args>`
 
 To implement your own benchmark version, you must run **new -> edit -> configure**
 
@@ -45,11 +56,9 @@ To implement your own benchmark version, you must run **new -> edit -> configure
 
 In the **exec** step you must choose a given input for the benchmark.
 
-These inputs can be found and downloaded in the inputs/ directory.
+To automatically download them you can run:
 
-You can run the 'get_inputs.sh' script to automatically download them.
-
-`cd inputs/ && bash get_inputs.sh`
+`./spbench download-inputs`
 
 You can use your own input or choose a given one.
 
@@ -58,11 +67,11 @@ These alias are linked to the inputs provided by SPBench and you can see them ru
 `./spbench list_inputs`
 
 SPBench also allows you to create an alias for your custom inputs.
-`./spbench new_input -input_id <input_alias> -app <spbench_application> -input "<full_path_to_your_new_input>"`
+`./spbench new_input -id <input_alias> -app <spbench_application> -input "<full_path_to_your_new_input>"`
 
 ## How to run example:
 
-- `./spbench exec -version [version_name] -input [small, medium, large]`
+- `./spbench exec -benchmark [benchmark_name] -input [small, medium, large]`
 
 ## Performance metrics
 
@@ -72,7 +81,9 @@ With SPBench you can evaluate four performance metrics in different ways.
     - CPU usage (%)
     - Memory usage (KB)
 
-There are four OPTIONAL arguments you can select when running the 'exec' command:
+There are some OPTIONAL arguments you can select when running the 'exec' command:
+
+## For metrics:
 
 - `-monitor <time interval>`
 
@@ -94,11 +105,11 @@ There are four OPTIONAL arguments you can select when running the 'exec' command
 
     It prints the global memory and CPU usage for the selected application.
 
-## Other configuration arguments
+## Other optional management arguments
 
 All of these are also OPTIONAL arguments that you can use within the 'exec' command.
 
-- `-in_memory`
+- `-in-memory`
 
     It runs the application in-memory, which means that all the input is first loaded into the memory before start processing it. The opposite is true for the writing phase, where the result stays in memory and is only writen to the disk after all the input is proccessed.
 
@@ -109,22 +120,14 @@ All of these are also OPTIONAL arguments that you can use within the 'exec' comm
 - `-batch <batch_size>`
 
     Here you can change the size of the batches, so each item can carry more data. By default, the size of each batch is 1.
-    
-- `-frequency <time_in_microseconds>`
 
-    Here you can change the frequency of itens generated by source operator. The minimum frequency is limited by the memory access speed in your system.
+- `-frequency <time-delay_per_item_in_us>`
+
+    Here you can set the frequency in which the sources of the benchmarks will produce new items. To increase or decrese the frequency, you can decrease or increase the time-delay between items generation. You must insert a time-delay in microseconds (e.g. 500000 = 500 ms).
 
 - `-d`
     
     This a specific argument for bzip2. You can use it to run this application in decompress mode. Observe that for de decompression mode it is required a compressed file as input (e.g. my_compressed_file.tar.bz2).
-
-## Global attributes
-
-SPBench implements some global variables that can be used and modified by users at execution time in custom implementations. Some useful are:
-
-- nthreads
-- batch_size
-- items_reading_frequency
 
 ## Important
 

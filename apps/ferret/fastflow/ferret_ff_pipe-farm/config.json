@@ -1,25 +1,28 @@
 {
-        "compiler"		:"g++",
-        "cflags"                :"-no-pie -O3",
-        "pre_src_cmd"		:"",
-        "post_src_cmd"		:"",
-        "macros"                :"-DBLOCKING_MODE",
-        "ldflags"               :"-ljpeg -lgsl -lgslcblas -lpthread",
-        "pkg-config" : {
-                "myPKG_1"       :"",
-                "myPKG_2"       :"",
-                "myPKG_N"       :"",
-                "gsl"           :"pkg-config --cflags --libs gsl",
-                "jpeg"          :"pkg-config --cflags --libs libjpeg"
+        "CXX": "g++ -std=c++1y",
+        "CXX_FLAGS":"-no-pie -O3",
+        "PPI_CXX": "g++ -std=c++1y",
+        "PPI_CXX_FLAGS":"-no-pie -O3",
+        "PRE_SRC_CMD": "",
+        "POST_SRC_CMD": "",
+        "MACROS": "-DBLOCKING_MODE -DNO_DEFAULT_MAPPING",
+        "PKG-CONFIG": {
+                "myPKG_1": "",
+                "myPKG_2": "",
+                "myPKG_N": "",
+                "gsl": "pkg-config --cflags --libs gsl",
+                "jpeg": "pkg-config --cflags --libs libjpeg"
+            },
+        "INCLUDES": {
+                "myINC_1": "",
+                "myINC_2": "",
+                "myINC_N": "",
+                "fastflow":"-I $BENCH_DIR/ppis/fastflow/"
         },
-        "includes" : {
-        	"myINC_1"	:"",
-                "myINC_2"	:"",
-                "fastflow"	:"-I $BENCH_DIR/ppis/fastflow/"
+        "LIBS": {
+                "myLIB_1": "",
+                "myLIB_2": "",
+                "myLIB_N": ""
         },
-        "libs" : {
-                "myLIB_1"	:"",
-                "myLIB_2"	:"",
-                "myLIB_N"	:""
-        }
-}
+        "LDFLAGS": "-ljpeg -lgsl -lgslcblas -lpthread"
+    }

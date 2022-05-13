@@ -1,50 +1,48 @@
-#include <metrics.hpp>
 #include <ferret.hpp>
 
 #include <ff/ff.hpp>
 
-using namespace ff;
+struct Emitter: ff::ff_node_t<spb::Item>{
 
-struct Emitter: ff_node_t<Item>{
-
-    Item * svc(Item * task){
+    spb::Item * svc(spb::Item * task){
         while (1){
-            Item * item = new Item();
-            if (!source_op(*item)) break;
+            spb::Item * item = new spb::Item();
+            if (!spb::Source::op(*item)) break;
             ff_send_out(item);
         }
         return EOS;
     }
 };
 
-struct Worker: ff_node_t<Item>{
-    Item * svc(Item * item){
-        segmentation_op(*item);
-        extract_op(*item);
-        vectorization_op(*item);
-        rank_op(*item);
+struct Worker: ff::ff_node_t<spb::Item>{
+    spb::Item * svc(spb::Item * item){
+        spb::Segmentation::op(*item);
+        spb::Extract::op(*item);
+        spb::Vectorization::op(*item);
+        spb::Rank::op(*item);
         return item;
     }
 };
 
-struct Collector: ff_node_t<Item>{
-    Item * svc(Item * item){
-        sink_op(*item);
+struct Collector: ff::ff_node_t<spb::Item>{
+    spb::Item * svc(spb::Item * item){
+        spb::Sink::op(*item);
         return GO_ON;
     }
 }Collector;
 
 int main(int argc, char *argv[]) {
 
-    init_bench(argc, argv);
-    data_metrics metrics = init_metrics();
-    vector<unique_ptr<ff_node>> workers;
+    spb::init_bench(argc, argv);
+	spb::Metrics::init();
 
-    for(int i=0; i<nthreads; i++){
-        workers.push_back(make_unique<Worker>());
+    std::vector<std::unique_ptr<ff::ff_node>> workers;
+
+    for(int i=0; i<spb::nthreads; i++){
+        workers.push_back(ff::make_unique<Worker>());
     }
 
-    ff_Farm<Item> farm(move(workers));
+    ff::ff_Farm<spb::Item> farm(move(workers));
 
     Emitter E;
     farm.add_emitter(E);
@@ -53,10 +51,10 @@ int main(int argc, char *argv[]) {
     farm.set_scheduling_ondemand();
 
     if(farm.run_and_wait_end()<0){
-        cout << "error running pipe";
+        std::cout << "error running pipe";
     }
 
-    stop_metrics(metrics);
-    end_bench();
+    spb::Metrics::stop();
+    spb::end_bench();
     return 0;
 }

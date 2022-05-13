@@ -1,0 +1,27 @@
+{
+    "CXX": "g++ -std=c++1y",
+    "CXX_FLAGS":"-O3 -finline-functions",
+    "PPI_CXX": "",
+    "PPI_CXX_FLAGS":"",
+    "PRE_SRC_CMD": "",
+    "POST_SRC_CMD": "",
+    "MACROS": "-DNO_CMAKE_CONFIG -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64",
+    "PKG-CONFIG": {
+            "myPKG_1": "",
+            "myPKG_2": "",
+            "myPKG_N": ""
+        },
+    "INCLUDES": {
+            "myINC_1": "",
+            "myINC_2": "",
+            "myINC_N": "",
+            "bzlib": "-I $BENCH_DIR/libs/bzlib/include/"
+    },
+    "LIBS": {
+            "myLIB_1": "",
+            "myLIB_2": "",
+            "myLIB_N": "",
+            "bzlib": "-L $BENCH_DIR/libs/bzlib/lib/ -lbz2"
+    },
+    "LDFLAGS": "-lpthread"
+}
