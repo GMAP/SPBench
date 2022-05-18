@@ -1,7 +1,7 @@
 #ifndef BZIP2_H
 #define BZIP2_H
 
-#include <bzip2_utils_ns.hpp>
+#include <bzip2_utils.hpp>
 
 namespace spb{
 
