@@ -41,7 +41,7 @@ if [[ $APP == "lane_detection" || $APP == "all" ]]; then
 		echo " Downloading $FILE..."
 		wget https://gmap.pucrs.br/public_data/spbench/workloads/lane/$FILE
 	fi
-
+	echo " Building Lane Detection input classes..."
 	tar -xf $FILE
 	#cd ..
 fi
@@ -55,7 +55,7 @@ then
 	fi
 
 	#cd $THIS_APP
-
+	echo " Building Person Recognition input classes..."
 	FILE=person_inputs.tar.gz
 
 	if [[ $3 == "force" ]]; then
@@ -66,6 +66,8 @@ then
 		echo " Downloading $FILE..."
 		wget https://gmap.pucrs.br/public_data/spbench/workloads/person/$FILE
 	fi
+
+
 
 	tar -xf $FILE
 	#cd ..
@@ -91,7 +93,7 @@ then
 		echo " Downloading $FILE..."
 		wget https://gmap.pucrs.br/public_data/spbench/workloads/ferret/$FILE
 	fi
-
+	echo " Building Ferret input classes..."
 	tar -xf $FILE
 	#cd ..
 fi
@@ -107,6 +109,20 @@ then
 
 	cd $THIS_APP
 
+	if [[ $CLASS == "test" || $CLASS == "all" ]]
+	then
+		FILE=bzip2_test.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+		fi
+		echo " Building bzip2 test class..."
+		tar -xf $FILE
+	fi
+
 	if [[ $CLASS == "small" || $CLASS == "all" ]]
 	then
 		FILE=bzip2_small.tar.gz
@@ -117,6 +133,7 @@ then
 			echo " Downloading $FILE..."
 			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
 		fi
+		echo " Building bzip2 small class..."
 		tar -xf $FILE
 	fi
 
@@ -130,6 +147,7 @@ then
 			echo " Downloading $FILE..."
 			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
 		fi
+		echo " Building bzip2 medium class..."
 		tar -xf $FILE
 	fi
 	
@@ -143,7 +161,26 @@ then
 			echo " Downloading $FILE..."
 			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
 		fi
+		echo " Building bzip2 large class..."
 		tar -xf $FILE
+	fi
+
+	if [[ $CLASS == "huge" || $CLASS == "all" ]]
+	then
+		FILE=bzip2_large.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+		fi
+		tar -xf $FILE
+
+		echo " Building bzip2 huge class..."
+
+		cat enwiki-20211120-pages-articles-multistream9.xml > enwiki-20211120-pages-articles-multistream9-2x.xml
+		cat enwiki-20211120-pages-articles-multistream9.xml >> enwiki-20211120-pages-articles-multistream9-2x.xml
 	fi
 
 	cd ..

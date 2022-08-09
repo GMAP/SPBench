@@ -15,8 +15,7 @@
         "INCLUDES": {
                 "myINC_1": "",
                 "myINC_2": "",
-                "myINC_N": "",
-                "opencv": "-I $BENCH_DIR/libs/opencv/opencv-2.4.13.6/include/"
+                "myINC_N": ""
         },
         "LIBS": {
                 "myLIB_1": "",

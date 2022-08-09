@@ -80,6 +80,8 @@ namespace spb{
 #define LBPH_GRID_Y    8
 #define LBPH_THRESHOLD 180.0
 
+#define NUMBER_OF_OPERATORS 4
+
 struct item_data;
 class Item;
 class Source;
@@ -118,51 +120,19 @@ struct item_data {
 	}
 };
 
-class Item {
-	private:
-		bool isEmpty;
-		bool isLast;
+/* This class implements an Item */
+class Item : public Batch, public NsItem{
+public:
+	std::vector<item_data> item_batch;
 
-	public:
-		std::vector<item_data> item_batch;
-		std::vector<double> latency_op;
-		volatile unsigned long timestamp;
-		unsigned int batch_size;
-		unsigned int batch_index;
-		unsigned int sourceId;
+	Item():Batch(NUMBER_OF_OPERATORS){};
 
-		Item():
-			latency_op(4, 0.0),
-			timestamp(0.0),
-			batch_size(0),
-			batch_index(0),
-			isEmpty(true),
-			isLast(false)
-		{};
-
-		~Item(){
-			latency_op.clear();
-		}
-
-		void setNotEmpty(){ isEmpty = false; }
-		bool empty(){ return isEmpty; }
-		void setLastItem(){ isLast = true; }
-		bool isLastItem(){ return isLast; }
+	~Item(){}
 };
 
-class Source{
+class Source : public SuperSource{
 	private:
-		std::thread source_thread;
-
-		unsigned long sourceFrequency;
-		unsigned int sourceBatchSize;
 		unsigned int sourceQueueSize;
-		
-		bool sourceDepleted;
-		bool isRunning;
-		std::string sourceName;
-		unsigned int sourceId;
-		data_metrics source_metrics;
 
 		void source_op();
 		void printStatus();
@@ -185,25 +155,23 @@ class Source{
 		}
 
 	public:
-		static unsigned int sourceObjCounter;
-		std::vector<Metrics::latency_t> sourceLatencyVector;
+		std::vector<Metrics::item_metrics_data> sourceLatencyVector;
 		concurrent::queue::blocking_queue<Item> sourceQueue;
 
-		Source():
-			sourceBatchSize(SPBench::get_batch_size()),
-			sourceQueueSize(0),
-			sourceFrequency(SPBench::get_items_reading_frequency()),
-			sourceId(sourceObjCounter),
-			sourceDepleted(false),
-			isRunning(false)
-		{
+		Source() : SuperSource(){
+			setBatchSize(SPBench::getBatchSize());
+			setBatchInterval(SPBench::getBatchInterval());
+			setQueueMaxSize(0);
+			setFrequency(SPBench::getFrequency());
+			setSourceId(sourceObjCounter);
+			setSourceDepleted(false);
+			setRunningState(false);
 			sourceObjCounter++;
 		}
 
-		Source(unsigned int batchSize, unsigned int queueSize, unsigned long frequency):
-			sourceDepleted(false),
-			sourceId(sourceObjCounter)
-		{
+		Source(int batchSize, float batchInterval, int queueSize, long frequency) : SuperSource(){
+			sourceDepleted = false;
+			sourceId = sourceObjCounter;
 			sourceObjCounter++;
 			checkInput();
 			setFrequency(frequency);
@@ -257,24 +225,6 @@ class Source{
 			return item;
 		}
 
-		void setFrequency(unsigned long sourceFrequency){
-			this->sourceFrequency = (sourceFrequency > 0 ? sourceFrequency : 0);
-			return;
-		}
-
-		void setSourceName(std::string sourceName){
-			this->sourceName = sourceName;
-			return;
-		}
-
-		std::string getSourceName(){
-			return sourceName;
-		}
-
-		unsigned int getSourceId(){
-			return sourceId;
-		}
-
 		void setQueueMaxSize(unsigned int newQueueSize){
 			
 			if(newQueueSize < 0){
@@ -292,14 +242,6 @@ class Source{
 			sourceQueue.setCapacity(sourceQueueSize);
 		}
 
-		void setBatchSize(unsigned int sourceBatchSize){
-			this->sourceBatchSize = (sourceBatchSize > 0 ? sourceBatchSize : 1);
-			return;
-		}
-
-		bool depleted(){
-			return sourceDepleted;
-		}
 };
 
 class Sink{

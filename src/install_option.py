@@ -42,17 +42,16 @@ def install_func(spbench_path, args):
     print(" Before proceeding with the installation you\n need to ensure that you have the following\n packages installed on your system:")
     print("    - build-essential")
     print("    - cmake")
-    print("    - yasm")
     print("    - python\n")
     print(" To install them, you can run:\n")
-    print(" sudo apt-get install -y build-essential cmake yasm python3.\n")
+    print(" sudo apt-get install -y build-essential cmake python3.\n")
     print(" Or ask a system admin if you don't have sudo access.")
     print("---------------------------------------------\n")
 
     print(" You are installing dependencies for the following\n application:")
     print("\n -> " + args.app_id + "\n")
     if(args.app_id == "lane_detection") or (args.app_id == "person_recognition"):
-        print(" This will install FastFlow, SPar, TBB, FFMPEG and OpenCV.\n")
+        print(" This will install FastFlow, SPar, TBB, yasm, FFMPEG and OpenCV.\n")
         print(" >> It may take several minutes. <<")
     elif(args.app_id == "ferret"):
         print(" This will install FastFlow, SPar, TBB, GSL and JPEG.\n")
@@ -61,7 +60,7 @@ def install_func(spbench_path, args):
         print(" This will install FastFlow, SPar, TBB, BZLIB.\n")
         print(" It may take a few moments.")
     else:
-        print(" This will install FastFlow, SPar, TBB,\n BZLIB, FFMPEG, OpenCV, GSL, and JPEG.\n")
+        print(" This will install FastFlow, SPar, TBB,\n BZLIB, yasm, FFMPEG, OpenCV, GSL, and JPEG.\n")
         print(" >> It may take several minutes. <<")
         
     # user input support for python 2 and 3

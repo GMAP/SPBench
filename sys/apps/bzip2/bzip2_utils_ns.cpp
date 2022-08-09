@@ -177,8 +177,6 @@ void set_operators_name(){
 	}
 }
 
-unsigned int Source::sourceObjCounter = 0;
-
 void Source::printStatus(){
 	std::cout << "\n - New source added: " << getSourceName() << std::endl;
 
@@ -188,6 +186,7 @@ void Source::printStatus(){
 
 	std::cout << "\n - Setup:" << std::endl;
 	std::cout << "         Batch size: " << sourceBatchSize << std::endl;
+	std::cout << "     Batch interval: " << sourceBatchInterval << std::endl;
 	
 	if(sourceQueueSize == 0)
 		std::cout << "    Queue max. size: 0 (unlimited)" << std::endl;
@@ -195,9 +194,9 @@ void Source::printStatus(){
 		std::cout << "    Queue max. size: " << sourceQueueSize << std::endl;
 
 	if(sourceFrequency == 0)
-		std::cout << "  Reading frequency: 0 (hardware speed)" << std::endl;
+		std::cout << "    Input frequency: 0 (no limit)" << std::endl;
 	else
-		std::cout << "  Reading frequency: " << sourceFrequency << " microseconds" << std::endl;
+		std::cout << "    Input frequency: " << sourceFrequency << " items per second" << std::endl;
 
 	if(SPBench::memory_source_is_enabled())
 		std::cout << "In-memory execution: enabled" << std::endl;
@@ -281,6 +280,8 @@ bool Source::source_comp(){
 
 	bool end_of_input = false;
 	unsigned int sourceItemCounter = 0;
+	long source_item_timestamp = current_time_usecs();
+
 
 	while(1){
 
@@ -293,13 +294,29 @@ bool Source::source_comp(){
 			break;
 		}
 
+		// frequency control mechanism
+		item_frequency_control(source_item_timestamp, sourceFrequency);
+
+		item.timestamp = source_item_timestamp = current_time_usecs();
+		unsigned long batch_elapsed_time = source_item_timestamp;
+
 		volatile unsigned long latency_op;
 		item.timestamp = current_time_usecs();
 		if(Metrics::latency_is_enabled()){
 			latency_op = current_time_usecs();
 		}
 
-		while(item.batch_size < sourceBatchSize){ //batch loop
+		while(1){ //batch loop
+
+			// batching management routines
+			if(sourceBatchInterval){
+				if(((current_time_usecs() - batch_elapsed_time) / 1000.0) >= sourceBatchInterval) break;
+			} else {
+				if(item.batch_size >= sourceBatchSize) break;
+			}
+			if(sourceBatchSize > 1){
+				if(item.batch_size >= sourceBatchSize) break;
+			}
 
 			struct item_data item_data;
 			item_data.sourceId = getSourceId();
@@ -352,7 +369,7 @@ bool Source::source_comp(){
 			//item_data.index = sourceItemCounter;
 			item.item_batch[item.batch_size] = item_data;
 			item.batch_size++;
-			item.notEmpty();
+			item.setNotEmpty();
 			sourceItemCounter++;
 		}
 
@@ -362,9 +379,6 @@ bool Source::source_comp(){
 			sourceQueue.enqueue(item);
 			break;
 		}
-
-		// frequency control mechanism
-		item_frequency_control(item.timestamp, sourceFrequency);
 
 		if(Metrics::latency_is_enabled()){
 			item.latency_op[0] = (current_time_usecs() - latency_op);
@@ -430,17 +444,19 @@ void Sink::sink_c(Item &item){
 	}
 	if(Metrics::latency_is_enabled()){
 
-		item.latency_op[2] = (current_time_usecs() - latency_op);
+		double current_time_sink = current_time_usecs();
+		item.latency_op[2] = (current_time_sink - latency_op);
 
-		volatile unsigned long total_item_latency = (current_time_usecs() - item.timestamp);
+		volatile unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		metrics_vec[item.sourceId].global_latency_acc += total_item_latency; // to compute real time average latency
-		metrics_vec[item.sourceId].global_current_latency = total_item_latency; // to compute real time latency
 		
-		latency_t latency;
+		item_metrics_data latency;
 		latency.local_latency = item.latency_op;
-		latency.local_total = total_item_latency;
+		latency.total_latency = total_item_latency;
+		latency.item_sink_timestamp = current_time_sink;
+		latency.batch_size = item.batch_size;
 		metrics_vec[item.sourceId].latency_vector_ns.push_back(latency);
-		metrics_vec[item.sourceId].stop_throughput_clock = current_time_usecs();
+		metrics_vec[item.sourceId].stop_throughput_clock = current_time_sink;
 		item.latency_op.clear();
 	}
 }
@@ -646,6 +662,8 @@ void Source::source_decomp(){
 	
 	unsigned int sourceItemCounter = 0;
 	bool end_of_input = false;
+	long source_item_timestamp = current_time_usecs();
+
 
 	while(1){
 
@@ -657,6 +675,12 @@ void Source::source_decomp(){
 			sourceQueue.enqueue(item);
 			break;
 		}
+
+		// frequency control mechanism
+		item_frequency_control(source_item_timestamp, sourceFrequency);
+
+		item.timestamp = source_item_timestamp = current_time_usecs();
+		unsigned long batch_elapsed_time = source_item_timestamp;
 		
 		volatile unsigned long latency_op;
 		item.timestamp = current_time_usecs();
@@ -664,7 +688,18 @@ void Source::source_decomp(){
 			latency_op = current_time_usecs();
 		}
 
-		while(item.batch_size < sourceBatchSize){ //batch loop
+		while(1){ //batch loop
+
+			// batching management routines
+			if(sourceBatchInterval){
+				if(((current_time_usecs() - batch_elapsed_time) / 1000.0) >= sourceBatchInterval) break;
+			} else {
+				if(item.batch_size >= sourceBatchSize) break;
+			}
+			if(sourceBatchSize > 1){
+				if(item.batch_size >= sourceBatchSize) break;
+			}
+			
 			struct item_data item_data;
 			item_data.sourceId = getSourceId();
 
@@ -756,7 +791,7 @@ void Source::source_decomp(){
 			//item_data.index = sourceItemCounter;
 			item.item_batch[item.batch_size] = item_data;
 			item.batch_size++;
-			item.notEmpty();
+			item.setNotEmpty();
 			sourceItemCounter++;
 		}
 
@@ -832,24 +867,24 @@ void Sink::sink_d(Item &item){
 	
 	metrics_vec[item.sourceId].batches_at_sink_counter++;
 
-	metrics_vec[item.sourceId].batches_at_sink_counter++;
-
 	if(Metrics::monitoring_is_enabled()){
 		monitor_metrics(item.timestamp, item.sourceId);
 	}
 	if(Metrics::latency_is_enabled()){
 
-		item.latency_op[2] = (current_time_usecs() - latency_op);
+		double current_time_sink = current_time_usecs();
+		item.latency_op[2] = (current_time_sink - latency_op);
 
-		volatile unsigned long total_item_latency = (current_time_usecs() - item.timestamp);
+		volatile unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		metrics_vec[item.sourceId].global_latency_acc += total_item_latency; // to compute real time average latency
-		metrics_vec[item.sourceId].global_current_latency = total_item_latency; // to compute real time latency
 		
-		latency_t latency;
+		item_metrics_data latency;
 		latency.local_latency = item.latency_op;
-		latency.local_total = total_item_latency;
+		latency.total_latency = total_item_latency;
+		latency.item_sink_timestamp = current_time_sink;
+		latency.batch_size = item.batch_size;
 		metrics_vec[item.sourceId].latency_vector_ns.push_back(latency);
-		metrics_vec[item.sourceId].stop_throughput_clock = current_time_usecs();
+		metrics_vec[item.sourceId].stop_throughput_clock = current_time_sink;
 		item.latency_op.clear();
 	}
 }
@@ -1201,7 +1236,7 @@ int detectCPUs()
  */
 void banner()
 {
-	fprintf(stderr, "SPBench version of bzip2 - by: Adriano Marques Garcia\n");
+	fprintf(stderr, "N-sources SPBench version of bzip2 - by: Adriano Marques Garcia\n");
 	fprintf(stderr, "Parallel BZIP2 v1.0.5 - by: Jeff Gilchrist [http://compression.ca]\n");
 	fprintf(stderr, "[Jan. 08, 2009]             (uses libbzip2 by Julian Seward)\n");
 
@@ -1225,7 +1260,8 @@ void usage(char* progname, const char *reason)
 	fprintf(stderr, "Usage: %s [-1 .. -9] [-b#cdfhkp#qrtVz] <filename> <filename2> <filenameN>\n", progname);
 #endif
 	fprintf(stderr, " -b#      : where # is the number of itens per batch (default 1)\n");
-	fprintf(stderr, " -B#      : where # is the file block size in 100k (default 9 = 900k)\n");
+	fprintf(stderr, " -B#      : where # is the time size of the batch (default 0)\n");
+	fprintf(stderr, " -Q#      : where # is the file block size in 100k (default 9 = 900k)\n");
 	fprintf(stderr, " -t#      : where # is the number of threads (default");
 	fprintf(stderr, " -c       : output to standard out (stdout)\n");
 	fprintf(stderr, " -d       : decompress file\n");
@@ -1240,7 +1276,8 @@ void usage(char* progname, const char *reason)
 #ifndef PBZIP_NO_LOADAVG
 	fprintf(stderr, " -l       : load average determines max number processors to use\n");
 #endif
-	fprintf(stderr, " -p#      : where # is the number of processors (default");
+	fprintf(stderr, " -P#      : where # is the number of processors (default)");
+	fprintf(stderr, " -p#      : where # is the frequency pattern defined as = <pattern,period,min,max>");
 #if defined(_SC_NPROCESSORS_ONLN) || defined(__APPLE__)
 	fprintf(stderr, ": autodetect [%d])\n", detectCPUs());
 #else
@@ -1254,7 +1291,6 @@ void usage(char* progname, const char *reason)
 	fprintf(stderr, " -V       : display version info for Bzip2 then exit\n");
 	fprintf(stderr, " -z       : compress file (default)\n");
 	fprintf(stderr, " -1 .. -9 : set BWT block size to 100k .. 900k (default 900k)\n\n");
-	fprintf(stderr, "Example: Bzip2 -b15vk myfile.tar\n");
 	fprintf(stderr, "Example: Bzip2 -p4 -r -5 myfile.tar second*.txt\n");
 	fprintf(stderr, "Example: tar cf myfile.tar.bz2 --use-compress-prog=Bzip2 dir_to_compress/\n");
 	fprintf(stderr, "Example: Bzip2 -d myfile.tar.bz2\n\n");
@@ -1445,7 +1481,7 @@ int bzip2_main(int argc, char* argv[])
 			{
 				switch (argv[i][j])
 				{
-					case 'p': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					case 'P': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
 						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
 						  {
 							  // no more numbers, finish
@@ -1509,8 +1545,8 @@ int bzip2_main(int argc, char* argv[])
 						  if (cmdLineTempCount == 0)
 							  usage(argv[0], "Cannot parse -b argument");
 						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount);
-						  SPBench::set_batch_size(atoi(cmdLineTemp));
-						  if (SPBench::get_batch_size() < 1)
+						  SPBench::setBatchSize(atoi(cmdLineTemp));
+						  if (SPBench::getBatchSize() < 1)
 						  {
 							  fprintf(stderr,"Bzip2: *ERROR: Minimum batch size is 1!  Aborting...\n");
 							  return 1;
@@ -1520,6 +1556,30 @@ int bzip2_main(int argc, char* argv[])
 						  fprintf(stderr, "-b%d\n", batch_size);
 #endif
 						  break;
+					// batch interval
+					case 'B': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+						while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+						{
+							// no more numbers, finish
+							if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+								break;
+							k++;
+							cmdLineTempCount++;
+						}
+						if (cmdLineTempCount == 0)
+							usage(argv[0], "Cannot parse -B argument");
+						strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+						SPBench::setBatchInterval(atoi(cmdLineTemp));
+						if (SPBench::getBatchInterval() <= 0)
+						{
+							fprintf(stderr, "Bzip2: *ERROR: Minimum batch time size is 0!  Aborting...\n");
+							return 1;
+						}
+						j += cmdLineTempCount;
+	#ifdef PBZIP_DEBUG
+						fprintf(stderr, "-b%d\n", batch_size);
+	#endif
+						break;
 					// Frequency
 					case 'F': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
 						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
@@ -1533,10 +1593,10 @@ int bzip2_main(int argc, char* argv[])
 						  if (cmdLineTempCount == 0)
 							  usage(argv[0], "Cannot parse -F argument");
 						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount);
-						  SPBench::set_items_reading_frequency(atoi(cmdLineTemp));
+						  SPBench::setFrequency(atoi(cmdLineTemp));
 						  SPBench::enable_memory_source();
 
-						  if (SPBench::get_items_reading_frequency() < 0)
+						  if (SPBench::getFrequency() < 0)
 						  {
 							  fprintf(stderr,"Bzip2: *ERROR: Minimum frequency is 0!  Aborting...\n");
 							  return 1;
@@ -1547,8 +1607,26 @@ int bzip2_main(int argc, char* argv[])
 #endif
 						  break;
 
+					case 'p': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+						while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+						{
+							k++;
+							cmdLineTempCount++;
+						}
+
+						strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount + 1);
+						try {
+							input_freq_pattern_parser(cmdLineTemp);
+						}
+						catch (const std::invalid_argument& e) {
+							std::cerr << "exception: " << e.what() << std::endl;
+							exit(1);
+						}
+						j += cmdLineTempCount;
+						break;
+
 					//block size
-					case 'B': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "9"); blockSize = 900000;
+					case 'Q': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "9"); blockSize = 900000;
 						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
 						  {
 							  // no more numbers, finish

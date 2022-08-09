@@ -60,6 +60,8 @@
 #define MAXR            100
 #define IMAGE_DIM       14
 
+#define NUMBER_OF_OPERATORS 6
+
 namespace spb{
 
 class Item;
@@ -192,52 +194,20 @@ struct IO_data_struct {
 	std::vector<item_data*> mem_data_vec;	
 };
 
-class Item {
-	private:
-		bool isEmpty;
-		bool isLast;
-	public:
-		std::vector<item_data*> item_batch;
-		std::vector<double> latency_op;
-		volatile unsigned long timestamp;
-		unsigned int batch_size;
-		unsigned int index;
-		unsigned int sourceId;
-		Item():
-			latency_op(6, 0.0),
-			timestamp(0.0),
-			batch_size(0),
-			index(0),
-			isEmpty(true),
-			isLast(false)
-		{};
+class Item : public Batch, public NsItem{
+public:
+	std::vector<item_data*> item_batch;
 
-		~Item(){
-			latency_op.clear();
-			item_batch.clear();
-		}
+	Item():Batch(NUMBER_OF_OPERATORS){};
 
-		void setNotEmpty(){ isEmpty = false; }
-		bool empty(){ return isEmpty; }
-		void setLastItem(){	isLast = true; }
-		bool isLastItem(){ return isLast; }
+	~Item(){}
 };
 
-class Source{
-	private:
-		std::thread source_thread;
 
-		unsigned long sourceFrequency;
-		unsigned int sourceBatchSize;
+class Source : public SuperSource{
+	private:
 		unsigned int sourceQueueSize;
 		
-		bool sourceDepleted;
-		bool isRunning;
-		std::string sourceName;
-
-		data_metrics source_metrics;
-		unsigned int sourceId;
-
 		void source_op();
 		void printStatus();
 
@@ -260,24 +230,23 @@ class Source{
 		}
 
 	public:
-		static unsigned int sourceObjCounter;
+		std::vector<Metrics::item_metrics_data> sourceLatencyVector;
 		concurrent::queue::blocking_queue<Item> sourceQueue;
 
-		Source():
-			sourceBatchSize(SPBench::get_batch_size()),
-			sourceQueueSize(0),
-			sourceFrequency(SPBench::get_items_reading_frequency()),
-			sourceId(sourceObjCounter),
-			sourceDepleted(false),
-			isRunning(false)
-		{
+		Source() : SuperSource(){
+			setBatchSize(SPBench::getBatchSize());
+			setBatchInterval(SPBench::getBatchInterval());
+			setQueueMaxSize(0);
+			setFrequency(SPBench::getFrequency());
+			setSourceId(sourceObjCounter);
+			setSourceDepleted(false);
+			setRunningState(false);
 			sourceObjCounter++;
 		}
 
-		Source(unsigned int batchSize, unsigned int queueSize, unsigned long frequency):
-			sourceDepleted(false),
-			sourceId(sourceObjCounter)
-		{
+		Source(int batchSize, float batchInterval, int queueSize, long frequency) : SuperSource(){
+			sourceDepleted = false;
+			sourceId = sourceObjCounter;
 			sourceObjCounter++;
 			getInput();
 			setFrequency(frequency);
@@ -331,24 +300,6 @@ class Source{
 			return item;
 		}
 
-		void setFrequency(unsigned long sourceFrequency){
-			this->sourceFrequency = (sourceFrequency > 0 ? sourceFrequency : 0);
-			return;
-		}
-
-		void setSourceName(std::string sourceName){
-			this->sourceName = sourceName;
-			return;
-		}
-
-		std::string getSourceName(){
-			return sourceName;
-		}
-
-		unsigned int getSourceId(){
-			return sourceId;
-		}
-
 		void setQueueMaxSize(unsigned int newQueueSize){
 			
 			if(newQueueSize < 0){
@@ -364,15 +315,6 @@ class Source{
 
 			sourceQueueSize = newQueueSize;
 			sourceQueue.setCapacity(sourceQueueSize);
-		}
-
-		void setBatchSize(unsigned int sourceBatchSize){
-			this->sourceBatchSize = (sourceBatchSize > 0 ? sourceBatchSize : 1);
-			return;
-		}
-
-		bool depleted(){
-			return sourceDepleted;
 		}
 };
 

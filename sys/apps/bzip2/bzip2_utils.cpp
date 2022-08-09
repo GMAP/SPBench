@@ -1,123 +1,123 @@
-/** 
- * ************************************************************************  
+/**
+ * ************************************************************************
  *  File  : bzip2_utils.cpp
  *
  *  Title : SPBench version of the parallel BZIP2
  *
- *  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
+ *  Author: Adriano Marques Garcia <adriano1mg@gmail.com>
  *
  *  Date  : July 06, 2021
  *
  * ************************************************************************
-**/
+ **/
 
-/*
- *	Original file  : pbzip2.cpp
+ /*
+  *	Original file  : pbzip2.cpp
+  *
+  *	Title : Parallel BZIP2 (pbzip2)
+  *
+  *	Author: Jeff Gilchrist (http://gilchrist.ca/jeff/)
+  *           - Modified producer/consumer threading code from
+  *             Andrae Muys <andrae@humbug.org.au.au>
+  *           - uses libbzip2 by Julian Seward (http://sources.redhat.com/bzip2/)
+  *
+  *	Date  : January 8, 2009
+  *
+  *
+  *  Contributions
+  *  -------------
+  *  Bryan Stillwell <bryan@bokeoa.com> - code cleanup, RPM spec, prep work
+  *			for inclusion in Fedora Extras
+  *  Dru Lemley [http://lemley.net/smp.html] - help with large file support
+  *  Kir Kolyshkin <kir@sacred.ru> - autodetection for # of CPUs
+  *  Joergen Ramskov <joergen@ramskov.org> - initial version of man page
+  *  Peter Cordes <peter@cordes.ca> - code cleanup
+  *  Kurt Fitzner <kfitzner@excelcia.org> - port to Windows compilers and
+  *          decompression throttling
+  *  Oliver Falk <oliver@linux-kernel.at> - RPM spec update
+  *  Jindrich Novy <jnovy@redhat.com> - code cleanup and bug fixes
+  *  Benjamin Reed <ranger@befunk.com> - autodetection for # of CPUs in OSX
+  *  Chris Dearman <chris@mips.com> - fixed pthreads race condition
+  *  Richard Russon <ntfs@flatcap.org> - help fix decompression bug
+  *  Paul Pluzhnikov <paul@parasoft.com> - fixed minor memory leak
+  *  Aníbal Monsalve Salazar <anibal@debian.org> - creates and maintains Debian packages
+  *  Steve Christensen - creates and maintains Solaris packages (sunfreeware.com)
+  *  Alessio Cervellin - creates and maintains Solaris packages (blastwave.org)
+  *  Ying-Chieh Liao - created the FreeBSD port
+  *  Andrew Pantyukhin <sat@FreeBSD.org> - maintains the FreeBSD ports and willing to
+  *          resolve any FreeBSD-related problems
+  *  Roland Illig <rillig@NetBSD.org> - creates and maintains NetBSD packages
+  *  Matt Turner <mattst88@gmail.com> - code cleanup
+  *  Álvaro Reguly <alvaro@reguly.com> - RPM spec update to support SUSE Linux
+  *  Ivan Voras <ivoras@freebsd.org> - support for stdin and pipes during compression and
+  *          CPU detect changes
+  *  John Dalton <john@johndalton.info> - code cleanup and bug fixes for stdin support
+  *  Rene Georgi <rene.georgi@online.de> - code and Makefile cleanup, support for direct
+  *          decompress and bzcat
+  *  René Rhéaume & Jeroen Roovers <jer@xs4all.nl> - patch to support uclibc's lack of
+  *          a getloadavg function
+  *  Reinhard Schiedermeier <rs@cs.hm.edu> - support for tar --use-compress-prog=pbzip2
+  *
+  *  Specials thanks for suggestions and testing:  Phillippe Welsh,
+  *  James Terhune, Dru Lemley, Bryan Stillwell, George Chalissery,
+  *  Kir Kolyshkin, Madhu Kangara, Mike Furr, Joergen Ramskov, Kurt Fitzner,
+  *  Peter Cordes, Oliver Falk, Jindrich Novy, Benjamin Reed, Chris Dearman,
+  *  Richard Russon, Aníbal Monsalve Salazar, Jim Leonard, Paul Pluzhnikov,
+  *  Coran Fisher, Ken Takusagawa, David Pyke, Matt Turner, Damien Ancelin,
+  *  Álvaro Reguly, Ivan Voras, John Dalton, Sami Liedes, Rene Georgi,
+  *  René Rhéaume, Jeroen Roovers, Reinhard Schiedermeier, Kari Pahula,
+  *  Elbert Pol.
+  *
+  *
+  * This program, "pbzip2" is copyright (C) 2003-2009 Jeff Gilchrist.
+  * All rights reserved.
+  *
+  * The library "libbzip2" which pbzip2 uses, is copyright
+  * (C) 1996-2008 Julian R Seward.  All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+  * are met:
+  *
+  * 1. Redistributions of source code must retain the above copyright
+  *    notice, this list of conditions and the following disclaimer.
+  *
+ * 2. The origin of this software must not be misrepresented; you must
+ *    not claim that you wrote the original software.  If you use this
+ *    software in a product, an acknowledgment in the product
+ *    documentation would be appreciated but is not required.
  *
- *	Title : Parallel BZIP2 (pbzip2)
+ * 3. Altered source versions must be plainly marked as such, and must
+ *    not be misrepresented as being the original software.
  *
- *	Author: Jeff Gilchrist (http://gilchrist.ca/jeff/)
- *           - Modified producer/consumer threading code from
- *             Andrae Muys <andrae@humbug.org.au.au>
- *           - uses libbzip2 by Julian Seward (http://sources.redhat.com/bzip2/)
+ * 4. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior written
+ *    permission.
  *
- *	Date  : January 8, 2009
- *
- *
- *  Contributions
- *  -------------
- *  Bryan Stillwell <bryan@bokeoa.com> - code cleanup, RPM spec, prep work
- *			for inclusion in Fedora Extras
- *  Dru Lemley [http://lemley.net/smp.html] - help with large file support
- *  Kir Kolyshkin <kir@sacred.ru> - autodetection for # of CPUs
- *  Joergen Ramskov <joergen@ramskov.org> - initial version of man page
- *  Peter Cordes <peter@cordes.ca> - code cleanup
- *  Kurt Fitzner <kfitzner@excelcia.org> - port to Windows compilers and
- *          decompression throttling
- *  Oliver Falk <oliver@linux-kernel.at> - RPM spec update
- *  Jindrich Novy <jnovy@redhat.com> - code cleanup and bug fixes
- *  Benjamin Reed <ranger@befunk.com> - autodetection for # of CPUs in OSX
- *  Chris Dearman <chris@mips.com> - fixed pthreads race condition
- *  Richard Russon <ntfs@flatcap.org> - help fix decompression bug
- *  Paul Pluzhnikov <paul@parasoft.com> - fixed minor memory leak
- *  Aníbal Monsalve Salazar <anibal@debian.org> - creates and maintains Debian packages
- *  Steve Christensen - creates and maintains Solaris packages (sunfreeware.com)
- *  Alessio Cervellin - creates and maintains Solaris packages (blastwave.org)
- *  Ying-Chieh Liao - created the FreeBSD port
- *  Andrew Pantyukhin <sat@FreeBSD.org> - maintains the FreeBSD ports and willing to
- *          resolve any FreeBSD-related problems
- *  Roland Illig <rillig@NetBSD.org> - creates and maintains NetBSD packages
- *  Matt Turner <mattst88@gmail.com> - code cleanup
- *  Álvaro Reguly <alvaro@reguly.com> - RPM spec update to support SUSE Linux
- *  Ivan Voras <ivoras@freebsd.org> - support for stdin and pipes during compression and
- *          CPU detect changes
- *  John Dalton <john@johndalton.info> - code cleanup and bug fixes for stdin support
- *  Rene Georgi <rene.georgi@online.de> - code and Makefile cleanup, support for direct
- *          decompress and bzcat
- *  René Rhéaume & Jeroen Roovers <jer@xs4all.nl> - patch to support uclibc's lack of
- *          a getloadavg function
- *  Reinhard Schiedermeier <rs@cs.hm.edu> - support for tar --use-compress-prog=pbzip2
- *
- *  Specials thanks for suggestions and testing:  Phillippe Welsh,
- *  James Terhune, Dru Lemley, Bryan Stillwell, George Chalissery,
- *  Kir Kolyshkin, Madhu Kangara, Mike Furr, Joergen Ramskov, Kurt Fitzner,
- *  Peter Cordes, Oliver Falk, Jindrich Novy, Benjamin Reed, Chris Dearman,
- *  Richard Russon, Aníbal Monsalve Salazar, Jim Leonard, Paul Pluzhnikov,
- *  Coran Fisher, Ken Takusagawa, David Pyke, Matt Turner, Damien Ancelin,
- *  Álvaro Reguly, Ivan Voras, John Dalton, Sami Liedes, Rene Georgi, 
- *  René Rhéaume, Jeroen Roovers, Reinhard Schiedermeier, Kari Pahula,
- *  Elbert Pol.
- *
- *
- * This program, "pbzip2" is copyright (C) 2003-2009 Jeff Gilchrist.
- * All rights reserved.
- *
- * The library "libbzip2" which pbzip2 uses, is copyright
- * (C) 1996-2008 Julian R Seward.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
-* 2. The origin of this software must not be misrepresented; you must
-*    not claim that you wrote the original software.  If you use this
-*    software in a product, an acknowledgment in the product
-*    documentation would be appreciated but is not required.
-*
-* 3. Altered source versions must be plainly marked as such, and must
-*    not be misrepresented as being the original software.
-*
-* 4. The name of the author may not be used to endorse or promote
-*    products derived from this software without specific prior written
-*    permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
-* OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-* GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-* NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* Jeff Gilchrist, Ottawa, Canada.
-* pbzip2@compression.ca
-* pbzip2 version 1.0.5 of January 8, 2009
-*
-*/
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+		 * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+		 * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+	 * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+			 * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	 *
+	 * Jeff Gilchrist, Ottawa, Canada.
+	 * pbzip2@compression.ca
+	 * pbzip2 version 1.0.5 of January 8, 2009
+	 *
+	 */
 
 #include <bzip2_utils.hpp>
 
 void compress();
 void decompress();
 
-namespace spb{
+namespace spb {
 //
 // GLOBALS
 //
@@ -131,34 +131,34 @@ static int ForceOverwrite = 0;
 int BWTblockSize = 9;
 static int FileListCount = 0;
 static struct stat fileMetaData;
-static char *sigInFilename = NULL;
-static char *sigOutFilename = NULL;
+static char* sigInFilename = NULL;
+static char* sigOutFilename = NULL;
 static char BWTblockSizeChar = '9';
 
 bool stream_end = false;
 
 void mySignalCatcher(int);
-char *memstr(char *, int, char *, int);
+char* memstr(char*, int, char*, int);
 
-int direct_compress(char *);
-int direct_decompress(char *);
+int direct_compress(char*);
+int direct_decompress(char*);
 
-int getFileMetaData(char *);
-int writeFileMetaData(char *);
-int testBZ2ErrorHandling(int, BZFILE *, int);
-int testCompressedData(char *);
-ssize_t bufread(int hf, char *buf, size_t bsize);
+int getFileMetaData(char*);
+int writeFileMetaData(char*);
+int testBZ2ErrorHandling(int, BZFILE*, int);
+int testCompressedData(char*);
+ssize_t bufread(int hf, char* buf, size_t bsize);
 int detectCPUs(void);
 /*
- *********************************************************
- */
+	*********************************************************
+	*/
 
 OFF_T CompressedSize;
 int hOutfile;
 int currBlock;
 
 int hInfile = -1;
-int blockSize = 9*100000;
+int blockSize = 9 * 100000;
 OFF_T bytesLeft = 0;
 OFF_T fileSize = 0;
 int blockNum = 0;
@@ -168,27 +168,30 @@ std::vector <bz2BlockListing> bz2BlockList;
 
 unsigned int global_decomp = 0; //0 for compress and 1 for decompress
 
-bool optimized_memory = false; 
+bool optimized_memory = false;
 
 std::vector <data> MemData;
 
-char *MemReadData;
-char *MemWriteData;
+char* MemReadData;
+char* MemWriteData;
 unsigned int outFileSize = 0;
 
-void set_operators_name(){
-	if(Metrics::latency_is_enabled()){
-		if(global_decomp == 1){
+void set_operators_name() {
+	if (Metrics::latency_is_enabled()) {
+		if (global_decomp == 1) {
 			SPBench::addOperatorName("Read      ");
 			SPBench::addOperatorName("Decompress");
 			SPBench::addOperatorName("Write     ");
-		} else {
+		}
+		else {
 			SPBench::addOperatorName("Read    ");
 			SPBench::addOperatorName("Compress");
 			SPBench::addOperatorName("Write   ");
 		}
 	}
 }
+
+long Source::source_item_timestamp = current_time_usecs();
 
 bool Source::op(Item &item){
 
@@ -197,14 +200,29 @@ bool Source::op(Item &item){
 		return false;
 	}
 
-	volatile unsigned long latency_op;
-	item.timestamp = current_time_usecs();
+	// frequency control mechanism
+	SPBench::item_frequency_control(source_item_timestamp);
+
+	item.timestamp = source_item_timestamp = current_time_usecs();
+	unsigned long batch_elapsed_time = source_item_timestamp;
+	
+	unsigned long latency_op;
 	if(Metrics::latency_is_enabled()){
-		latency_op = current_time_usecs();
+		latency_op = source_item_timestamp;
 	}
 
+	while(1) { //main source loop
+		
+		// batching management routines
+		if(SPBench::getBatchInterval()){
+			if(((current_time_usecs() - batch_elapsed_time) / 1000.0) >= SPBench::getBatchInterval()) break;
+		} else {
+			if(item.batch_size >= SPBench::getBatchSize()) break;
+		}
+		if(SPBench::getBatchSize() > 1){
+			if(item.batch_size >= SPBench::getBatchSize()) break;
+		}
 
-	while(item.batch_size < SPBench::get_batch_size()){ //batch loop
 		item_data item_data;
 
 		// set buffer size
@@ -216,128 +234,93 @@ bool Source::op(Item &item){
 		// allocate memory to read in file
 		item_data.FileData = NULL;
 
-		if(SPBench::memory_source_is_enabled() || optimized_memory){
-			if(optimized_memory){
+		if (SPBench::memory_source_is_enabled() || optimized_memory) {
+			if (optimized_memory) {
 				item_data.FileData = MemData[Metrics::items_counter].batch;
 				item_data.index = Metrics::items_counter;
-			} else {
+			}
+			else {
 				item_data.FileData = MemReadData + (fileSize - bytesLeft);
 			}
 			//end of the input
-			if (bytesLeft == 0){
+			if (bytesLeft == 0) {
 				stream_end = true;
 				break;
-			} else if (bytesLeft < 0){
+			}
+			else if (bytesLeft < 0) {
 				fprintf(stderr, "Bzip2: *ERROR: Could not read from file!  Skipping...\n");
 				exit(-1);
 			}
 			bytesLeft -= item_data.buffSize;
-		} else {
+		}
+		else {
 			item_data.FileData = new char[item_data.buffSize];
 			// read file data from disk
-			int rret = read(hInfile, (char *) item_data.FileData, item_data.buffSize);	
+			int rret = read(hInfile, (char*)item_data.FileData, item_data.buffSize);
 
 			// check to make sure all the data we expected was read in
 			if (rret != item_data.buffSize)
 				item_data.buffSize = rret;
 			//end of the file
-			if (rret == 0){
+			if (rret == 0) {
 				stream_end = true;
 				break;
-			} else if (rret < 0){
+			}
+			else if (rret < 0) {
 				fprintf(stderr, "Bzip2: *ERROR: Could not read from file!  Skipping...\n");
 				exit(-1);
 			}
 			bytesLeft -= rret;
 		}
-		if(stream_end) break;
-		item.item_batch.resize(item.batch_size+1);
+		if (stream_end) break;
+		item.item_batch.resize(item.batch_size + 1);
 		//item_data.index = Metrics::items_counter;
 		item.item_batch[item.batch_size] = item_data;
 		item.batch_size++;
 		Metrics::items_counter++;
 	}
+	
 	//if this batch has size 0, ends computation
-	if(item.batch_size == 0){
+	if (item.batch_size == 0) {
 		return false;
 	}
 
-	// frequency control mechanism
-	SPBench::item_frequency_control(item.timestamp);
-
-	if(Metrics::latency_is_enabled()){
-		item.latency_op[0] = (current_time_usecs() - latency_op) ;
+	if (Metrics::latency_is_enabled()) {
+		item.latency_op[0] = (current_time_usecs() - latency_op);
 	}
 
-	Metrics::batch_counter++;
+	item.batch_index = Metrics::batch_counter;
+	Metrics::batch_counter++;	// sent batches
 	return true;
 }
-/*
-inline void compress_op(Item &item){
-	volatile unsigned long latency_op;
-	if(Metrics::latency_is_enabled()){
+
+void Sink::op(Item& item) {
+	unsigned long latency_op;
+	if (Metrics::latency_is_enabled()) {
 		latency_op = current_time_usecs();
 	}
 
 	unsigned int num_item = 0;
-	while(num_item < item.batch_size){ //batch loop
+	while (num_item < item.batch_size) { //batch loop
 		item_data item_data;
 		item_data = item.item_batch[num_item];
-		
-		unsigned int outSize = (int) ((item_data.buffSize*1.01)+600);
-
-		// allocate memory for compressed data
-		item_data.CompDecompData == NULL;
-		item_data.CompDecompData = new char[outSize];
-
-		// make sure memory was allocated properly
-		if (item_data.CompDecompData == NULL)
-		{
-			fprintf(stderr, "Bzip2: *ERROR: Could not allocate memory (CompressedData)!  Skipping...\n");
-			exit(-1);	
-		}
-
-		// compress the memory buffer (blocksize=9*100k, verbose=0, worklevel=30)
-		int ret = BZ2_bzBuffToBuffCompress(item_data.CompDecompData, &outSize, item_data.FileData, item_data.buffSize, BWTblockSize, Verbosity, 30);
-
-		if (ret != BZ_OK)
-			fprintf(stderr, "Bzip2: *ERROR during compression: %d\n", ret);
-
-		item_data.buffSize = outSize;
-
-		item.item_batch[num_item] = item_data;
-		num_item++;
-	}
-	if(Metrics::latency_is_enabled()){
-		item.latency_op[1] = (current_time_usecs() - latency_op) ;
-	}
-}
-*/
-void Sink::op(Item &item){
-	volatile unsigned long latency_op;
-	if(Metrics::latency_is_enabled()){
-		latency_op = current_time_usecs();
-	}
-
-	unsigned int num_item = 0;
-	while(num_item < item.batch_size){ //batch loop
-		item_data item_data;
-		item_data = item.item_batch[num_item];
-		if(SPBench::memory_source_is_enabled()){
-			if(optimized_memory){
-				delete [] MemData[item_data.index].batch;
+		if (SPBench::memory_source_is_enabled()) {
+			if (optimized_memory) {
+				delete[] MemData[item_data.index].batch;
 				MemData[item_data.index].batch = item_data.CompDecompData;
 				MemData[item_data.index].buffSize = item_data.buffSize;
-			} else {
+			}
+			else {
 				outFileSize += item_data.buffSize;
-				MemWriteData = (char*) realloc (MemWriteData, outFileSize * sizeof(char));
+				MemWriteData = (char*)realloc(MemWriteData, outFileSize * sizeof(char));
 				memcpy(MemWriteData + (outFileSize - item_data.buffSize), item_data.CompDecompData, item_data.buffSize);
 			}
-		} else {
+		}
+		else {
 			int ret = write(hOutfile, item_data.CompDecompData, item_data.buffSize);
-	#ifdef PBZIP_DEBUG
+#ifdef PBZIP_DEBUG
 			fprintf(stderr, "\n -> Total Bytes Written[%d]: %d bytes...\n", currBlock, ret);
-	#endif
+#endif
 			CompressedSize += ret;
 			if (ret <= 0)
 			{
@@ -356,48 +339,54 @@ void Sink::op(Item &item){
 			fflush(stderr);
 		}
 
-		if(!SPBench::memory_source_is_enabled()){
+		if (!SPBench::memory_source_is_enabled()) {
 			if (item_data.FileData != NULL)
-				delete [] item_data.FileData;
+				delete[] item_data.FileData;
 		}
 
-		if(!optimized_memory){
+		if (!optimized_memory) {
 			if (item_data.CompDecompData != NULL)
-				delete [] item_data.CompDecompData;
+				delete[] item_data.CompDecompData;
 		}
 		num_item++;
+		Metrics::items_at_sink_counter++;
 	}
-	
-	Metrics::items_at_sink_counter++;
 
-	if(Metrics::monitoring_is_enabled()){
-		Metrics::monitor_metrics(item.timestamp);
-	}
+	Metrics::batches_at_sink_counter++;
+
 	if(Metrics::latency_is_enabled()){
+		double current_time_sink = current_time_usecs();
+		item.latency_op[2] = (current_time_sink - latency_op);
 
-		volatile unsigned long total_item_latency = (current_time_usecs() - item.timestamp);
+		unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
-		Metrics::global_current_latency = total_item_latency; // to compute real time latency
 
-		item.latency_op[2] = (current_time_usecs() - latency_op);
-		auto latency = Metrics::getLatency_t();
+		auto latency = Metrics::Latency_t();
 		latency.local_latency = item.latency_op;
-		latency.local_total = total_item_latency;
+		latency.total_latency = total_item_latency;
+		latency.item_timestamp = item.timestamp;
+		latency.item_sink_timestamp = current_time_sink;
+		latency.batch_size = item.batch_size;
 		Metrics::latency_vector.push_back(latency);
 		item.latency_op.clear();
 	}
+
+	if (Metrics::monitoring_is_enabled()) {
+		Metrics::last_batch_size = item.batch_size;
+		Metrics::monitor_metrics();
+	}
 }
 
-int direct_compress(char *OutFilename)
+int direct_compress(char* OutFilename)
 {
 	CompressedSize = 0;
 	hOutfile = 1;  // default to stdout
 	currBlock = 0;
 	bytesLeft = fileSize;
 
-	if(SPBench::memory_source_is_enabled()){
+	if (SPBench::memory_source_is_enabled()) {
 		OFF_T buffSize;
-		if(optimized_memory){
+		if (optimized_memory) {
 			int i = 0;
 			data file_data;
 			while (bytesLeft > 0)
@@ -414,16 +403,16 @@ int direct_compress(char *OutFilename)
 				{
 					fprintf(stderr, "Bzip2: *ERROR: Could not allocate memory (FileData)!  Skipping...\n");
 					exit(-1);
-				}	
+				}
 				// read file data from disk
-				int rret = read(hInfile, file_data.batch, buffSize);	
+				int rret = read(hInfile, file_data.batch, buffSize);
 				// check to make sure all the data we expected was read in
 				if (rret != buffSize)
 					buffSize = rret;
 				//end of the file
-				if (rret == 0) 
+				if (rret == 0)
 					break;
-				else if (rret < 0){
+				else if (rret < 0) {
 					fprintf(stderr, "Bzip2: *ERROR: Could not read from file!  Skipping...\n");
 					exit(-1);
 				}
@@ -431,7 +420,8 @@ int direct_compress(char *OutFilename)
 				bytesLeft -= rret;
 				i++;
 			}
-		} else {
+		}
+		else {
 			MemReadData = NULL;
 			MemWriteData = NULL;
 			MemReadData = new char[fileSize];
@@ -448,12 +438,12 @@ int direct_compress(char *OutFilename)
 			}
 
 			// read file data
-			int rret = read(hInfile, (char *) MemReadData, fileSize);
+			int rret = read(hInfile, (char*)MemReadData, fileSize);
 #ifdef PBZIP_DEBUG
 			fprintf(stderr, " -> Total Bytes Read: %d bytes...\n\n", rret);
 #endif
 			// end of the file
-			if (rret == 0) 
+			if (rret == 0)
 				return -1;
 
 			else if (rret < 0)
@@ -484,14 +474,15 @@ int direct_compress(char *OutFilename)
 
 	close(hInfile);
 
-	if(SPBench::memory_source_is_enabled()){
-		if(optimized_memory){
-			while(!MemData.empty()){
+	if (SPBench::memory_source_is_enabled()) {
+		if (optimized_memory) {
+			while (!MemData.empty()) {
 				int ret = write(hOutfile, MemData[0].batch, MemData[0].buffSize);
-				delete [] MemData[0].batch;
+				delete[] MemData[0].batch;
 				MemData.erase(MemData.begin());
 			}
-		} else {
+		}
+		else {
 			int ret = write(hOutfile, MemWriteData, outFileSize);
 #ifdef PBZIP_DEBUG
 			fprintf(stderr, "\n -> Total Bytes Written[%d]: %d bytes...\n", currBlock, ret);
@@ -502,8 +493,8 @@ int direct_compress(char *OutFilename)
 				fprintf(stderr, "Bzip2: *ERROR: Could not write to file!  Skipping...\n");
 				exit(-1);
 			}
-			delete [] MemReadData;
-			delete [] MemWriteData;
+			delete[] MemReadData;
+			delete[] MemWriteData;
 		}
 	}
 	if (OutputStdOut == 0)
@@ -516,31 +507,50 @@ int direct_compress(char *OutFilename)
 }
 
 /*
- *********************************************************
- */
+*********************************************************
+*/
+
+long Source_d::source_item_timestamp = current_time_usecs();
 
 bool Source_d::op(Item &item){
+
 	//if last batch included the last item, ends computation
 	if(stream_end == true){
 		return false;
 	}
+
+	// frequency control mechanism
+	SPBench::item_frequency_control(source_item_timestamp);
+
+	item.timestamp = source_item_timestamp = current_time_usecs();
+	unsigned long batch_elapsed_time = source_item_timestamp;
 	
-	volatile unsigned long latency_op;
-	item.timestamp = current_time_usecs();
+	unsigned long latency_op;
 	if(Metrics::latency_is_enabled()){
-		latency_op = current_time_usecs();
+		latency_op = source_item_timestamp;
 	}
 
-	while(item.batch_size < SPBench::get_batch_size()){ //batch loop
+	while(1) { //main source loop
+		
+		// batching management routines
+		if(SPBench::getBatchInterval()){
+			if(((current_time_usecs() - batch_elapsed_time) / 1000.0) >= SPBench::getBatchInterval()) break;
+		} else {
+			if(item.batch_size >= SPBench::getBatchSize()) break;
+		}
+		if(SPBench::getBatchSize() > 1){
+			if(item.batch_size >= SPBench::getBatchSize()) break;
+		}
+
 		item_data item_data;
 
 		// go to start of block position in file
-	#ifndef WIN32
+#ifndef WIN32
 		int ret = lseek(hInfile, bz2BlockList[Metrics::items_counter].dataStart, SEEK_SET);
-	#else
+#else
 		int ret = bz2BlockList[Metrics::items_counter].dataStart;
 		LOW_DWORD(ret) = SetFilePointer((HANDLE)_get_osfhandle(hInfile), LOW_DWORD(ret), &HIGH_DWORD(ret), FILE_BEGIN);
-	#endif
+#endif
 		if (ret != bz2BlockList[Metrics::items_counter].dataStart)
 		{
 			fprintf(stderr, "Bzip2: *ERROR: Could not seek to beginning of file [%" "llu" "]!  Skipping...\n", (unsigned long long)ret);
@@ -550,9 +560,9 @@ bool Source_d::op(Item &item){
 		// set buffer size
 		item_data.buffSize = bz2BlockList[Metrics::items_counter].dataSize;
 
-	#ifdef PBZIP_DEBUG
+#ifdef PBZIP_DEBUG
 		fprintf(stderr, " -> Bytes To Read: %" "llu" " bytes...\n", item_data.buffSize);
-	#endif
+#endif
 
 		if (QuietMode != 1)
 		{
@@ -566,21 +576,23 @@ bool Source_d::op(Item &item){
 		// allocate memory to read in file
 		item_data.FileData = NULL;
 
-		if(SPBench::memory_source_is_enabled()){
-			if(optimized_memory){
+		if (SPBench::memory_source_is_enabled()) {
+			if (optimized_memory) {
 				item_data.FileData = MemData[Metrics::items_counter].batch;
 				item_data.index = Metrics::items_counter;
-			} else {
+			}
+			else {
 				item_data.FileData = MemReadData + (fileSize - bytesLeft);
 			}
 
-			if (bytesLeft == 0){
-				stream_end = true; 
+			if (bytesLeft == 0) {
+				stream_end = true;
 				break;
 			}
 
 			bytesLeft -= item_data.buffSize;
-		} else {
+		}
+		else {
 			item_data.FileData = new char[item_data.buffSize];
 			// make sure memory was allocated properly
 			if (item_data.FileData == NULL)
@@ -590,16 +602,16 @@ bool Source_d::op(Item &item){
 				exit(-1);
 			}
 			// read file data
-			ret = read(hInfile, (char *) item_data.FileData, item_data.buffSize);
-	#ifdef PBZIP_DEBUG
+			ret = read(hInfile, (char*)item_data.FileData, item_data.buffSize);
+#ifdef PBZIP_DEBUG
 			fprintf(stderr, " -> Total Bytes Read: %" "llu" " bytes...\n\n", ret);
-	#endif
+#endif
 
 			// check to make sure all the data we expected was read in
 			if (ret == 0)
-			{	
+			{
 				if (item_data.FileData != NULL)
-					delete [] item_data.FileData;
+					delete[] item_data.FileData;
 				stream_end = true;
 				break;
 			}
@@ -608,7 +620,7 @@ bool Source_d::op(Item &item){
 				fprintf(stderr, "Bzip2: *ERROR: Could not read from file!  Skipping...\n");
 				close(hInfile);
 				if (item_data.FileData != NULL)
-					delete [] item_data.FileData;
+					delete[] item_data.FileData;
 				exit(-1);
 			}
 
@@ -617,138 +629,59 @@ bool Source_d::op(Item &item){
 				fprintf(stderr, "Bzip2: *ERROR: Could not read enough data from file!  Skipping...\n");
 				close(hInfile);
 				if (item_data.FileData != NULL)
-					delete [] item_data.FileData;
+					delete[] item_data.FileData;
 				exit(-1);
 			}
 		}
-		item.item_batch.resize(item.batch_size+1);
+		item.item_batch.resize(item.batch_size + 1);
 		//item_data.index = Metrics::items_counter;
 		item.item_batch[item.batch_size] = item_data;
 		item.batch_size++;
 		Metrics::items_counter++;
 	}
 	//if this batch has size 0, ends computation
-	if(item.batch_size == 0){
+	if (item.batch_size == 0) {
 		return false;
 	}
 
-	// frequency control mechanism
-	SPBench::item_frequency_control(item.timestamp);
-
-	if(Metrics::latency_is_enabled()){
-		item.latency_op[0] = (current_time_usecs() - latency_op) ;
+	if (Metrics::latency_is_enabled()) {
+		item.latency_op[0] = (current_time_usecs() - latency_op);
 	}
 
+	item.batch_index = Metrics::batch_counter;
 	Metrics::batch_counter++;	// sent batches
 	return true;
 }
-/*
-inline void decompress_op(Item &item){
-	volatile unsigned long latency_op;
-	if(Metrics::latency_is_enabled()){
-		latency_op = current_time_usecs();
-	}
 
-	unsigned int num_item = 0;
-	while(num_item < item.batch_size){ //batch loop
-		item_data item_data;
-		item_data = item.item_batch[num_item];
-
-		unsigned int outSize;
-
-		//int blockNum = 0;
-	#ifdef PBZIP_DEBUG
-		fprintf(stderr, "consumer:  Buffer: %x  Size: %u   Block: %d\n", item_data.FileData, item_data.buffSize, blockNum);
-	#endif
-
-	#ifdef PBZIP_DEBUG
-		printf ("consumer: recieved %d.\n", blockNum);
-	#endif
-
-		outSize = 900000;
-		// allocate memory for decompressed data (start with default 900k block size)
-		item_data.CompDecompData = new char[outSize];
-		// make sure memory was allocated properly
-		if (item_data.CompDecompData == NULL)
-		{
-			fprintf(stderr, " *ERROR: Could not allocate memory (DecompressedData)!  Skipping...\n");
-			exit(-1);
-		}
-
-		// decompress the memory buffer (verbose=0)
-		int ret = BZ2_bzBuffToBuffDecompress(item_data.CompDecompData, &outSize, item_data.FileData, item_data.buffSize, 0, Verbosity);
-
-		while (ret == BZ_OUTBUFF_FULL)
-		{
-	#ifdef PBZIP_DEBUG
-			fprintf(stderr, "Increasing DecompressedData buffer size: %d -> %d\n", outSize, outSize*4);
-	#endif
-
-			if (item_data.CompDecompData != NULL)
-				delete [] item_data.CompDecompData;
-			item_data.CompDecompData = NULL;
-			// increase buffer space
-			outSize = outSize * 4;
-			// allocate memory for decompressed data (start with default 900k block size)
-			item_data.CompDecompData = new char[outSize];
-			// make sure memory was allocated properly
-			if (item_data.CompDecompData == NULL)
-			{
-				fprintf(stderr, "Bzip2: *ERROR: Could not allocate memory (DecompressedData)!  Skipping...\n");
-				exit(-1);
-			}
-
-			// decompress the memory buffer (verbose=0)
-			ret = BZ2_bzBuffToBuffDecompress(item_data.CompDecompData, &outSize, item_data.FileData, item_data.buffSize, 0, Verbosity);
-
-		} // while
-
-		if ((ret != BZ_OK) && (ret != BZ_OUTBUFF_FULL))
-			fprintf(stderr, "Bzip2: *ERROR during decompression: %d\n", ret);
-
-	#ifdef PBZIP_DEBUG
-		fprintf(stderr, "\n Compressed Block Size: %u\n", item_data.buffSize);
-		fprintf(stderr, "   Original Block Size: %u\n", outSize);
-	#endif
-
-		blockNum++;
-		item_data.buffSize = outSize;
-		
-		item.item_batch[num_item] = item_data;
-		num_item++;
-	}
-	if(Metrics::latency_is_enabled()){
-		item.latency_op[1] = (current_time_usecs() - latency_op) ;
-	}
-}*/
-
-void Sink_d::op(Item &item){
-	volatile unsigned long latency_op;
-	if(Metrics::latency_is_enabled()){
+void Sink_d::op(Item& item) {
+	unsigned long latency_op;
+	if (Metrics::latency_is_enabled()) {
 		latency_op = current_time_usecs();
 	}
 	unsigned int num_item = 0;
-	while(num_item < item.batch_size){ //batch loop
+	while (num_item < item.batch_size) { //batch loop
 		item_data item_data;
 		item_data = item.item_batch[num_item];
 
-		if(SPBench::memory_source_is_enabled()){
-			if(optimized_memory){
-				delete [] MemData[item_data.index].batch;
+		if (SPBench::memory_source_is_enabled()) {
+			if (optimized_memory) {
+				delete[] MemData[item_data.index].batch;
 				//MemData[item_data.index].batch = new char[item_data.buffSize];
 				//memcpy(MemData[item_data.index].batch, item_data.CompDecompData, item_data.buffSize);
 				MemData[item_data.index].batch = item_data.CompDecompData;
 				MemData[item_data.index].buffSize = item_data.buffSize;
-			} else {
+			}
+			else {
 				outFileSize += item_data.buffSize;
-				MemWriteData = (char*) realloc (MemWriteData, outFileSize * sizeof(char));
+				MemWriteData = (char*)realloc(MemWriteData, outFileSize * sizeof(char));
 				memcpy(MemWriteData + (outFileSize - item_data.buffSize), item_data.CompDecompData, item_data.buffSize);
 			}
-		} else {
+		}
+		else {
 			int ret = write(hOutfile, item_data.CompDecompData, item_data.buffSize);
-	#ifdef PBZIP_DEBUG
+#ifdef PBZIP_DEBUG
 			fprintf(stderr, "\n -> Total Bytes Written[%d]: %d bytes...\n", currBlock, ret);
-	#endif
+#endif
 			CompressedSize += ret;
 			if (ret <= 0)
 			{
@@ -764,39 +697,45 @@ void Sink_d::op(Item &item){
 			fprintf(stderr, "Completed: %d%%             \r", percentComplete);
 			fflush(stderr);
 		}
-		if(!SPBench::memory_source_is_enabled()){
+		if (!SPBench::memory_source_is_enabled()) {
 			if (item_data.FileData != NULL)
-				delete [] item_data.FileData;
+				delete[] item_data.FileData;
 		}
-		if(!optimized_memory){
+		if (!optimized_memory) {
 			if (item_data.CompDecompData != NULL)
-				delete [] item_data.CompDecompData;
+				delete[] item_data.CompDecompData;
 		}
 		num_item++;
+		Metrics::items_at_sink_counter++;
 	}
-	Metrics::items_at_sink_counter++;
+	Metrics::batches_at_sink_counter++;
 
-	if(Metrics::monitoring_is_enabled){
-		Metrics::monitor_metrics(item.timestamp);
-	}
-	if(Metrics::latency_is_enabled()){
+		if(Metrics::latency_is_enabled()){
+		double current_time_sink = current_time_usecs();
+		item.latency_op[2] = (current_time_sink - latency_op);
 
-		volatile unsigned long total_item_latency = (current_time_usecs() - item.timestamp);
+		unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
-		Metrics::global_current_latency = total_item_latency; // to compute real time latency
 
-		item.latency_op[2] = (current_time_usecs() - latency_op);
-		auto latency = Metrics::getLatency_t();
+		auto latency = Metrics::Latency_t();
 		latency.local_latency = item.latency_op;
-		latency.local_total = total_item_latency;
+		latency.total_latency = total_item_latency;
+		latency.item_timestamp = item.timestamp;
+		latency.item_sink_timestamp = current_time_sink;
+		latency.batch_size = item.batch_size;
 		Metrics::latency_vector.push_back(latency);
 		item.latency_op.clear();
 	}
+
+	if (Metrics::monitoring_is_enabled()) {
+		Metrics::last_batch_size = item.batch_size;
+		Metrics::monitor_metrics();
+	}
 }
 
-int direct_decompress(char *OutFilename)
+int direct_decompress(char* OutFilename)
 {
-	char bz2Header[] = {"BZh91AY&SY"};  // for 900k BWT block size
+	char bz2Header[] = { "BZh91AY&SY" };  // for 900k BWT block size
 	CompressedSize = 0;
 	currBlock = 0;
 	blockNum = 0;
@@ -815,7 +754,7 @@ int direct_decompress(char *OutFilename)
 			fprintf(stderr, "Bzip2: *ERROR: Could not create output file [%s]!\n", OutFilename);
 			return -1;
 		}
-	}	
+	}
 
 	// go to start of file
 	int ret = lseek(hInfile, 0, SEEK_SET);
@@ -826,7 +765,7 @@ int direct_decompress(char *OutFilename)
 		return -1;
 	}
 
-	char *FileData;
+	char* FileData;
 	OFF_T inSize = 100000;
 
 	// scan input file for BZIP2 block markers (BZh91AY&SY)
@@ -848,7 +787,7 @@ int direct_decompress(char *OutFilename)
 	OFF_T startByte = 0;
 
 	bz2BlockListing TempBlockListing;
-	char *startPointer = NULL;
+	char* startPointer = NULL;
 
 	// keep going until all the file is scanned for BZIP2 blocks
 	while (bytesLeft > 0)
@@ -859,18 +798,18 @@ int direct_decompress(char *OutFilename)
 			fprintf(stderr, " -> Bytes To Read: %" "llu" " bytes...\n", inSize);
 #endif
 			// read file data
-			ret = read(hInfile, (char *) FileData, inSize);
+			ret = read(hInfile, (char*)FileData, inSize);
 		}
 		else
 		{
 			// copy end section of previous buffer to new just in case the BZIP2 header is
 			// located between two buffer boundaries
-			memcpy(FileData, FileData+inSize-(strlen(bz2Header)-1), strlen(bz2Header)-1);
+			memcpy(FileData, FileData + inSize - (strlen(bz2Header) - 1), strlen(bz2Header) - 1);
 #ifdef PBZIP_DEBUG
-			fprintf(stderr, " -> Bytes To Read: %" "llu" " bytes...\n", inSize-(strlen(bz2Header)-1));
+			fprintf(stderr, " -> Bytes To Read: %" "llu" " bytes...\n", inSize - (strlen(bz2Header) - 1));
 #endif
 			// read file data minus overflow from previous buffer
-			ret = read(hInfile, (char *) FileData+strlen(bz2Header)-1, inSize-(strlen(bz2Header)-1));
+			ret = read(hInfile, (char*)FileData + strlen(bz2Header) - 1, inSize - (strlen(bz2Header) - 1));
 		}
 #ifdef PBZIP_DEBUG
 		fprintf(stderr, " -> Total Bytes Read: %" "llu" " bytes...\n\n", ret);
@@ -880,7 +819,7 @@ int direct_decompress(char *OutFilename)
 			fprintf(stderr, "Bzip2: *ERROR: Could not read from fibz2NumBlocksle!  Skipping...\n");
 			close(hInfile);
 			if (FileData != NULL)
-				delete [] FileData;
+				delete[] FileData;
 			return -1;
 		}
 
@@ -888,7 +827,7 @@ int direct_decompress(char *OutFilename)
 		if (currentByte == 0)
 			startPointer = memstr(FileData, ret, bz2Header, strlen(bz2Header));
 		else
-			startPointer = memstr(FileData, ret+(strlen(bz2Header)-1), bz2Header, strlen(bz2Header));
+			startPointer = memstr(FileData, ret + (strlen(bz2Header) - 1), bz2Header, strlen(bz2Header));
 		while (startPointer != NULL)
 		{
 			if (currentByte == 0)
@@ -909,11 +848,11 @@ int direct_decompress(char *OutFilename)
 
 			if (currentByte == 0)
 			{
-				startPointer = memstr(startPointer+1, ret-(startPointer-FileData)-1, bz2Header, strlen(bz2Header));
+				startPointer = memstr(startPointer + 1, ret - (startPointer - FileData) - 1, bz2Header, strlen(bz2Header));
 			}
 			else
 			{
-				startPointer = memstr(startPointer+1, ret-(startPointer-FileData)-1+(strlen(bz2Header)-1), bz2Header, strlen(bz2Header));
+				startPointer = memstr(startPointer + 1, ret - (startPointer - FileData) - 1 + (strlen(bz2Header) - 1), bz2Header, strlen(bz2Header));
 			}
 		}
 
@@ -930,13 +869,13 @@ int direct_decompress(char *OutFilename)
 	}
 
 	if (FileData != NULL)
-		delete [] FileData;
+		delete[] FileData;
 	NumBlocks = bz2NumBlocks;
 
 	// calculate data sizes for each block
-	for (int i=0; i < bz2NumBlocks; i++)
+	for (int i = 0; i < bz2NumBlocks; i++)
 	{
-		if (i == bz2NumBlocks-1)
+		if (i == bz2NumBlocks - 1)
 		{
 			// special case for last block
 			bz2BlockList[i].dataSize = fileSize - bz2BlockList[i].dataStart;
@@ -944,12 +883,12 @@ int direct_decompress(char *OutFilename)
 		else if (i == 0)
 		{
 			// special case for first block
-			bz2BlockList[i].dataSize = bz2BlockList[i+1].dataStart;
+			bz2BlockList[i].dataSize = bz2BlockList[i + 1].dataStart;
 		}
 		else
 		{
 			// normal case
-			bz2BlockList[i].dataSize = bz2BlockList[i+1].dataStart - bz2BlockList[i].dataStart;
+			bz2BlockList[i].dataSize = bz2BlockList[i + 1].dataStart - bz2BlockList[i].dataStart;
 		}
 #ifdef PBZIP_DEBUG
 		fprintf(stderr, " bz2BlockList[%d].dataStart = %" "llu" "\n", i, bz2BlockList[i].dataStart);
@@ -958,15 +897,15 @@ int direct_decompress(char *OutFilename)
 		//printf("dataSize: %ld\n", bz2BlockList[i].dataSize);
 	}
 
-	if(SPBench::memory_source_is_enabled()){
-		if(!optimized_memory){
+	if (SPBench::memory_source_is_enabled()) {
+		if (!optimized_memory) {
 			bytesLeft = fileSize;
 			MemReadData = NULL;
 			MemWriteData = NULL;
 			MemReadData = new char[fileSize];
 		}
 
-		for (int i=0; i < bz2NumBlocks; i++)
+		for (int i = 0; i < bz2NumBlocks; i++)
 		{
 			// go to start of block position in file
 #ifndef WIN32
@@ -977,13 +916,14 @@ int direct_decompress(char *OutFilename)
 #endif
 
 			// read file data
-			if(optimized_memory){
+			if (optimized_memory) {
 				data file_data;
 				file_data.batch = new char[bz2BlockList[i].dataSize];
-				ret = read(hInfile, (char *) file_data.batch, bz2BlockList[i].dataSize);
+				ret = read(hInfile, (char*)file_data.batch, bz2BlockList[i].dataSize);
 				MemData.push_back(file_data);
-			} else {
-				ret = read(hInfile, (char *) MemReadData + (fileSize - bytesLeft), bz2BlockList[i].dataSize);
+			}
+			else {
+				ret = read(hInfile, (char*)MemReadData + (fileSize - bytesLeft), bz2BlockList[i].dataSize);
 				bytesLeft -= bz2BlockList[i].dataSize;
 			}
 		}
@@ -998,17 +938,18 @@ int direct_decompress(char *OutFilename)
 
 	close(hInfile);
 
-	if(SPBench::memory_source_is_enabled()){
-		if(optimized_memory){
-			while(!MemData.empty()){
+	if (SPBench::memory_source_is_enabled()) {
+		if (optimized_memory) {
+			while (!MemData.empty()) {
 				ret = write(hOutfile, MemData[0].batch, MemData[0].buffSize);
-				delete [] MemData[0].batch;
+				delete[] MemData[0].batch;
 				MemData.erase(MemData.begin());
 			}
-		} else {
+		}
+		else {
 			ret = write(hOutfile, MemWriteData, outFileSize);
-			delete [] MemReadData;
-			delete [] MemWriteData;
+			delete[] MemReadData;
+			delete[] MemWriteData;
 		}
 	}
 	close(hOutfile);
@@ -1018,12 +959,12 @@ int direct_decompress(char *OutFilename)
 
 
 /*
- * Simulate an unconditional read(), reading in data to fill the
- * bsize-sized buffer if it can, even if it means calling read() multiple
- * times. This is needed since pipes and other "special" streams
- * sometimes don't allow reading of arbitrary sized buffers.
- */
-ssize_t bufread(int hf, char *buf, size_t bsize)
+	* Simulate an unconditional read(), reading in data to fill the
+	* bsize-sized buffer if it can, even if it means calling read() multiple
+	* times. This is needed since pipes and other "special" streams
+	* sometimes don't allow reading of arbitrary sized buffers.
+	*/
+ssize_t bufread(int hf, char* buf, size_t bsize)
 {
 	size_t bufr = 0;
 	int ret;
@@ -1047,8 +988,8 @@ ssize_t bufread(int hf, char *buf, size_t bsize)
 }
 
 /*
- *********************************************************
- */
+	*********************************************************
+	*/
 void mySignalCatcher(int n)
 {
 	struct stat statBuf;
@@ -1084,35 +1025,35 @@ void mySignalCatcher(int n)
 }
 
 /*
- *********************************************************
- This function will search the array pointed to by
- searchBuf[] for the string searchString[] and return
- a pointer to the start of the searchString[] if found
- otherwise return NULL if not found.
- */
-char *memstr(char *searchBuf, int searchBufSize, char *searchString, int searchStringSize)
+	*********************************************************
+	This function will search the array pointed to by
+	searchBuf[] for the string searchString[] and return
+	a pointer to the start of the searchString[] if found
+	otherwise return NULL if not found.
+	*/
+char* memstr(char* searchBuf, int searchBufSize, char* searchString, int searchStringSize)
 {
 	int i;
 
-	for (i=0; i < searchBufSize; i++)
+	for (i = 0; i < searchBufSize; i++)
 	{
 		if ((searchBufSize - i) < searchStringSize)
 			break;
 
-		if ( searchBuf[i] == searchString[0] && 
-				memcmp(searchBuf+i, searchString, searchStringSize) == 0 ) 
+		if (searchBuf[i] == searchString[0] &&
+			memcmp(searchBuf + i, searchString, searchStringSize) == 0)
 		{
 			return &searchBuf[i];
-		}	
+		}
 	}
 
 	return NULL;
 }
 
 /*
- *********************************************************
- Much of the code in this function is taken from bzip2.c
- */
+	*********************************************************
+	Much of the code in this function is taken from bzip2.c
+	*/
 int testBZ2ErrorHandling(int bzerr, BZFILE* bzf, int streamNo)
 {
 	int bzerr_dummy;
@@ -1120,59 +1061,59 @@ int testBZ2ErrorHandling(int bzerr, BZFILE* bzf, int streamNo)
 	BZ2_bzReadClose(&bzerr_dummy, bzf);
 	switch (bzerr)
 	{
-		case BZ_CONFIG_ERROR:
-			fprintf(stderr, "Bzip2: *ERROR: Integers are not the right size for libbzip2. Aborting!\n");
-			exit(3);
-			break;
-		case BZ_IO_ERROR:
-			fprintf(stderr, "Bzip2: *ERROR: Integers are not the right size for libbzip2. Aborting!\n");
-			return 1;
-			break;
-		case BZ_DATA_ERROR:
-			fprintf(stderr,	"Bzip2: *ERROR: Data integrity (CRC) error in data!  Skipping...\n");
+	case BZ_CONFIG_ERROR:
+		fprintf(stderr, "Bzip2: *ERROR: Integers are not the right size for libbzip2. Aborting!\n");
+		exit(3);
+		break;
+	case BZ_IO_ERROR:
+		fprintf(stderr, "Bzip2: *ERROR: Integers are not the right size for libbzip2. Aborting!\n");
+		return 1;
+		break;
+	case BZ_DATA_ERROR:
+		fprintf(stderr, "Bzip2: *ERROR: Data integrity (CRC) error in data!  Skipping...\n");
+		return -1;
+		break;
+	case BZ_MEM_ERROR:
+		fprintf(stderr, "Bzip2: *ERROR: Could NOT allocate enough memory. Aborting!\n");
+		return 1;
+		break;
+	case BZ_UNEXPECTED_EOF:
+		fprintf(stderr, "Bzip2: *ERROR: File ends unexpectedly!  Skipping...\n");
+		return -1;
+		break;
+	case BZ_DATA_ERROR_MAGIC:
+		if (streamNo == 1)
+		{
+			fprintf(stderr, "Bzip2: *ERROR: Bad magic number (file not created by bzip2)!  Skipping...\n");
 			return -1;
-			break;
-		case BZ_MEM_ERROR:
-			fprintf(stderr, "Bzip2: *ERROR: Could NOT allocate enough memory. Aborting!\n");
-			return 1;
-			break;
-		case BZ_UNEXPECTED_EOF:
-			fprintf(stderr,	"Bzip2: *ERROR: File ends unexpectedly!  Skipping...\n");
-			return -1;
-			break;
-		case BZ_DATA_ERROR_MAGIC:
-			if (streamNo == 1)
-			{
-				fprintf(stderr, "Bzip2: *ERROR: Bad magic number (file not created by bzip2)!  Skipping...\n");
-				return -1;
-			}
-			else
-			{
-				if (QuietMode != 1)
-					fprintf(stderr, "Bzip2: *WARNING: Trailing garbage after EOF ignored!\n");
-				return 0;
-			}
-		default:
-			fprintf(stderr, "Bzip2: *ERROR: Unexpected error. Aborting!\n");
-			exit(3);
+		}
+		else
+		{
+			if (QuietMode != 1)
+				fprintf(stderr, "Bzip2: *WARNING: Trailing garbage after EOF ignored!\n");
+			return 0;
+		}
+	default:
+		fprintf(stderr, "Bzip2: *ERROR: Unexpected error. Aborting!\n");
+		exit(3);
 	}
 
 	return 0;
 }
 
 /*
- *********************************************************
- Much of the code in this function is taken from bzip2.c
- */
-int testCompressedData(char *fileName)
+	*********************************************************
+	Much of the code in this function is taken from bzip2.c
+	*/
+int testCompressedData(char* fileName)
 {
-	FILE *zStream = NULL;
+	FILE* zStream = NULL;
 	int ret = 0;
 
 	BZFILE* bzf = NULL;
 	unsigned char obuf[5000];
 	unsigned char unused[BZ_MAX_UNUSED];
-	unsigned char *unusedTmp;
+	unsigned char* unusedTmp;
 	int bzerr, nread, streamNo;
 	int nUnused;
 	int i;
@@ -1181,7 +1122,7 @@ int testCompressedData(char *fileName)
 	streamNo = 0;
 
 	// see if we are using stdin or not
-	if (strcmp(fileName, "-") != 0) 
+	if (strcmp(fileName, "-") != 0)
 	{
 		// open the file for reading
 		zStream = fopen(fileName, "rb");
@@ -1204,7 +1145,7 @@ int testCompressedData(char *fileName)
 	}
 
 	// loop until end of file
-	while(true)
+	while (true)
 	{
 		bzf = BZ2_bzReadOpen(&bzerr, zStream, Verbosity, 0, unused, nUnused);
 		if (bzf == NULL || bzerr != BZ_OK)
@@ -1285,18 +1226,18 @@ int testCompressedData(char *fileName)
 }
 
 /*
- *********************************************************
- */
-int getFileMetaData(char *fileName)
+	*********************************************************
+	*/
+int getFileMetaData(char* fileName)
 {
 	// get the file meta data and store it in the global structure
 	return stat(fileName, &fileMetaData);
 }
 
 /*
- *********************************************************
- */
-int writeFileMetaData(char *fileName)
+	*********************************************************
+	*/
+int writeFileMetaData(char* fileName)
 {
 	int ret = 0;
 	struct utimbuf uTimBuf;
@@ -1324,8 +1265,8 @@ int writeFileMetaData(char *fileName)
 }
 
 /*
- *********************************************************
- */
+	*********************************************************
+	*/
 int detectCPUs()
 {
 	int ncpu;
@@ -1354,8 +1295,8 @@ int detectCPUs()
 
 
 /*
- *********************************************************
- */
+	*********************************************************
+	*/
 void banner()
 {
 	fprintf(stderr, "SPBench version of bzip2 - by: Adriano Marques Garcia\n");
@@ -1365,9 +1306,9 @@ void banner()
 	return;
 }
 /*
- *********************************************************
- */
-void usage(char* progname, const char *reason)
+	*********************************************************
+	*/
+void usage(char* progname, const char* reason)
 {
 	banner();
 
@@ -1382,7 +1323,8 @@ void usage(char* progname, const char *reason)
 	fprintf(stderr, "Usage: %s [-1 .. -9] [-b#cdfhkp#qrtVz] <filename> <filename2> <filenameN>\n", progname);
 #endif
 	fprintf(stderr, " -b#      : where # is the number of itens per batch (default 1)\n");
-	fprintf(stderr, " -B#      : where # is the file block size in 100k (default 9 = 900k)\n");
+	fprintf(stderr, " -B#      : where # is the time size of the batch (default 0)\n");
+	fprintf(stderr, " -Q#      : where # is the file block size in 100k (default 9 = 900k)\n");
 	fprintf(stderr, " -t#      : where # is the number of threads (default");
 	fprintf(stderr, " -c       : output to standard out (stdout)\n");
 	fprintf(stderr, " -d       : decompress file\n");
@@ -1394,24 +1336,24 @@ void usage(char* progname, const char *reason)
 	fprintf(stderr, " -X       : overwrite existing output file\n");
 	fprintf(stderr, " -h       : print this help message\n");
 	//fprintf(stderr, " -k       : keep input file, don't delete\n");
-//#ifndef PBZIP_NO_LOADAVG
+	//#ifndef PBZIP_NO_LOADAVG
 	//fprintf(stderr, " -l       : load average determines max number processors to use\n");
-//#endif
-	fprintf(stderr, " -p#      : where # is the number of processors (default");
+	//#endif
+	fprintf(stderr, " -P#      : where # is the number of processors (default)");
+	fprintf(stderr, " -p#      : where # is the frequency pattern defined as = <pattern,period,min,max>");
 #if defined(_SC_NPROCESSORS_ONLN) || defined(__APPLE__)
 	fprintf(stderr, ": autodetect [%d])\n", detectCPUs());
 #else
 	fprintf(stderr, " 2)\n");
 #endif
 	fprintf(stderr, " -q       : quiet mode (default)\n");
-//	fprintf(stderr, " -r       : read entire input file into RAM and split between processors\n");
+	//	fprintf(stderr, " -r       : read entire input file into RAM and split between processors\n");
 	//fprintf(stderr, " -t       : <number_of_threads>\n");
 	//fprintf(stderr, " -t       : test compressed file integrity\n");
 	fprintf(stderr, " -v       : verbose mode\n");
 	fprintf(stderr, " -V       : display version info for Bzip2 then exit\n");
 	fprintf(stderr, " -z       : compress file (default)\n");
 	fprintf(stderr, " -1 .. -9 : set BWT block size to 100k .. 900k (default 900k)\n\n");
-	fprintf(stderr, "Example: Bzip2 -b15vk myfile.tar\n");
 	fprintf(stderr, "Example: Bzip2 -p4 -r -5 myfile.tar second*.txt\n");
 	fprintf(stderr, "Example: tar cf myfile.tar.bz2 --use-compress-prog=Bzip2 dir_to_compress/\n");
 	fprintf(stderr, "Example: Bzip2 -d myfile.tar.bz2\n\n");
@@ -1419,21 +1361,21 @@ void usage(char* progname, const char *reason)
 }
 
 /*
- *********************************************************
- */
+	*********************************************************
+	*/
 int bzip2_main(int argc, char* argv[])
 {
 	//pthread_t output;
-	char **FileList = NULL;
-	char *InFilename = NULL;
-	char *progName = NULL;
-	char *progNamePos = NULL;
-	char bz2Header[] = {"BZh91AY&SY"};  // using 900k block size
+	char** FileList = NULL;
+	char* InFilename = NULL;
+	char* progName = NULL;
+	char* progNamePos = NULL;
+	char bz2Header[] = { "BZh91AY&SY" };  // using 900k block size
 	char bz2HeaderZero[] = { 0x42, 0x5A, 0x68, 0x39, 0x17, 0x72, 0x45, 0x38, 0x50, static_cast<char>(0x90), 0x00, 0x00, 0x00, 0x00 };
 	char OutFilename[2048];
 	char cmdLineTemp[2048];
 	char tmpBuff[50];
-	char stdinFile[2] = {"-"};
+	char stdinFile[2] = { "-" };
 	struct timeval tvStartTime;
 	struct timeval tvStopTime;
 #ifndef WIN32
@@ -1476,7 +1418,7 @@ int bzip2_main(int argc, char* argv[])
 	gettimeofday(&tvStartTime, &tz);
 #else
 	GetSystemTime(&systemtime);
-	SystemTimeToFileTime(&systemtime, (FILETIME *)&filetime);
+	SystemTimeToFileTime(&systemtime, (FILETIME*)&filetime);
 	tvStartTime.tv_sec = filetime.QuadPart / 10000000;
 	tvStartTime.tv_usec = (filetime.QuadPart - (LONGLONG)tvStartTime.tv_sec * 10000000) / 10;
 #endif
@@ -1504,11 +1446,11 @@ int bzip2_main(int argc, char* argv[])
 	}
 	if ((strstr(progName, "zcat") != 0) || (strstr(progName, "ZCAT") != 0))
 	{
-		decompress = OutputStdOut = keep = 1; 
+		decompress = OutputStdOut = keep = 1;
 	}
 
 	FileListCount = 0;
-	FileList = new char *[argc];
+	FileList = new char* [argc];
 	if (FileList == NULL)
 	{
 		fprintf(stderr, "Bzip2: *ERROR: Not enough memory!  Aborting...\n");
@@ -1522,11 +1464,11 @@ int bzip2_main(int argc, char* argv[])
 #endif
 
 	// parse command line switches
-	for (i=1; i < argc; i++)
+	for (i = 1; i < argc; i++)
 	{
 		if (argv[i][0] == '-')
 		{
-			if (argv[i][1] == '\0') 
+			if (argv[i][1] == '\0')
 			{
 				// support "-" as a filename
 				FileList[FileListCount] = argv[i];
@@ -1596,205 +1538,242 @@ int bzip2_main(int argc, char* argv[])
 #endif
 			// get command line options with single "-"
 			// check for multiple switches grouped together
-			for (j=1; argv[i][j] != '\0'; j++)
+			for (j = 1; argv[i][j] != '\0'; j++)
 			{
 				switch (argv[i][j])
 				{
-					case 'p': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
-						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
-						  {
-							  // no more numbers, finish
-							  if ((argv[i][k] < '0') || (argv[i][k] > '9'))
-								  break;
-							  k++;
-							  cmdLineTempCount++;
-						  }
-						  if (cmdLineTempCount == 0)
-							  usage(argv[0], "Cannot parse -p argument");
-						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount);
-						  numCPU = atoi(cmdLineTemp);
-						  if (numCPU > 4096)
-						  {
-							  fprintf(stderr,"Bzip2: *ERROR: Maximal number of supported processors is 4096!  Aborting...\n");
-							  return 1;
-						  }
-						  else if (numCPU < 1)
-						  {
-							  fprintf(stderr,"Bzip2: *ERROR: Minimum number of supported processors is 1!  Aborting...\n");
-							  return 1;
-						  }
-						  j += cmdLineTempCount;
+				case 'P': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					if (cmdLineTempCount == 0)
+						usage(argv[0], "Cannot parse -P argument");
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					numCPU = atoi(cmdLineTemp);
+					if (numCPU > 4096)
+					{
+						fprintf(stderr, "Bzip2: *ERROR: Maximal number of supported processors is 4096!  Aborting...\n");
+						return 1;
+					}
+					else if (numCPU < 1)
+					{
+						fprintf(stderr, "Bzip2: *ERROR: Minimum number of supported processors is 1!  Aborting...\n");
+						return 1;
+					}
+					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
-						  fprintf(stderr, "-p%d\n", numCPU);
+					fprintf(stderr, "-p%d\n", numCPU);
 #endif
-						  break;
-					case 't': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
-						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
-						  {
-							  // no more numbers, finish
-							  if ((argv[i][k] < '0') || (argv[i][k] > '9'))
-								  break;
-							  k++;
-							  cmdLineTempCount++;
-						  }
-						  if (cmdLineTempCount == 0)
-							  usage(argv[0], "Cannot parse -t argument");
-						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount);
-						  nthreads = atoi(cmdLineTemp);
-						  if (nthreads < 1)
-						  {
-							  fprintf(stderr,"Bzip2: *ERROR: Minimum number of supported processors is 1!  Aborting...\n");
-							  return 1;
-						  }
-						  j += cmdLineTempCount;
+					break;
+				case 't': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					if (cmdLineTempCount == 0)
+						usage(argv[0], "Cannot parse -t argument");
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					nthreads = atoi(cmdLineTemp);
+					if (nthreads < 1)
+					{
+						fprintf(stderr, "Bzip2: *ERROR: Minimum number of supported processors is 1!  Aborting...\n");
+						return 1;
+					}
+					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
-						  fprintf(stderr, "-t%d\n", nthreads);
+					fprintf(stderr, "-t%d\n", nthreads);
 #endif
-						  break;
+					break;
 					//batch size
-					case 'b': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
-						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
-						  {
-							  // no more numbers, finish
-							  if ((argv[i][k] < '0') || (argv[i][k] > '9'))
-								  break;
-							  k++;
-							  cmdLineTempCount++;
-						  }
-						  if (cmdLineTempCount == 0)
-							  usage(argv[0], "Cannot parse -b argument");
-						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount);
-						  SPBench::set_batch_size(atoi(cmdLineTemp));
-						  if (SPBench::get_batch_size() < 1)
-						  {
-							  fprintf(stderr,"Bzip2: *ERROR: Minimum batch size is 1!  Aborting...\n");
-							  return 1;
-						  }
-						  j += cmdLineTempCount;
+				case 'b': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					if (cmdLineTempCount == 0)
+						usage(argv[0], "Cannot parse -b argument");
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					SPBench::setBatchSize(atoi(cmdLineTemp));
+					if (SPBench::getBatchSize() < 1)
+					{
+						fprintf(stderr, "Bzip2: *ERROR: Minimum batch size is 1!  Aborting...\n");
+						return 1;
+					}
+					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
-						  fprintf(stderr, "-b%d\n", batch_size);
+					fprintf(stderr, "-b%d\n", batch_size);
 #endif
-						  break;
+					break;
+					//batch interval
+				case 'B': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					if (cmdLineTempCount == 0)
+						usage(argv[0], "Cannot parse -B argument");
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					SPBench::setBatchInterval(atoi(cmdLineTemp));
+					if (SPBench::getBatchInterval() <= 0)
+					{
+						fprintf(stderr, "Bzip2: *ERROR: Minimum batch time size is 0!  Aborting...\n");
+						return 1;
+					}
+					j += cmdLineTempCount;
+#ifdef PBZIP_DEBUG
+					fprintf(stderr, "-b%d\n", batch_size);
+#endif
+					break;
 					// Frequency
-					case 'F': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
-						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
-						  {
-							  // no more numbers, finish
-							  if ((argv[i][k] < '0') || (argv[i][k] > '9'))
-								  break;
-							  k++;
-							  cmdLineTempCount++;
-						  }
-						  if (cmdLineTempCount == 0)
-							  usage(argv[0], "Cannot parse -F argument");
-						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount);
-						  SPBench::set_items_reading_frequency(atoi(cmdLineTemp));
-						  SPBench::enable_memory_source();
+				case 'F': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					if (cmdLineTempCount == 0)
+						usage(argv[0], "Cannot parse -F argument");
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					SPBench::setFrequency(atoi(cmdLineTemp));
+					//SPBench::enable_memory_source();
 
-						  if (SPBench::get_items_reading_frequency() < 0)
-						  {
-							  fprintf(stderr,"Bzip2: *ERROR: Minimum frequency is 0!  Aborting...\n");
-							  return 1;
-						  }
-						  j += cmdLineTempCount;
+					if (SPBench::getFrequency() < 0)
+					{
+						fprintf(stderr, "Bzip2: *ERROR: Minimum frequency is 0!  Aborting...\n");
+						return 1;
+					}
+					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
-						  fprintf(stderr, "-F%d\n", items_reading_frequency);
+					fprintf(stderr, "-F%d\n", items_reading_frequency);
 #endif
-						  break;
+					break;
+					// Frequency pattern
+				case 'p': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						k++;
+						cmdLineTempCount++;
+					}
+
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount + 1);
+					try {
+						input_freq_pattern_parser(cmdLineTemp);
+					}
+					catch (const std::invalid_argument& e) {
+						std::cerr << "exception: " << e.what() << std::endl;
+						exit(1);
+					}
+					j += cmdLineTempCount;
+					break;
 
 					//block size
-					case 'B': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "9"); blockSize = 900000;
-						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
-						  {
-							  // no more numbers, finish
-							  if ((argv[i][k] < '0') || (argv[i][k] > '9'))
-								  break;
-							  k++;
-							  cmdLineTempCount++;
-						  }
-						  if (cmdLineTempCount == 0)
-							  usage(argv[0], "Cannot parse file block size");
-						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount);
-						  blockSize = atoi(cmdLineTemp)*100000;
-						  if ((blockSize < 100000) || (blockSize > 1000000000))
-						  {
-							  fprintf(stderr,"Bzip2: *ERROR: File block size Min: 100k and Max: 10000k!  Aborting...\n");
-							  return 1;
-						  }
-						  j += cmdLineTempCount;
+				case 'Q': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "9"); blockSize = 900000;
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					if (cmdLineTempCount == 0)
+						usage(argv[0], "Cannot parse file block size");
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					blockSize = atoi(cmdLineTemp) * 100000;
+					if ((blockSize < 100000) || (blockSize > 1000000000))
+					{
+						fprintf(stderr, "Bzip2: *ERROR: File block size Min: 100k and Max: 10000k!  Aborting...\n");
+						return 1;
+					}
+					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
-						  fprintf(stderr, "-b%d\n", blockSize);
+					fprintf(stderr, "-b%d\n", blockSize);
 #endif
-						  break;
-					case 'm': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
-						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
-						  {
-							  // no more numbers, finish
-							  if ((argv[i][k] < '0') || (argv[i][k] > '9'))
-								  break;
-							  k++;
-							  cmdLineTempCount++;
-						  }
-						  if (cmdLineTempCount == 0)
-							  usage(argv[0], "Cannot parse -m argument");
-						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount);
-						  Metrics::set_monitoring_time_interval(atoi(cmdLineTemp));
-						  Metrics::enable_monitoring();
-						  if (Metrics::get_monitoring_time_interval() > 100000)
-						  {
-							  fprintf(stderr,"Bzip2: *ERROR: Maximal interval time is 100000 (100 seconds)!  Aborting...\n");
-							  return 1;
-						  }
-						  j += cmdLineTempCount;
+					break;
+				case 'm': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					if (cmdLineTempCount == 0)
+						usage(argv[0], "Cannot parse -m argument");
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					Metrics::set_monitoring_time_interval(atoi(cmdLineTemp));
+					Metrics::enable_monitoring();
+					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
-						  fprintf(stderr, "-t%d\n", monitoring_time_interval);
+					fprintf(stderr, "-t%d\n", monitoring_time_interval);
 #endif
-						  break;
-					case 'u': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
-						  while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
-						  {
-							  k++;
-							  cmdLineTempCount++;
-						  }
+					break;
+				case 'u': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						k++;
+						cmdLineTempCount++;
+					}
 
-						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount+1);
-						  SPBench::setArg(cmdLineTemp);
-						  j += cmdLineTempCount;
-						  break;
-					case 'h': usage(argv[0], "HELP"); break;
-					case 'd': decompress = 1; break;
-					case 'k': optimized_memory = true; SPBench::enable_memory_source(); break;
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount + 1);
+					SPBench::setArg(cmdLineTemp);
+					j += cmdLineTempCount;
+					break;
+				case 'h': usage(argv[0], "HELP"); break;
+				case 'd': decompress = 1; break;
+				case 'k': optimized_memory = true; SPBench::enable_memory_source(); break;
 					//case 'm': monitoring_time_interval = atoi(optarg); enable_monitoring = true; break;
 					//case 'o': optimized_memory = true; memory_source = true; break;
-					case 'l': Metrics::enable_print_latency(); break;
-					case 'f': Metrics::enable_latency_to_file(); break;
-					case 'x': Metrics::enable_throughput(); break;
-					case 'r': Metrics::enable_upl(); break;
-					case 'c': OutputStdOut = 1; break;
-					case 'X': force = 1; ForceOverwrite = 1; break;
-					case 'C': keep = 1; break;
-						  //#ifndef PBZIP_NO_LOADAVG
-						  //					case 'l': useLoadAverage = 1; break;
-						  //#endif
-					case 'L': banner(); exit(0); break;
-					case 'q': QuietMode = 1; break;
-					case 'i': break;
-					case 'R': readEntireFile = 1; break;
-						  //case 't': testFile = 1; break;
-						  //case 't':  = 1; break;
-					case 'v': QuietMode = 0; break;
-					case 'V': banner(); exit(0); break;
-					case 'z': decompress = 0; break;
+				case 'l': Metrics::enable_print_latency(); break;
+				case 'f': Metrics::enable_latency_to_file(); break;
+				case 'x': Metrics::enable_throughput(); break;
+				case 'r': Metrics::enable_upl(); break;
+				case 'c': OutputStdOut = 1; break;
+				case 'X': force = 1; ForceOverwrite = 1; break;
+				case 'C': keep = 1; break;
+					//#ifndef PBZIP_NO_LOADAVG
+					//					case 'l': useLoadAverage = 1; break;
+					//#endif
+				case 'L': banner(); exit(0); break;
+				case 'q': QuietMode = 1; break;
+				case 'i': break;
+				case 'R': readEntireFile = 1; break;
+					//case 't': testFile = 1; break;
+					//case 't':  = 1; break;
+				case 'v': QuietMode = 0; break;
+				case 'V': banner(); exit(0); break;
+				case 'z': decompress = 0; break;
 
-					case '1': BWTblockSize = 1; break;
-					case '2': BWTblockSize = 2; break;
-					case '3': BWTblockSize = 3; break;
-					case '4': BWTblockSize = 4; break;
-					case '5': BWTblockSize = 5; break;
-					case '6': BWTblockSize = 6; break;
-					case '7': BWTblockSize = 7; break;
-					case '8': BWTblockSize = 8; break;
-					case '9': BWTblockSize = 9; break;
+				case '1': BWTblockSize = 1; break;
+				case '2': BWTblockSize = 2; break;
+				case '3': BWTblockSize = 3; break;
+				case '4': BWTblockSize = 4; break;
+				case '5': BWTblockSize = 5; break;
+				case '6': BWTblockSize = 6; break;
+				case '7': BWTblockSize = 7; break;
+				case '8': BWTblockSize = 8; break;
+				case '9': BWTblockSize = 9; break;
 				}
 			}
 		}
@@ -1807,6 +1786,7 @@ int bzip2_main(int argc, char* argv[])
 	} /* for */
 
 	set_operators_name();
+	Metrics::enable_latency();
 
 	if (FileListCount == 0)
 	{
@@ -1815,13 +1795,13 @@ int bzip2_main(int argc, char* argv[])
 #ifndef WIN32
 			if (isatty(fileno(stdin)))
 #else
-				if (_isatty(_fileno(stdin)))
+			if (_isatty(_fileno(stdin)))
 #endif
-				{
-					fprintf(stderr,"Bzip2: *ERROR: Won't read compressed data from terminal.  Aborting!\n");
-					fprintf(stderr,"Bzip2: For help type: %s -h\n", argv[0]);
-					return 1;
-				}
+			{
+				fprintf(stderr, "Bzip2: *ERROR: Won't read compressed data from terminal.  Aborting!\n");
+				fprintf(stderr, "Bzip2: For help type: %s -h\n", argv[0]);
+				return 1;
+			}
 			// expecting data from stdin
 			FileList[FileListCount] = stdinFile;
 			FileListCount++;
@@ -1831,13 +1811,13 @@ int bzip2_main(int argc, char* argv[])
 #ifndef WIN32
 			if (isatty(fileno(stdout)))
 #else
-				if (_isatty(_fileno(stdout)))
+			if (_isatty(_fileno(stdout)))
 #endif
-				{
-					fprintf(stderr,"Bzip2: *ERROR: Won't write compressed data to terminal.  Aborting!\n");
-					fprintf(stderr,"Bzip2: For help type: %s -h\n", argv[0]);
-					return 1;
-				}
+			{
+				fprintf(stderr, "Bzip2: *ERROR: Won't write compressed data to terminal.  Aborting!\n");
+				fprintf(stderr, "Bzip2: For help type: %s -h\n", argv[0]);
+				return 1;
+			}
 			// expecting data from stdin
 			FileList[FileListCount] = stdinFile;
 			FileListCount++;
@@ -1847,13 +1827,13 @@ int bzip2_main(int argc, char* argv[])
 #ifndef WIN32
 			if (isatty(fileno(stdin)))
 #else
-				if (_isatty(_fileno(stdin)))
+			if (_isatty(_fileno(stdin)))
 #endif
-				{
-					fprintf(stderr,"Bzip2: *ERROR: Won't read compressed data from terminal.  Aborting!\n");
-					fprintf(stderr,"Bzip2: For help type: %s -h\n", argv[0]);
-					return 1;
-				}
+			{
+				fprintf(stderr, "Bzip2: *ERROR: Won't read compressed data from terminal.  Aborting!\n");
+				fprintf(stderr, "Bzip2: For help type: %s -h\n", argv[0]);
+				return 1;
+			}
 			// expecting data from stdin via TAR
 			OutputStdOut = 1;
 			keep = 1;
@@ -1875,7 +1855,7 @@ int bzip2_main(int argc, char* argv[])
 #endif
 		if (sizeof(OFF_T) <= 4)
 		{
-			fprintf(stderr, "\nBzip2: *WARNING: off_t variable size only %lu bits!\n", sizeof(OFF_T)*8);
+			fprintf(stderr, "\nBzip2: *WARNING: off_t variable size only %lu bits!\n", sizeof(OFF_T) * 8);
 			if (decompress == 1)
 				fprintf(stderr, " You will only able to uncompress files smaller than 2GB in size.\n\n");
 			else
@@ -1918,10 +1898,10 @@ int bzip2_main(int argc, char* argv[])
 	// setup signal handling
 	sigInFilename = NULL;
 	sigOutFilename = NULL;
-	signal(SIGINT,  mySignalCatcher);
+	signal(SIGINT, mySignalCatcher);
 	signal(SIGTERM, mySignalCatcher);
 #ifndef WIN32
-	signal(SIGHUP,  mySignalCatcher);
+	signal(SIGHUP, mySignalCatcher);
 #endif
 
 	if (numCPU < 1)
@@ -1943,7 +1923,7 @@ int bzip2_main(int argc, char* argv[])
 				if (blockSize < 100000)
 					fprintf(stderr, "File Block Size: %d bytes\n", blockSize);
 				else
-					fprintf(stderr, "File Block Size: %dk\n", blockSize/1000);
+					fprintf(stderr, "File Block Size: %dk\n", blockSize / 1000);
 			}
 		}
 		fprintf(stderr, "-------------------------------------------\n");
@@ -1961,7 +1941,7 @@ int bzip2_main(int argc, char* argv[])
 	/* -------------------------------- */
 
 	// process all files
-	for (fileLoop=0; fileLoop < FileListCount; fileLoop++)
+	for (fileLoop = 0; fileLoop < FileListCount; fileLoop++)
 	{
 		fileSize = 0;
 
@@ -1973,8 +1953,8 @@ int bzip2_main(int argc, char* argv[])
 		{
 			if (QuietMode != 1)
 			{
-				fprintf(stderr, "      File #: %d of %d\n", fileLoop+1, FileListCount);
-				if (strcmp(InFilename, "-") != 0) 
+				fprintf(stderr, "      File #: %d of %d\n", fileLoop + 1, FileListCount);
+				if (strcmp(InFilename, "-") != 0)
 					fprintf(stderr, "     Testing: %s\n", InFilename);
 				else
 					fprintf(stderr, "     Testing: <stdin>\n");
@@ -2010,9 +1990,9 @@ int bzip2_main(int argc, char* argv[])
 				continue;
 			}
 			memset(tmpBuff, 0, sizeof(tmpBuff));
-			size = read(hInfile, tmpBuff, strlen(bz2Header)+1);
+			size = read(hInfile, tmpBuff, strlen(bz2Header) + 1);
 			close(hInfile);
-			if ((size == (size_t)(-1)) || (size < strlen(bz2Header)+1))
+			if ((size == (size_t)(-1)) || (size < strlen(bz2Header) + 1))
 			{
 				fprintf(stderr, "Bzip2: *ERROR: File [%s] is NOT a valid bzip2!  Skipping...\n", InFilename);
 				fprintf(stderr, "-------------------------------------------\n");
@@ -2030,10 +2010,10 @@ int bzip2_main(int argc, char* argv[])
 					continue;
 				}
 				// skip 4th char which differs depending on BWT block size used
-				if (memstr(tmpBuff+4, size-4, bz2Header+4, strlen(bz2Header)-4) == NULL)
+				if (memstr(tmpBuff + 4, size - 4, bz2Header + 4, strlen(bz2Header) - 4) == NULL)
 				{
 					// check to see if this is a special 0 byte file
-					if (memstr(tmpBuff+4, size-4, bz2HeaderZero+4, strlen(bz2Header)-4) == NULL)
+					if (memstr(tmpBuff + 4, size - 4, bz2HeaderZero + 4, strlen(bz2Header) - 4) == NULL)
 					{
 						fprintf(stderr, "Bzip2: *ERROR: File [%s] is NOT a valid bzip2!  Skipping...\n", InFilename);
 						fprintf(stderr, "-------------------------------------------\n");
@@ -2057,10 +2037,10 @@ int bzip2_main(int argc, char* argv[])
 			}
 
 			// check if filename ends with .bz2
-			if (strncasecmp(&OutFilename[strlen(OutFilename)-4], ".bz2", 4) == 0)
+			if (strncasecmp(&OutFilename[strlen(OutFilename) - 4], ".bz2", 4) == 0)
 			{
 				// remove .bz2 extension
-				OutFilename[strlen(OutFilename)-4] = '\0';
+				OutFilename[strlen(OutFilename) - 4] = '\0';
 			}
 			else
 			{
@@ -2071,7 +2051,7 @@ int bzip2_main(int argc, char* argv[])
 		else
 		{
 			// check input file to make sure its not already a .bz2 file
-			if (strncasecmp(&InFilename[strlen(InFilename)-4], ".bz2", 4) == 0)
+			if (strncasecmp(&InFilename[strlen(InFilename) - 4], ".bz2", 4) == 0)
 			{
 				fprintf(stderr, "Bzip2: *ERROR: Input file [%s] already has a .bz2 extension!  Skipping...\n", InFilename);
 				fprintf(stderr, "-------------------------------------------\n");
@@ -2085,7 +2065,7 @@ int bzip2_main(int argc, char* argv[])
 		sigInFilename = InFilename;
 		sigOutFilename = OutFilename;
 
-		if (strcmp(InFilename, "-") != 0) 
+		if (strcmp(InFilename, "-") != 0)
 		{
 			struct stat statbuf;
 			// read file for compression
@@ -2121,7 +2101,7 @@ int bzip2_main(int argc, char* argv[])
 #ifndef WIN32
 			fileSize = statbuf.st_size;
 #else
-			fileSize_temp.LowPart = GetFileSize((HANDLE)_get_osfhandle(hInfile), (unsigned long *)&fileSize_temp.HighPart);
+			fileSize_temp.LowPart = GetFileSize((HANDLE)_get_osfhandle(hInfile), (unsigned long*)&fileSize_temp.HighPart);
 			fileSize = fileSize_temp.QuadPart;
 #endif
 			// don't process a 0 byte file
@@ -2174,7 +2154,7 @@ int bzip2_main(int argc, char* argv[])
 
 		if (readEntireFile == 1)
 		{
-			if (hInfile == 0) 
+			if (hInfile == 0)
 			{
 				if (QuietMode != 1)
 					fprintf(stderr, " *Warning: Ignoring -r switch since input is stdin.\n");
@@ -2189,7 +2169,7 @@ int bzip2_main(int argc, char* argv[])
 		// display per file settings
 		if (QuietMode != 1)
 		{
-			fprintf(stderr, "         File #: %d of %d\n", fileLoop+1, FileListCount);
+			fprintf(stderr, "         File #: %d of %d\n", fileLoop + 1, FileListCount);
 			fprintf(stderr, "     Input Name: %s\n", hInfile != 0 ? InFilename : "<stdin>");
 
 			if (OutputStdOut == 0)
@@ -2199,7 +2179,7 @@ int bzip2_main(int argc, char* argv[])
 
 			if (decompress == 1)
 				fprintf(stderr, " BWT Block Size: %c00k\n", BWTblockSizeChar);
-			if (strcmp(InFilename, "-") != 0) 
+			if (strcmp(InFilename, "-") != 0)
 				fprintf(stderr, "     Input Size: %" "llu" " bytes\n", (unsigned long long)fileSize);
 		}
 
@@ -2218,7 +2198,7 @@ int bzip2_main(int argc, char* argv[])
 		}
 		else
 		{
-			if (fileSize > 0) 
+			if (fileSize > 0)
 			{
 				// calculate the # of blocks of data
 				numBlocks = (fileSize + blockSize - 1) / blockSize;
@@ -2228,8 +2208,8 @@ int bzip2_main(int argc, char* argv[])
 					noThreads = 1;
 				else
 					noThreads = 0;
-			} 
-			else 
+			}
+			else
 			{
 				// Simulate a "big" number of buffers. Will need to resize it later
 				numBlocks = 10000;
@@ -2281,7 +2261,7 @@ int bzip2_main(int argc, char* argv[])
 		if (decompress == 1)
 		{
 			//if(Metrics::latency_is_enabled()){
-				global_decomp = 1;
+			global_decomp = 1;
 			//}
 			// do decompression
 			if (QuietMode != 1)
@@ -2289,7 +2269,7 @@ int bzip2_main(int argc, char* argv[])
 
 			ret = direct_decompress(OutFilename);
 			if (ret != 0)
-				errLevel = 1;               
+				errLevel = 1;
 		}
 		else
 		{
@@ -2339,12 +2319,12 @@ int bzip2_main(int argc, char* argv[])
 		MemMutex = NULL;
 		}*/
 
-	// get current time for end of benchmark
+		// get current time for end of benchmark
 #ifndef WIN32
 	gettimeofday(&tvStopTime, &tz);
 #else
 	GetSystemTime(&systemtime);
-	SystemTimeToFileTime(&systemtime, (FILETIME *)&filetime);
+	SystemTimeToFileTime(&systemtime, (FILETIME*)&filetime);
 	tvStopTime.tv_sec = filetime.QuadPart / 10000000;
 	tvStopTime.tv_usec = (filetime.QuadPart - (LONGLONG)tvStopTime.tv_sec * 10000000) / 10;
 #endif

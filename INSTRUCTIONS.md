@@ -21,7 +21,7 @@ For each command there is also a "help" guide. You can access it using:
  - **Benchmark**: In this context, it means any application version registered in SPBench. Benchmarks can be the sequential applications, the parallel versions pre-available within SPBench, or any new custom implementations registered latter by users.
  - **PPI**: It stands for Parallel Programming Interface, which means any library, framework, language, etc. that leverages parallelism.
 
-## Main command-line commands:
+## Framework commands:
 
 The table bellow shows all commands that can be used through the CLI
 | Command | Description | Subcommands |

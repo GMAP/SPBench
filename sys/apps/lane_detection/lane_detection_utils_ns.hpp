@@ -71,6 +71,8 @@
 
 #define FRAME_ID_INITIALIZATION -1
 
+#define NUMBER_OF_OPERATORS 9
+
 namespace spb {
 
 struct item_data;
@@ -117,62 +119,19 @@ struct item_data{
 	}
 };
 
-class Item {
-	private:
-		bool isEmpty;
-		bool isLast;
+/* This class implements an Item */
+class Item : public Batch, public NsItem{
+public:
+	std::vector<item_data> item_batch;
 
-	public:
-		std::vector<item_data> item_batch;
-		std::vector<double> latency_op;
-		volatile unsigned long timestamp;
-		unsigned int batch_size;
-		unsigned int index;
-		unsigned int sourceId;
-		//cv::VideoWriter oVideoWriter;
-		Item():
-			latency_op(9, 0.0),
-			timestamp(0.0),
-			batch_size(0),
-			index(0),
-			isEmpty(true),
-			isLast(false)
-		{};
+	Item():Batch(NUMBER_OF_OPERATORS){};
 
-		~Item(){
-			latency_op.clear();
-		}
-
-		void setNotEmpty(){
-			isEmpty = false;
-		}
-
-		bool empty(){
-			return isEmpty;
-		}
-
-		void setLastItem(){
-			isLast = true;
-		}
-
-		bool isLastItem(){
-			return isLast;
-		}
+	~Item(){}
 };
 
-class Source{
+class Source : public SuperSource{
 	private:
-		std::thread source_thread;
-
-		unsigned long sourceFrequency;
-		unsigned int sourceBatchSize;
-		unsigned int sourceQueueSize;
-		
-		bool sourceDepleted;
-		bool isRunning;
-		std::string sourceName;
-		unsigned int sourceId;
-		data_metrics source_metrics;
+		int sourceQueueSize;
 
 		void source_op();
 		void printStatus();
@@ -195,48 +154,47 @@ class Source{
 		}
 
 	public:
-		static unsigned int sourceObjCounter;
-		std::vector<Metrics::latency_t> sourceLatencyVector;
+		
+		std::vector<Metrics::item_metrics_data> sourceLatencyVector;
 		concurrent::queue::blocking_queue<Item> sourceQueue;
 
-		Source():
-			sourceBatchSize(SPBench::get_batch_size()),
-			sourceQueueSize(0),
-			sourceFrequency(SPBench::get_items_reading_frequency()),
-			sourceId(sourceObjCounter),
-			sourceDepleted(false),
-			isRunning(false)
-		{
+		Source() : SuperSource(){
+			setBatchSize(SPBench::getBatchSize());
+			setBatchInterval(SPBench::getBatchInterval());
+			setQueueMaxSize(0);
+			setFrequency(SPBench::getFrequency());
+			setSourceId(sourceObjCounter);
+			setSourceDepleted(false);
+			setRunningState(false);
 			sourceObjCounter++;
 		}
 
-		Source(unsigned int batchSize, unsigned int queueSize, unsigned long frequency):
-			sourceDepleted(false),
-			sourceId(sourceObjCounter)
-		{
+		Source(int batchSize, float batchInterval, int queueSize, long frequency) : SuperSource(){
+			sourceDepleted = false;
+			sourceId = sourceObjCounter;
 			sourceObjCounter++;
 			checkInput();
 			setFrequency(frequency);
 			setQueueMaxSize(queueSize);
 			setBatchSize(batchSize);
+			setBatchInterval(batchInterval);
 			setSourceName(remove_extension(base_name(IO_data_vec[sourceId].inputFile)));
 			source_metrics = init_metrics();
 			source_metrics.sourceId = sourceId;
 			source_metrics.source_name = getSourceName();
 			metrics_vec.push_back(source_metrics);
 			source_thread = std::thread(&Source::source_op, this);
-			isRunning = true;
+			setRunningState(true);
 			printStatus();
 		}
 
 		~Source(){}
 		
 		void init(){
-			if(isRunning){
+			if(getRunningState()){
 				std::cout << "Failed to use init(), this source is already running!" << std::endl;
 				return;
 			}
-
 			checkInput();
 			setSourceName(remove_extension(base_name(IO_data_vec[sourceId].inputFile)));
 			source_metrics = init_metrics();
@@ -245,7 +203,7 @@ class Source{
 			metrics_vec.push_back(source_metrics);
 
 			source_thread = std::thread(&Source::source_op, this);
-			isRunning = true;
+			setRunningState(true);
 
 			printStatus();
 		}
@@ -254,7 +212,7 @@ class Source{
 			
 			Item item;
 			
-			if(depleted() || !isRunning) return item;
+			if(depleted() || !getRunningState()) return item;
 
 			item = sourceQueue.dequeue();
 			item.sourceId = sourceId;
@@ -267,48 +225,21 @@ class Source{
 			return item;
 		}
 
-		void setFrequency(unsigned long sourceFrequency){
-			this->sourceFrequency = (sourceFrequency > 0 ? sourceFrequency : 0);
-			return;
-		}
-
-		void setSourceName(std::string sourceName){
-			this->sourceName = sourceName;
-			return;
-		}
-
-		std::string getSourceName(){
-			return sourceName;
-		}
-
-		unsigned int getSourceId(){
-			return sourceId;
-		}
-
-		void setQueueMaxSize(unsigned int newQueueSize){
+		void setQueueMaxSize(int newQueueSize){
 			
 			if(newQueueSize < 0){
-				std::cout << " Queue size must be 0 (unlimited) or higher.\n";
+				std::cerr << " Queue size must be 0 (unlimited) or higher.\n";
 				return;
 			}
 
 			if(newQueueSize < sourceQueue.size()){
-				std::cout << " You cannot set a max. queue size lower than the number of current items in the queue.\n";
-				std::cout << " Number of items in the queue: " << sourceQueue.size() << std::endl;
+				std::cerr << " You cannot set a max. queue size lower than the number of current items in the queue.\n";
+				std::cerr << " Number of items in the queue: " << sourceQueue.size() << std::endl;
 				return;
 			}
 
 			sourceQueueSize = newQueueSize;
 			sourceQueue.setCapacity(sourceQueueSize);
-		}
-
-		void setBatchSize(unsigned int sourceBatchSize){
-			this->sourceBatchSize = (sourceBatchSize > 0 ? sourceBatchSize : 1);
-			return;
-		}
-
-		bool depleted(){
-			return sourceDepleted;
 		}
 };
 

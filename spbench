@@ -54,11 +54,13 @@ from src.download_inputs_option import download_inputs_func
 from src.rename_bench_option import rename_bench_func
 from src.reset_option import reset_operators_func
 
+from src.errors import *
+
 from src.utils import *
 
 from argparse import ArgumentParser,SUPPRESS
 
-spbench_version="v0.3-alpha"
+spbench_version="v0.4-alpha"
 
 spbench_path = os.path.dirname(os.path.realpath(__file__))#os.path.dirname(sys.argv[0])
 
@@ -73,7 +75,12 @@ def edit_json(args):
 def edit_source(args):
     edit_source_func(spbench_path, args)
 def execute(args):
-    execute_func(spbench_path, args)
+    try:
+        execute_func(spbench_path, args)
+    except ArgumentTypeError as e:
+        print("\n ", e, "\n")
+        sys.exit()
+
 def compile(args):
     compile_func(spbench_path, args)
 def clean(args):
@@ -126,8 +133,8 @@ parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpForm
             new - Create a new benchmark 
            edit - Open a benchmark to edit the main source code
       configure - Open a JSON configuration file for adding compiling dependencies
-         update - Generate a new makefile based on the information provided in the JSON configuration file
-        compile - Compile a given benchmark
+         update - Update makefiles with the information provided in the JSON configuration file
+        compile - Compile a given benchmark (similar to make)
           clean - Clean a benchmark (similar to make clean)
            exec - Execute a given benchmark
            list - List all available benchmarks
@@ -441,8 +448,23 @@ parser_exec.add_argument('-benchmark',
     action='store',
     type=str,
     dest='benchmark_id',
-    required=True,
-    help='Name of the benchmark to execute (mandatory). You can use \'all\' to execute all benchmarks.')
+    required=False,
+    help='Name of the benchmark to execute. You can use \'-bench all\' to execute all benchmarks.')
+
+parser_exec.add_argument('-app',
+    action='store',
+    type=str,
+    dest='app_id',
+    required=False,
+    choices=apps_list,
+    help="Run all benchmarks based on a specific application: \n " + str(apps_list) + " (optional)")
+
+parser_exec.add_argument('-ppi',
+    action='store',
+    type=str,
+    dest='ppi_id',
+    required=False,
+    help="Run all benchmarks implemented with a specific PPI (optional)\n")
 
 parser_exec.add_argument('-input',
     action='append',
@@ -457,7 +479,7 @@ parser_exec.add_argument('-nthreads',
     type=str,
     dest='nthreads',
     required=False,
-    default='1',
+    default='',
     help='Number of threads. It can be used inside the parallel benchmarks. Default value: 1. (Optional)')
 
 parser_exec.add_argument('-batch', 
@@ -465,8 +487,16 @@ parser_exec.add_argument('-batch',
     type=str,
     dest='batch_size',
     required=False,
-    default='1',
+    default='',
     help='Batch size. It can be used to set a batch size. Default value: 1. (Optional)')
+
+parser_exec.add_argument('-batch-interval', 
+    action='store',
+    type=str,
+    dest='batch_interval',
+    required=False,
+    default='',
+    help='Batch interval in seconds. It can be used to set a batch size based on a time window. Default value: 0 (0 = disabled). (Optional)')
     
 parser_exec.add_argument('-monitor', 
     action='store',
@@ -476,22 +506,30 @@ parser_exec.add_argument('-monitor',
     default='',
     help='Monitor latency, throughput, CPU and memory usage. You must indicate the monitoring time interval in milliseconds (e.g. 250. Optional).')
 
-parser_exec.add_argument('-frequency', 
+parser_exec.add_argument('-frequency',
     action='store',
     type=str,
-    dest='items_reading_frequency',
+    dest='items_frequency',
     required=False,
     default='',
-    help='Items will be read in a constant frequency. You must indicate a time interval in MICROseconds, e.g. 1000 (= 1 millisecond). The minimum frequency you can set is 0 microsecond, however the actual minimum limit will be defined by your system\'s memory access speed (the command [-frequency 0] is equivalent to [-in-memory]). (Optional).')
+    help='The applications will try to read items in a constant frequency. You must indicate how many items per second the application should target, e.g. 100. The minimum frequency you can set must be higher than zero. There is no limit for maximum frequency, the maximum possible frequency will vary according to data and application characteristics and also by the memory access speed (it automatically runs the application in-memory for reaching high frequencies). (Optional).')
 
-parser_exec.add_argument('-in-memory', 
+parser_exec.add_argument('-freq-pattern',
+    action='store',
+    type=str,
+    dest='frequency_pattern',
+    required=False,
+    default='',
+    help='(Optional) Usage example: [-freq-pattern wave,10,5,80] (pattern,period,max,min). This argument overwrites the -frequency command and sets a varying frequency for the input stream. You can select and set a frequency variation pattern. For this argument you need to supply a tuple string: <pattern,period,max,min>, where pattern can be "wave", "spike", "binary", "increasing" or "decreasing". Period is the duration in seconds of one cycle of the pattern. And min is the minimum frequency and max the maximum frequency, defined in items per second. For the spike pattern you can also set the duration of the spikes as percentage of the period (0-100) (e.g. <pattern,period,max,min,spike>). The default spike duration is 10 percent of the period.')
+
+parser_exec.add_argument('-in-memory',
     action='append_const',
     const="-k",
     dest='exec_arguments',
     required=False,
     help='Run the application in-memory (Optional)')
 
-parser_exec.add_argument('-latency', 
+parser_exec.add_argument('-latency',
     action='append_const',
     const="-l",
     dest='exec_arguments',
@@ -534,12 +572,13 @@ parser_exec.add_argument('-user-arg',
     required=False,
     help='User custom argument (optional). Allow users to pass one or more arguments. Single argument: [-user-arg single_argument] or [-user-arg "single argument"]. Multiple arguments: [-user-arg two arguments] or [-user-arg two -user-args arguments]')
 
-parser_exec.add_argument('-d', 
-    action='append_const',
-    const='-d',
-    dest='exec_arguments',
+parser_exec.add_argument('-repeat',
+    action='store',
+    type=str,
+    dest='repetitions',
     required=False,
-    help='Decompress mode (Use only for Bzip2. Optional)')
+    default='1',
+    help='Use this argument to repeat this execution n times (Optional).')
 
 parser_exec.add_argument('-test-result', 
      action='store_true',
@@ -547,8 +586,15 @@ parser_exec.add_argument('-test-result',
      dest='test_result',
      required=False,
      help='This option enables correctness test (optional)')
-parser_exec.set_defaults(func=execute)
 
+parser_exec.add_argument('-d', 
+    action='append_const',
+    const='-d',
+    dest='exec_arguments',
+    required=False,
+    help='Decompress mode (Use only for Bzip2. Optional)')
+
+parser_exec.set_defaults(func=execute)
 
 ##
 # List benchmarks
@@ -684,8 +730,8 @@ parser_get_inputs.add_argument('-class',
     dest='class_id',
     required=False,
     default="all",
-    choices=['all', 'small', 'medium', 'large'],
-    help='R|(It applies only for Bzip2) You can insert the class of workload\nyou want to download or leave it empty to download all classes. Default: \'all\'')
+    choices=['all', 'test', 'small', 'medium', 'large', 'huge'],
+    help='(It applies only for Bzip2) You can insert the input class\nyou want to download or leave it empty to download all classes. Default: \'all\'')
 
 parser_get_inputs.add_argument('-force', 
      action='store_true',
@@ -694,7 +740,6 @@ parser_get_inputs.add_argument('-force',
      required=False,
      help='Use this option to overwrite any existing input file and download it again (optional).')
 parser_get_inputs.set_defaults(func=download_inputs)
-
 
 ##
 # rename benchmark

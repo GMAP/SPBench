@@ -194,6 +194,8 @@
 #define O_BINARY 0
 #endif
 
+#define NUMBER_OF_OPERATORS 3
+
 #include <spbench.hpp>
 
 namespace spb{
@@ -244,27 +246,18 @@ struct item_data{
 	{}
 };
 
-class Item  {
-	public:
-		std::vector<item_data> item_batch;
-		std::vector<double> latency_op;
-		volatile unsigned long timestamp;
-		unsigned int batch_size;
+class Item : public Batch{
+public:
+	std::vector<item_data> item_batch;
 
-		Item():
-			latency_op(3, 0.0),
-			timestamp(0.0),
-			batch_size(0)
-		{}
+	Item():Batch(NUMBER_OF_OPERATORS){};
 
-		~Item(){
-			latency_op.clear();
-		}
-
+	~Item(){}
 };
 
 class Source{
 public:
+	static long source_item_timestamp;
 	static bool op(Item &item);
 	Source(){}
 	virtual ~Source(){}
@@ -279,6 +272,7 @@ public:
 
 class Source_d{
 public:
+	static long source_item_timestamp;
 	static bool op(Item &item);
 	Source_d(){}
 	virtual ~Source_d(){}

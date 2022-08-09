@@ -10,14 +10,13 @@
             "myPKG_1": "",
             "myPKG_2": "",
             "myPKG_N": "",
-            "opencv"    :"pkg-config --cflags --libs opencv"
+            "opencv" :"pkg-config --cflags --libs opencv"
         },
     "INCLUDES": {
             "myINC_1": "",
             "myINC_2": "",
             "myINC_N": "",
-            "fastflow": "-I $BENCH_DIR/ppis/fastflow/",
-            "opencv": "-I $BENCH_DIR/libs/opencv/opencv-2.4.13.6/include/"
+            "fastflow": "-I $BENCH_DIR/ppis/fastflow/"
     },
     "LIBS": {
             "myLIB_1": "",
