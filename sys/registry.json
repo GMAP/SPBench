@@ -46,7 +46,8 @@
         "fastflow": {
             "ferret_ff_pipe-farm": "simple",
             "ferret_ff_farm": "simple",
-            "ferret_ff_pipeline": "simple"
+            "ferret_ff_pipeline": "simple",
+            "ferret_ff_a2a_pipe-farm": "single"
         }
     },
     "person_recognition": {

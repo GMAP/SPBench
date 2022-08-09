@@ -34,21 +34,15 @@
 #ifndef FERRET_U
 #define FERRET_U
 
-#include <stdio.h>
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <unistd.h>
 #include <pthread.h>
 #include <stack>
 #include "include/cass.h"
 #include "include/cass_timer.h"
 #include "image/image.h"
-#include <iostream>
-#include <vector>
-#include <chrono>
-#include <sys/time.h>
 
 #include <spbench.hpp>
 
@@ -59,6 +53,8 @@
 #define DEFAULT_DEPTH   25
 #define MAXR            100
 #define IMAGE_DIM       14
+
+#define NUMBER_OF_OPERATORS 6
 
 namespace spb{
 
@@ -141,30 +137,19 @@ struct item_data {
 	~item_data(){};
 };
 
-class Item{
-	public:
-		std::vector<item_data*> item_batch;
-		unsigned int batch_size;
-		unsigned int batch_index;
+class Item : public Batch{
+public:
+	std::vector<item_data*> item_batch;
 
-		std::vector<double> latency_op;
-		volatile unsigned long timestamp;
+	Item():Batch(NUMBER_OF_OPERATORS){};
 
-		Item():
-			batch_size(0),
-			latency_op(6, 0.0),
-			timestamp(0.0),
-			batch_index(0)
-		{};
-
-		~Item(){
-			latency_op.clear();
-			item_batch.clear();
-		}
+	~Item(){}
 };
+
 
 class Source{
 public:
+	static long source_item_timestamp;
 	static bool op(Item &item);
 	Source(){}
 	virtual ~Source(){}

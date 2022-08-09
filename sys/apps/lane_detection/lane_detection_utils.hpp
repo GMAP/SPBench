@@ -60,15 +60,12 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <iostream>
-#include <vector>
-#include <stdio.h>
-#include <chrono>
 #include "linefinder.h"
-#include <sys/time.h>
 #include <spbench.hpp>
 
 #define FRAME_ID_INITIALIZATION -1
+
+#define NUMBER_OF_OPERATORS 9
 
 bool file_exists (const std::string&);
 
@@ -109,27 +106,19 @@ struct item_data{
 	}
 };
 
-class Item {
-	public:
-		std::vector<item_data> item_batch;
-		std::vector<double> latency_op;
-		volatile unsigned long timestamp;
-		unsigned int batch_size;
-		unsigned int batch_index;
-		Item():
-			latency_op(9, 0.0),
-			timestamp(0.0),
-			batch_size(0),
-			batch_index(0)
-		{};
+class Item : public Batch{
+public:
+	std::vector<item_data> item_batch;
 
-		~Item(){
-			latency_op.clear();
-		}
+	Item():Batch(NUMBER_OF_OPERATORS){};
+
+	~Item(){}
 };
+
 
 class Source{
 public:
+	static long source_item_timestamp;
 	static bool op(Item &item);
 	Source(){}
 	virtual ~Source(){}

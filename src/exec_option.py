@@ -26,13 +26,21 @@
  ##############################################################################
 ##
 
+from __future__ import print_function
+
+
 import sys
 import os
+import subprocess
 
+from src.errors import *
 from src.utils import *
 
-def execute_func(spbench_path, args):
+from sys import version_info 
+python_3 = version_info[0]
 
+def execute_func(spbench_path, args):
+    
     inputs_registry_dic = getInputsRegistry(spbench_path) 
 
     # get list of selected benchmarks to run
@@ -52,8 +60,8 @@ def execute_func(spbench_path, args):
         nsources = benchmark["nsources"]
 
         if not fileExists(spbench_path + "/bin/" + app_id + "/" + ppi_id + "/" + bench_id):
-            print("\n  Error!! Benchmark binary not found.")
-            print("  Make sure you already compiled this benchmark.")
+            print("\n  Error!! Binary file not found for "+ bench_id)
+            print("  Make sure you compiled the benchmark before run it.")
             print("\n  Try to run:\n    ./spbench compile -bench " + bench_id + "\n")
 
             sys.exit()
@@ -94,37 +102,132 @@ def execute_func(spbench_path, args):
                 input_id += " -i \"" + input + "\""   # ferret and person receive multiple files as workload
             else: # generate a '-i input_id_list' argument
                 input_id += " -i " + os.path.abspath(input)
+
+        # Check for errors in frequency pattern
+        frequency_pattern = ''
+        isPositiveFloat = lambda x: x.replace('.','',1).isdigit()
+        if args.frequency_pattern:
+            frequency_pattern = args.frequency_pattern.replace(" ", "").lower()
+            
+            # check if it has the righ number of parameters
+            if len(frequency_pattern.split(',')) < 4 or len(frequency_pattern.split(',')) > 5:
+                raise ArgumentTypeError("Argument error! Invalid format for frequency pattern: " + frequency_pattern + "\n  Expected: -freq-pattern pattern,period,min,max,spike\n\n  Obs.: Spike argument is optional, it only aplies for the spike pattern.")
+
+            pattern = frequency_pattern.split(',')[0]
+            patterns = ['wave', 'spike', 'binary', 'increasing', 'decreasing']
+            if pattern not in patterns:
+                raise ArgumentTypeError("Argument error! Invalid pattern for frequency: " + pattern + "\n  You must select from: " + str(patterns))
+                
+            period = frequency_pattern.split(',')[1]
+            min_freq = frequency_pattern.split(',')[2]
+            max_freq = frequency_pattern.split(',')[3]
+
+            if not isPositiveFloat(period) or not isPositiveFloat(min_freq) or not isPositiveFloat(max_freq):
+                raise ArgumentTypeError("Argument error! Invalid values for period, or maximum or minimum frequency: " + frequency_pattern)
+
+            # spike checking
+            spike_p = 0.0
+            if pattern == "spike":
+                spike_p = float(period)/10
+                if len(frequency_pattern.split(',')) == 5:
+                    spike_p = frequency_pattern.split(',')[4]
+                    if not isPositiveFloat(spike_p):
+                        raise ArgumentTypeError("Argument error! Invalid value for spike period: " + frequency_pattern)
+                    if float(spike_p) > 100:
+                        raise ArgumentTypeError("Argument error! Invalid value for spike period: " + frequency_pattern + "\n  It must be a value between 0 and 100 (it is defined as percentage of the period).")
+                    spike_p = float(period)/float(frequency_pattern.split(',')[4])
+                    
+            if float(min_freq) > float(max_freq):
+                raise ArgumentTypeError("Argument error! Maximum frequency must be higher than minimum frequency: " + frequency_pattern)
+
+
+        # Check for errors in repetitions
+        if args.repetitions:
+            if not args.repetitions.isdigit():
+                raise ArgumentTypeError("Argument error! The number of repetitions must be an integer higher than or equal to one: " + args.repetitions)
+
+
+        # Check for errors in batch size
+        if args.batch_size:
+            if not args.batch_size.isdigit():
+                raise ArgumentTypeError("Argument error! Batch size must be an integer number higher than or equal to one: " + args.batch_size)
+
+        # Check for errors in batch interval
+        if args.batch_interval:
+            if not isPositiveFloat(args.batch_interval):
+                raise ArgumentTypeError("Argument error! Batch interval window must be a number higher than or equal to zero: " + args.batch_interval)
+
+        # Check for errors in nthreads
+        if args.nthreads:
+            if not args.nthreads.isdigit():
+                raise ArgumentTypeError("Argument error! Number of threads must be a integer number higher than or equal to one: " + args.nthreads)
         
-        # additional args
+        # Check for errors in monitoring interval
+        if args.time_interval:
+            if not args.time_interval.isdigit():
+                raise ArgumentTypeError("Argument error! Time interval for monitoring must be an integer number higher than or equal to one: " + args.time_interval)
+        
+        # Check for errors in frequency
+        if args.items_frequency:
+            if not isPositiveFloat(args.items_frequency):
+                raise ArgumentTypeError("Argument error! value set for frequency must be a positive number: " + args.items_frequency)
+
+        # translate CLI arguments sintax to SPBench's applications argument sintax
         other_args=''
         user_args = ''
+        num_threads = ''
         if app_id == 'bzip2':
-            num_threads = " -t" + args.nthreads
-            batch = " -b" + args.batch_size
+            if args.nthreads:
+                num_threads = " -t" + args.nthreads
+
+            batch_size = ''
+            if args.batch_size:
+                batch_size = " -b" + args.batch_size
+
+            batch_interval = ''
+            if args.batch_interval:
+                batch_interval = " -B" + args.batch_interval
+
             time_interval = ''
-            other_args = ' --force --keep'
             if args.time_interval:
                 time_interval = " -m" + args.time_interval
 
-            items_reading_frequency = ''
-            if args.items_reading_frequency:
-                items_reading_frequency = " -F" + args.items_reading_frequency
+            items_frequency = ''
+            if args.items_frequency:
+                items_frequency = " -F" + args.items_frequency
+
+            if frequency_pattern:
+                frequency_pattern = " -p" + frequency_pattern
 
             if(args.user_args):
                 for sub_list in args.user_args:
                     for arg in sub_list:
                         user_args += " -u" + arg
+            
+            other_args = ' --force --keep'
+
         else:
-            num_threads = " -t " + args.nthreads
-            batch = " -b " + args.batch_size
+            if args.nthreads:
+                num_threads = " -t " + args.nthreads
+
+            batch_size = ''
+            if args.batch_size:
+                batch_size = " -b " + args.batch_size
+
+            batch_interval = ''
+            if args.batch_interval:
+                batch_interval = " -B " + args.batch_interval
 
             time_interval = ''
             if args.time_interval:
                 time_interval = " -m " + args.time_interval
 
-            items_reading_frequency = ''
-            if args.items_reading_frequency:
-                items_reading_frequency = " -F " + args.items_reading_frequency
+            items_frequency = ''
+            if args.items_frequency:
+                items_frequency = " -F " + args.items_frequency
+
+            if frequency_pattern:
+                frequency_pattern = " -p " + frequency_pattern
 
             if(args.user_args):
                 for sub_list in args.user_args:
@@ -134,7 +237,8 @@ def execute_func(spbench_path, args):
         exec_arguments = " "
         if args.exec_arguments:
             exec_arguments = exec_arguments.join(args.exec_arguments) # join the input argument with the remaining arguments
-        exec_arguments = input_id + num_threads + batch + time_interval + items_reading_frequency + " " + exec_arguments + other_args
+
+        exec_arguments = input_id + num_threads + batch_size + batch_interval + time_interval + items_frequency + frequency_pattern + " " + exec_arguments + other_args
 
         # build the execution command line and run it
         cmd_line = spbench_path + "/bin/" + app_id + "/" + ppi_id + "/" + bench_id + exec_arguments + user_args
@@ -142,76 +246,145 @@ def execute_func(spbench_path, args):
         print("\n Running benchmark: " + bench_id)
         if not nsources:
             print("    Selected input: " + inputs_ID_list[0])
-
+            if batch_size:
+                print("        Batch size: " + args.batch_size + " items per batch")
+            if batch_interval:
+                print("    Batch interval: " + args.batch_interval + " milliseconds")
+            if args.exec_arguments and "-k" in args.exec_arguments:
+                print("    In-memory mode: enabled")
+            else:
+                print("    In-memory mode: not enabled")
+            if frequency_pattern:
+                if(pattern == 'wave'):
+                    print("\n Frequency pattern: wave\n")
+                    print("     #  #                  #  #  - - - - - - - -> Maximum: " + max_freq + " items per second")
+                    print("  #        #            #        #                    ")
+                    print("             #        #            #        #          ")
+                    print("                #  #                  #  # - - -> Minimum: "+ min_freq + " items per second")
+                    print("                        |____________________| -> Periods: " + period + " seconds")
+                elif(pattern == 'binary'):
+                    print("\n Frequency pattern: binary\n")
+                    print("         # # # # #       # # # #  - -> Maximum: " + max_freq + " items per second")
+                    print("         #       #       #           ")
+                    print("         #       #       #           ")
+                    print(" # # # # #       # # # # #  - - - - -> Minimum: "+ min_freq + " items per second")
+                    print("                 |______________| - -> Periods: " + period + " seconds")
+                elif(pattern == 'spike'):
+                    print("\n Frequency pattern: spike\n")
+                    print("            #            #  - -> Maximum: " + max_freq + " items per second")
+                    print("           ##           ##   ")
+                    print("          # #          # #   ")
+                    print(" # # # # #  # # # # # #  # # #-> Minimum: "+ min_freq + " items per second")
+                    print("                     |____| - -> Spikes:  " + str(spike_p) + " seconds")
+                    print("            |_____________| - -> Periods: " + period + " seconds")
+                elif(pattern == 'increasing'):
+                    print("\n Frequency pattern: increasing\n")
+                    print("          # # # # # # # ...  -> Maximum: " + max_freq + " items per second")
+                    print("       #")
+                    print("    #")
+                    print(" # - - - - - - - - - - - - - -> Minimum: "+ min_freq + " items per second")
+                    print("|__________| - - - - - - - - -> Period:  " + period + " seconds")
+                elif(pattern == 'decreasing'):
+                    print("\n Frequency pattern: decreasing\n")
+                    print(" # - - - - - - - - - - - - - -> Maximum: " + max_freq + " items per second")
+                    print("    #")
+                    print("       #")
+                    print("          # # # # # # # ...  -> Minimum: "+ min_freq + " items per second")
+                    print("|__________| - - - - - - - - -> Period:  " + period + " seconds")
+                else:
+                    print("Invalid frequency pattern:", pattern)
+                    sys.exit()
+            elif args.items_frequency:
+                print("  Target frequency: " + args.items_frequency)
         else:
             print("   Selected inputs: ")
             for input_key in inputs_ID_list:
                 print("       -> " + input_key)
 
-        os.system(cmd_line)
+        # Try to execute the benchmark
+        print('\n')
 
-        # result correctness checking
-        if args.test_result:
-            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            for input in inputs_ID_list:
-                print("\n Checking result correctness for input \'" + input + '\'...\n')
+        for n in range (0, int(args.repetitions)):
 
-                # check if there is a md5 hash associated to this input
-                if not bool(inputs_registry_dic[app_id][input].get('md5_test')):
-                    print(" -> Result checking unavailable for this input!")
-                    print("\n - Make sure that input \'" + input + "\' has an expected\n   md5 hash associated to it.")
-                    print("   Run \'./spbench list-inputs\' to check it.")
-                    print("\n - Check the documentation for more info on how\n   to fix it (link)(forthcoming).")
-                    print("\n - Or run \'./spbench edit_input -h\' to associate\n   an verification hash (forthcoming feature).")
+            if(int(args.repetitions) > 1):
+                print("\n ~~~> Execution " + str(n+1) + " from " + args.repetitions)
+
+            if(python_3 == 3):
+                try:
+                    retcode = subprocess.call(cmd_line, shell=True)
+                    if -retcode < 0:
+                        print(" Process was terminated by signal", -retcode, file=sys.stderr)
+                        sys.exit()
+                except OSError as e:
+                    print(" Execution failed:", e, file=sys.stderr)
+                    sys.exit()
+                except KeyboardInterrupt as e:
+                    print(" KeyboardInterrupt")
+                    sys.exit()
+            else:
+                os.system(cmd_line)
+            
+            # result correctness checking
+            if args.test_result:
+                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                for input in inputs_ID_list:
+                    print("\n Checking result correctness for input \'" + input + '\'...\n')
+
+                    # check if there is a md5 hash associated to this input
+                    if not bool(inputs_registry_dic[app_id][input].get('md5_test')):
+                        print(" -> Result checking unavailable for this input!")
+                        print("\n - Make sure that input \'" + input + "\' has an expected\n   md5 hash associated to it.")
+                        print("   Run \'./spbench list-inputs\' to check it.")
+                        print("\n - Check the documentation for more info on how\n   to fix it (link)(forthcoming).")
+                        print("\n - Or run \'./spbench edit_input -h\' to associate\n   an verification hash (forthcoming feature).")
+                        print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                        continue
+                    
+                    checking_file = ''
+
+                    if app_id == 'bzip2':
+                        # bzip2 output files can alse be used as workload for decompression.
+                        # this way, the output files are in the same directory as input files and we must address this special case here
+                        bzip2_out_file = (inputs_registry_dic[app_id][input]['input'].replace('$BENCH_DIR', spbench_path))
+                        if '-d' in exec_arguments:
+                            # if decompress is selected, remove the '.bz2'
+                            checking_file = os.path.splitext(bzip2_out_file)[0]
+                        else: # else, add a '.bz2'
+                            checking_file = bzip2_out_file + ".bz2"
+                    
+                    elif app_id == 'ferret':
+                        # ferret output is disordered, so it requires sorting the output
+                        output_file = spbench_path + "/outputs/" + bench_id + '_' + input + ".out"
+
+                        # check if output exists before sorting it
+                        if not outputExists(output_file): continue 
+
+                        checking_file = spbench_path + "/outputs/" + bench_id + '_' + input + "_sorted.out"
+                        sorting_cmd = "sort " + output_file + " > " + checking_file
+                        os.system(sorting_cmd)
+
+                    else: # lane and person
+                        checking_file = spbench_path + "/outputs/" + bench_id + '_' + input + ".avi"
+
+                    # also check the ouput for bzip2, person, and lane
+                    if not outputExists(checking_file): continue
+
+                    # compute md5 hash for the output file    
+                    resulting_md5 = md5(checking_file)
+
+                    if app_id == 'ferret': # deleting ferret's sorted output
+                        os.system('rm ' + checking_file)
+                    
+                    # compare the computed hash to the one stored in the inputs database
+                    if resulting_md5 == inputs_registry_dic[app_id][input]['md5_test']:
+                        print(" -> SUCCESS!")
+                    else:
+                        print(" -> UNSUCCESSFUL!\n")
+                        print(" Incorrect output")
+                        print(" - Expected md5 hash:  " + inputs_registry_dic[app_id][input]['md5_test'])
+                        print(" - Resulting md5 hash: " + resulting_md5)
                     print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                    continue
-                
-                checking_file = ''
-
-                if app_id == 'bzip2':
-                    # bzip2 output files can alse be used as workload for decompression.
-                    # this way, the output files are in the same directory as input files and we must address this special case here
-                    bzip2_out_file = (inputs_registry_dic[app_id][input]['input'].replace('$BENCH_DIR', spbench_path))
-                    if '-d' in exec_arguments:
-                        # if decompress is selected, remove the '.bz2'
-                        checking_file = os.path.splitext(bzip2_out_file)[0]
-                    else: # else, add a '.bz2'
-                        checking_file = bzip2_out_file + ".bz2"
-                
-                elif app_id == 'ferret':
-                    # ferret output is disordered, so it requires sorting the output
-                    output_file = spbench_path + "/outputs/" + bench_id + '_' + input + ".out"
-
-                    # check if output exists before sorting it
-                    if not outputExists(output_file): continue 
-
-                    checking_file = spbench_path + "/outputs/" + bench_id + '_' + input + "_sorted.out"
-                    sorting_cmd = "sort " + output_file + " > " + checking_file
-                    os.system(sorting_cmd)
-
-                else: # lane and person
-                    checking_file = spbench_path + "/outputs/" + bench_id + '_' + input + ".avi"
-
-                # also check the ouput for bzip2, person, and lane
-                if not outputExists(checking_file): continue
-
-                # compute md5 hash for the output file    
-                resulting_md5 = md5(checking_file)
-
-                if app_id == 'ferret': # deleting ferret's sorted output
-                    os.system('rm ' + checking_file)
-                
-                # compare the computed hash to the one stored in the inputs database
-                if resulting_md5 == inputs_registry_dic[app_id][input]['md5_test']:
-                    print(" -> Correct!")
-                    print(" - Expected md5 hash:  " + inputs_registry_dic[app_id][input]['md5_test'])
-                    print(" - Resulting md5 hash: " + resulting_md5)
-                else:
-                    print(" -> Incorrect!")
-                    print(" - Expected md5 hash:  " + inputs_registry_dic[app_id][input]['md5_test'])
-                    print(" - Resulting md5 hash: " + resulting_md5)
-                print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            print("")
+                print("")
 
     sys.exit()
 

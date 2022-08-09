@@ -15,13 +15,6 @@
 #define PERSON_U 
 
 /** Includes: **/
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <cstdlib>
-#include <chrono>
-#include <sys/time.h>
-
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/opencv.hpp"
@@ -78,6 +71,8 @@ namespace spb{
 #define LBPH_GRID_Y    8
 #define LBPH_THRESHOLD 180.0
 
+#define NUMBER_OF_OPERATORS 4
+
 struct item_data;
 struct workload_data;
 class Item;
@@ -115,29 +110,19 @@ struct item_data {
 	}
 };
 
-class Item {
-	public:
-		std::vector<item_data> item_batch;
-		std::vector<double> latency_op;
-		volatile unsigned long timestamp;
-		unsigned int batch_size;
-		unsigned int batch_index;
+/* This class implements an Item */
+class Item : public Batch{
+public:
+	std::vector<item_data> item_batch;
 
-	Item():
-		latency_op(4, 0.0),
-		timestamp(0.0),
-		batch_size(0),
-		batch_index(0)
-	{};
+	Item():Batch(NUMBER_OF_OPERATORS){};
 
-	~Item(){
-		//faces.clear();
-		latency_op.clear();		
-	}
+	~Item(){}
 };
 
 class Source{
 public:
+	static long source_item_timestamp;
 	static bool op(Item &item);
 	Source(){}
 	virtual ~Source(){}

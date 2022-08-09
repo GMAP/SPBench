@@ -23,10 +23,39 @@
 # Compiled Static libraries
 *.lai
 *.la
-*.a
+#*.a
 *.lib
+/apps/**/*.a
 
 # Executables
 *.exe
 *.out
 *.app
+
+# Python trash
+*.pyc
+
+# Downloadable files
+*.tar.*
+
+# Makefiles
+apps/**/Makefile
+
+# Log files
+*.log
+
+.vscode
+
+# Directories
+/outputs
+/bin
+/log
+/inputs/*
+*_old
+sys/apps/ferret/parsec/
+/ppis/*
+/libs/*
+
+!/ppis/*/*.sh
+!/libs/*/*.sh
+

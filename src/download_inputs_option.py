@@ -48,9 +48,11 @@ def download_inputs_func(spbench_path, args):
     if args.app_id == "all" and args.class_id == "all":
         print("\n Warning: No specific application selected.")
         print(" It will download all the inputs for all SPBench applications.")
-        print("\n Aproximate size of all inputs: 800 MB.")
+        print("\n Aproximate size of all inputs: 1.3 GB.")
         if not askToProceed():
             sys.exit()
+
+    print("\n >> It may take a while to finish <<\n")
 
     if args.app_id == "lane_detection" or args.app_id == "all":
         get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "lane_detection " + "trash " + overwrite_files
@@ -65,7 +67,7 @@ def download_inputs_func(spbench_path, args):
         os.system("bash " + get_input_cmd)
     
     if args.app_id == "bzip2" or args.app_id == "all":
-        available_classes = ["small", "medium", "large", "all"]
+        available_classes = ["test", "small", "medium", "large", "huge", "all"]
         if not args.class_id:
             args.class_id = "all"
         else:

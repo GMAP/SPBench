@@ -36,8 +36,14 @@ from src.delete_option import delete_benchmark
 from sys import version_info 
 python_3 = version_info[0]
 
-#add a new benchmark to the suite
 def new_func(spbench_path, args):
+    """!@brief Function for the new command.
+
+    This function is used to add a new benchmark to the SPBench suite.
+
+    @param spbench_path Path of the SPBench root.
+    @param args Arguments captured in the argparse methods.
+    """
 
     # check if it is not a reserved word
     if args.benchmark_id in reserved_words:
@@ -163,7 +169,6 @@ def new_func(spbench_path, args):
         if not askToProceed(): # delete the old benchmark
             sys.exit()    
         delete_benchmark(spbench_path, args)
-        
 
     # set the path for the new benchmark
     new_path = spbench_path + "/apps/" +  args.app_id + "/" + args.ppi_id + "/" + args.benchmark_id + "/"

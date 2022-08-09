@@ -3,19 +3,19 @@
 void compress(){
 
 	// Compact source creation method. This source will run immediately.
-	// Parameters: <batch_size>, <queue_size>, <reading_frequency>
-	spb::Source source1(2, 2, 0);
+	// Parameters: <batch_size>, <batch_interval>, <queue_size>, <frequency>
+	spb::Source source1(2, 0, 1, 0);
 
     // Alternative source creation method
-	// This source will not run immediately, you must call the method init() later in order to run it
 	spb::Source source2;
 
 	// These parameters can be changed anytime during execution
-	source2.setBatchSize(1);	// To set batch size for this source
-	source2.setQueueMaxSize(3); // Queue size of this source (each source has its own queue)
-	source2.setFrequency(50000);// 50000 = 50 milliseconds
+	source2.setBatchSize(1); // 1 item per batch
+	source2.setBatchInterval(0.5); // 500 ms batch window
+	source2.setQueueMaxSize(3); // 3 slots in this source's queue
+	source2.setFrequency(30); // 30 items per second
 	
-	// Calling init() to run this source
+	// You must use the init() method to run this source
 	source2.init();
 
 	/* Stream region */
@@ -35,19 +35,19 @@ void compress(){
 void decompress(){
 
 	// Compact source creation method. This source will run immediately.
-	// Parameters: <batch_size>, <queue_size>, <reading_frequency>
-	spb::Source source1(1, 2, 0);
+	// Parameters: <batch_size>, <batch_interval>, <queue_size>, <frequency>
+	spb::Source source1(2, 0, 1, 0);
 
     // Alternative source creation method
-	// This source will not run immediately, you must call the method init() later in order to run it
 	spb::Source source2;
 
 	// These parameters can be changed anytime during execution
-	source2.setBatchSize(1);	// To set batch size for this source
-	source2.setQueueMaxSize(3); // Queue size of this source (each source has its own queue)
-	source2.setFrequency(50000);// 50000 = 50 milliseconds
+	source2.setBatchSize(1); // 1 item per batch
+	source2.setBatchInterval(0.5); // 500 ms batch window
+	source2.setQueueMaxSize(3); // 3 slots in this source's queue
+	source2.setFrequency(30); // 30 items per second
 	
-	// Calling init() to run this source
+	// You must use the init() method to run this source
 	source2.init();
 
 	/* Stream region */
