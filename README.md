@@ -26,7 +26,7 @@ The main goal of SPBench is to enable users to easily create custom benchmarks f
  - Ferret (PARSEC)
  - Lane Detection
  - Bzip2
- - Person Recognition
+ - Person Recognition (Face Recognizer)
 
 ### For each of them there are parallel versions implemented using the following parallel programming interfaces and will be more in the future:
  - Intel TBB
@@ -53,12 +53,11 @@ The folowing packages are required to install SPBench:
 - build-essential
 - pkg-config
 - cmake
-- yasm
 - python (tested on python3 and python2.7)
 
 You can run the command bellow to install theses packages or ask a system admin.
 
-`sudo apt-get install -y build-essential pkg-config cmake yasm python3`
+`sudo apt-get install -y build-essential pkg-config cmake python3`
 
 To install SPBench you can run:
 
