@@ -1,16 +1,16 @@
 * v0.4-alpha
 
   - General:
-    - new batching mode: by time window
-    - new feature: frequency patterns (available only globally for n-sources benchmarks)
+    - new batching mode: by time interval
+    - new feature: frequency patterns (for n-sources benchmarks it is only globally available)
     - yasm(v1.3.0) library is now provided within SPBench
   
   - Metrics:
     - new metric: instantaneous throughput
     - new metric: instantaneous latency
-    - metric update: monitoring now register also current frequency and batch size (not available for n-sources)
-    - metric update: monitoring now uses instantaneous metrics too
-    - metric update: average latency now shows min and max latency too
+    - metric update: benchmark monitoring now registers also current frequency and batch size (not available for n-sources)
+    - metric update: benchmark monitoring now uses the same instantaneous metrics system
+    - metric update: average latency now displays min and max latency
   
   - CLI:
     - new feature: users now can use the exec argument '-repeat <n_repetitions>' to run a benchmark n times
@@ -18,13 +18,13 @@
   
   - Workload:
     - new workload classes: Test and Huge
-    - new input video for lane detection with low-quality (360p) and mid-quality (720p) versions.
+    - new input video for lane detection with low-quality (360p) and mid-quality (720p) options.
   
   - Other:
-    - frequency parameter is now items per second instead of item interval
+    - frequency parameter is now defined as items per second instead of item interval
     - update in the frequency control: now the waiting time is added before the item reading at source
     - update in the frequency control: now it counts the processing time of the previous item in the source as part of the waiting time
-    - PPI update: FastFlow release 3 was replaced by its last master version available in the github repository (august 2022)
-    - new benchmark: ferret-fastflow pipe-farm using all-to-all inter-farm communication
+    - PPI update: FastFlow release 3 was replaced by its last version available in the github repository (august 2022)
+    - new benchmark: pipe-farm ferret-fastflow using all-to-all inter-farm communication
     - benchmark update: improved implementation for ferret-fastflow pipe-farm
     
