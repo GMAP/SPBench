@@ -4,6 +4,8 @@
 
 source ppis/tbb/setup_tbb_vars.sh
 
+source libs/yasm/setup_yasm_vars.sh
+
 source libs/opencv/setup_opencv_vars.sh
 
 source libs/ffmpeg/setup_ffmpeg_vars.sh
