@@ -25,8 +25,8 @@ inline void spb::Recognize::recognize_op(spb::item_data &item){
 			}	
 			
 			int label;
-			cvtColor(aux, gray, CV_BGR2GRAY);
-			resize(gray, gray, _faceSize);
+			cv::cvtColor(aux, gray, CV_BGR2GRAY);
+			cv::resize(gray, gray, _faceSize);
 			_model->predict(gray, label, confidence);
 
 			bool verify;
@@ -41,32 +41,32 @@ inline void spb::Recognize::recognize_op(spb::item_data &item){
 
 			cv::Point center(face->x + face->width * 0.5, face->y + face->height * 0.5);
 			if(SPBench::memory_source_is_enabled()){
-				circle(*(item.image_p), center, FACE_RADIUS_RATIO * face->width, color, CIRCLE_THICKNESS, LINE_TYPE, 0);
+				cv::circle(*(item.image_p), center, FACE_RADIUS_RATIO * face->width, color, CIRCLE_THICKNESS, LINE_TYPE, 0);
 			} else {
-				circle(item.image, center, FACE_RADIUS_RATIO * face->width, color, CIRCLE_THICKNESS, LINE_TYPE, 0);
+				cv::circle(item.image, center, FACE_RADIUS_RATIO * face->width, color, CIRCLE_THICKNESS, LINE_TYPE, 0);
 			}
 		}  
 		if(SPBench::memory_source_is_enabled()){
-			putText(*(item.image_p), cv::format("Frame: %d", (item.index +1)), cvPoint(10, item.image_p->rows - 105),
+			cv::putText(*(item.image_p), cv::format("Frame: %d", (item.index +1)), cvPoint(10, item.image_p->rows - 105),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
-			putText(*(item.image_p), cv::format("FPS: %d", 15), cvPoint(10, item.image_p->rows - 80),
+			cv::putText(*(item.image_p), cv::format("FPS: %d", 15), cvPoint(10, item.image_p->rows - 80),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
-			putText(*(item.image_p), cv::format("Faces: %d", item.faces.size()), cvPoint(10, item.image_p->rows - 55),
+			cv::putText(*(item.image_p), cv::format("Faces: %d", item.faces.size()), cvPoint(10, item.image_p->rows - 55),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
-			putText(*(item.image_p), cv::format("Match: %s", has_match ? "True" : "False"), cvPoint(10, item.image_p->rows - 30),
+			cv::putText(*(item.image_p), cv::format("Match: %s", has_match ? "True" : "False"), cvPoint(10, item.image_p->rows - 30),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
-			putText(*(item.image_p), cv::format("Confidence: %f", has_match ? match_conf : 0), cvPoint(10, item.image_p->rows - 5),
+			cv::putText(*(item.image_p), cv::format("Confidence: %f", has_match ? match_conf : 0), cvPoint(10, item.image_p->rows - 5),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
 		} else {
-			putText(item.image, cv::format("Frame: %d", (item.index +1)), cvPoint(10, item.image.rows - 105),
+			cv::putText(item.image, cv::format("Frame: %d", (item.index +1)), cvPoint(10, item.image.rows - 105),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
-			putText(item.image, cv::format("FPS: %d", 15), cvPoint(10, item.image.rows - 80),
+			cv::putText(item.image, cv::format("FPS: %d", 15), cvPoint(10, item.image.rows - 80),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
-			putText(item.image, cv::format("Faces: %d", item.faces.size()), cvPoint(10, item.image.rows - 55),
+			cv::putText(item.image, cv::format("Faces: %d", item.faces.size()), cvPoint(10, item.image.rows - 55),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
-			putText(item.image, cv::format("Match: %s", has_match ? "True" : "False"), cvPoint(10, item.image.rows - 30),
+			cv::putText(item.image, cv::format("Match: %s", has_match ? "True" : "False"), cvPoint(10, item.image.rows - 30),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
-			putText(item.image, cv::format("Confidence: %f", has_match ? match_conf : 0), cvPoint(10, item.image.rows - 5),
+			cv::putText(item.image, cv::format("Confidence: %f", has_match ? match_conf : 0), cvPoint(10, item.image.rows - 5),
 					cv::FONT, 2, cv::FONT_COLOR, 1, LINE_TYPE);
 		}
 }

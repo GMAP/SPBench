@@ -17,12 +17,14 @@
                 "myINC_1": "",
                 "myINC_2": "",
                 "myINC_N": "",
-                "fastflow":"-I $BENCH_DIR/ppis/fastflow/"
+                "fastflow":"-I $BENCH_DIR/ppis/fastflow/",
+                "UPL" : "-I $BENCH_DIR/libs/upl/include/upl/"
         },
         "LIBS": {
                 "myLIB_1": "",
                 "myLIB_2": "",
-                "myLIB_N": ""
+                "myLIB_N": "",
+                "UPL" : "-L $BENCH_DIR/libs/upl/lib/x86 -lupl"
         },
         "LDFLAGS": "-ljpeg -lgsl -lgslcblas -lpthread"
     }

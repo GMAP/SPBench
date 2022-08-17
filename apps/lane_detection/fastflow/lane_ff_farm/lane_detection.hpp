@@ -70,10 +70,11 @@ class Overlap;
 
 class Segment{
 private:
-	static inline void segment_op(spb::item_data &item);
+	static inline void segment_op(item_data &item);
+	static int operator_id;
 public:
-	static void op(spb::Item &item);
-	Segment(spb::Item &item){
+	static void op(Item &item);
+	Segment(Item &item){
 		op(item);
 	}
 	Segment(){};
@@ -82,10 +83,11 @@ public:
 
 class Canny1{
 private:
-	static inline void canny1_op(spb::item_data &item);
+	static inline void canny1_op(item_data &item);
+	static int operator_id;
 public:
-	static void op(spb::Item &item);
-	Canny1(spb::Item &item){
+	static void op(Item &item);
+	Canny1(Item &item){
 		op(item);
 	}
 	Canny1(){};
@@ -94,10 +96,11 @@ public:
 
 class HoughT{
 private:
-	static inline void houghT_op(spb::item_data &item);
+	static inline void houghT_op(item_data &item);
+	static int operator_id;
 public:
-	static void op(spb::Item &item);
-	HoughT(spb::Item &item){
+	static void op(Item &item);
+	HoughT(Item &item){
 		op(item);
 	}
 	HoughT(){};
@@ -106,10 +109,11 @@ public:
 
 class HoughP{
 private:
-	static inline void houghP_op(spb::item_data &item);
+	static inline void houghP_op(item_data &item);
+	static int operator_id;
 public:
-	static void op(spb::Item &item);
-	HoughP(spb::Item &item){
+	static void op(Item &item);
+	HoughP(Item &item){
 		op(item);
 	}
 	HoughP(){};
@@ -118,10 +122,11 @@ public:
 
 class Bitwise{
 private:
-	static inline void bitwise_op(spb::item_data &item);
+	static inline void bitwise_op(item_data &item);
+	static int operator_id;
 public:
-	static void op(spb::Item &item);
-	Bitwise(spb::Item &item){
+	static void op(Item &item);
+	Bitwise(Item &item){
 		op(item);
 	}
 	Bitwise(){};
@@ -130,10 +135,11 @@ public:
 
 class Canny2{
 private:
-	static inline void canny2_op(spb::item_data &item);
+	static inline void canny2_op(item_data &item);
+	static int operator_id;
 public:
-	static void op(spb::Item &item);
-	Canny2(spb::Item &item){
+	static void op(Item &item);
+	Canny2(Item &item){
 		op(item);
 	}
 	Canny2(){};
@@ -142,10 +148,11 @@ public:
 
 class Overlap{
 private:
-	static inline void overlap_op(spb::item_data &item);
+	static inline void overlap_op(item_data &item);
+	static int operator_id;
 public:
-	static void op(spb::Item &item);
-	Overlap(spb::Item &item){
+	static void op(Item &item);
+	Overlap(Item &item){
 		op(item);
 	}
 	Overlap(){};

@@ -64,6 +64,9 @@ std::vector<cv::Mat> MemData; //vector to store data in-memory
 cv::VideoWriter oVideoWriter;
 cv::VideoCapture capture;
 
+int Source::operator_id = -1;
+int Sink::operator_id = -1;
+
 void set_operators_name(){
 	//vector<string> operator_name_list;
 	SPBench::addOperatorName("Source ");

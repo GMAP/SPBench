@@ -149,9 +149,10 @@ int testBZ2ErrorHandling(int, BZFILE*, int);
 int testCompressedData(char*);
 ssize_t bufread(int hf, char* buf, size_t bsize);
 int detectCPUs(void);
+
 /*
-	*********************************************************
-	*/
+*********************************************************
+*/
 
 OFF_T CompressedSize;
 int hOutfile;
@@ -175,6 +176,9 @@ std::vector <data> MemData;
 char* MemReadData;
 char* MemWriteData;
 unsigned int outFileSize = 0;
+
+int Source::operator_id = -1;
+int Sink::operator_id = -1;
 
 void set_operators_name() {
 	if (Metrics::latency_is_enabled()) {

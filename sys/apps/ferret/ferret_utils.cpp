@@ -40,6 +40,9 @@ void input_parser(char * argv);
 void set_operators_name();
 void end_bench();
 
+int Source::operator_id = -1;
+int Sink::operator_id = -1;
+
 char *db_dir = NULL;
 const char *table_name = NULL;
 const char *query_dir = NULL;

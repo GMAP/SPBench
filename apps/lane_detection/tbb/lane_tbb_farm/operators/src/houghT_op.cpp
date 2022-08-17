@@ -21,7 +21,7 @@ inline void spb::HoughT::houghT_op(spb::item_data &item){
 
 	while(item.lines.size() < 5 && houghVote > 0)
 	{
-		HoughLines(item.contours, item.lines,1,PI/180, houghVote);
+		cv::HoughLines(item.contours, item.lines,1,PI/180, houghVote);
 		houghVote -= 5;  
 	}
 
@@ -47,8 +47,8 @@ inline void spb::HoughT::houghT_op(spb::item_data &item){
 			//point of intersection of the line with last row
 			cv::Point pt2((rho-result.rows*sin(theta))/cos(theta), result.rows);
 			//draw a white line
-			line(result, pt1, pt2, cv::Scalar(255), 8); 
-			line(hough, pt1, pt2, cv::Scalar(255), 8);
+			cv::line(result, pt1, pt2, cv::Scalar(255), 8); 
+			cv::line(hough, pt1, pt2, cv::Scalar(255), 8);
 		}
 		++it;
 	}

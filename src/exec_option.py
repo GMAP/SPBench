@@ -26,12 +26,11 @@
  ##############################################################################
 ##
 
-from __future__ import print_function
+#from __future__ import print_function
 
 
 import sys
 import os
-import subprocess
 
 from src.errors import *
 from src.utils import *
@@ -309,20 +308,8 @@ def execute_func(spbench_path, args):
             if(int(args.repetitions) > 1):
                 print("\n ~~~> Execution " + str(n+1) + " from " + args.repetitions)
 
-            if(python_3 == 3):
-                try:
-                    retcode = subprocess.call(cmd_line, shell=True)
-                    if -retcode < 0:
-                        print(" Process was terminated by signal", -retcode, file=sys.stderr)
-                        sys.exit()
-                except OSError as e:
-                    print(" Execution failed:", e, file=sys.stderr)
-                    sys.exit()
-                except KeyboardInterrupt as e:
-                    print(" KeyboardInterrupt")
-                    sys.exit()
-            else:
-                os.system(cmd_line)
+            # run the command line
+            runShellCmd(cmd_line)
             
             # result correctness checking
             if args.test_result:

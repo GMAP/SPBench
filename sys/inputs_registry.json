@@ -84,10 +84,10 @@
         }
     },
     "ferret": {
-    	"huge": {
+        "huge": {
             "input": "$BENCH_DIR/inputs/ferret/huge/corel/ lsh $BENCH_DIR/inputs/ferret/huge/queries/ 50",
             "md5_test": ""
-        },   
+        },
         "large": {
             "input": "$BENCH_DIR/inputs/ferret/large/corel/ lsh $BENCH_DIR/inputs/ferret/large/queries/ 10",
             "md5_test": ""
@@ -110,7 +110,7 @@
             "input": "$BENCH_DIR/inputs/person_recognition/input_vid/Obama0.3s.mp4 $BENCH_DIR/inputs/person_recognition/obama_faces/list $BENCH_DIR/inputs/person_recognition/cascades/haarcascade_frontalface_default.xml",
             "md5_test": "9e6bc9625ffdf36e5ae77e137dc83004"
         },
-    	"huge": {
+        "huge": {
             "input": "$BENCH_DIR/inputs/person_recognition/input_vid/Obama30s.mp4 $BENCH_DIR/inputs/person_recognition/obama_faces/list $BENCH_DIR/inputs/person_recognition/cascades/haarcascade_frontalface_default.xml",
             "md5_test": "2078706db04bfe8866ef76d5d23f2946"
         },

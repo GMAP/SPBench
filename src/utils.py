@@ -30,6 +30,7 @@ import hashlib
 import sys
 import os
 import json
+import subprocess
 
 from sys import version_info 
 python_3 = version_info[0]
@@ -47,7 +48,7 @@ class color:
     END = '\033[0m'
 
 # list of SPBench reserved words
-reserved_words = {'all', 'bzip2', 'ferret', 'lane_detection', 'person_recognition'}
+reserved_words = {'all', 'bzip2', 'ferret', 'lane_detection', 'person_recognition', 'source', 'sink', 'spbench'}
 
 # list of supported apps
 apps_list = ['bzip2', 'ferret', 'lane_detection', 'person_recognition']
@@ -125,6 +126,34 @@ def benchmarkExists(spbench_path, selected_bench):
                 if selected_bench == bench_key:
                     return True
     return False
+
+
+def editorChecking(programm, err_msg):
+    """check if a given programm exists in shell
+    """
+    check_editor_cmd = "command -v " + programm + " >/dev/null 2>&1 || { echo >&2 \" " + err_msg + "\"; exit 1; }"
+    runShellCmd(check_editor_cmd)
+
+def runShellCmd(shell_cmd_line):
+    """Run a shell command line
+    """
+    if(python_3 == 3):
+        try:
+            retcode = subprocess.call(shell_cmd_line, shell=True)
+            if -retcode < 0:
+                print(" Process was terminated by signal", -retcode, file=sys.stderr)
+                print()
+                sys.exit()
+        except OSError as e:
+            print(" Execution failed:", e, file=sys.stderr)
+            print()
+            sys.exit()
+        except KeyboardInterrupt as e:
+            print(" KeyboardInterrupt")
+            print()
+            sys.exit()
+    else:
+        os.system(shell_cmd_line)
 
 def askToProceed():
     # user input support for python 2 and 3

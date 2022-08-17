@@ -87,4 +87,3 @@ See the [documentation](https://spbench-doc.readthedocs.io/en/latest/) for more 
 This is an ongoing project and you may face some bugs or other problems.
 Feel free to open an issue or contact me for any problem regarding the SPBench.
 adriano.garcia@edu.pucrs.br
-

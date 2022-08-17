@@ -11,8 +11,8 @@
  * ************************************************************************
 **/
 
-#ifndef PERSON_H_NS
-#define PERSON_H_NS
+#ifndef PERSON_H
+#define PERSON_H
 
 #include <person_recognition_utils_ns.hpp>
 

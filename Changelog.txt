@@ -1,3 +1,8 @@
+* v0.4.1-alpha
+  - Operators edition: Users can edit the source code of the benchmarks' operators
+  - UPL now can be disabled (-DNO_UPL) to avoid architectural incompatibility issues
+  - Added doc folder with a PDF documentation
+
 * v0.4-alpha
 
   - General:
@@ -27,4 +32,4 @@
     - PPI update: FastFlow release 3 was replaced by its last version available in the github repository (august 2022)
     - new benchmark: pipe-farm ferret-fastflow using all-to-all inter-farm communication
     - benchmark update: improved implementation for ferret-fastflow pipe-farm
-    
+

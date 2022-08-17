@@ -73,8 +73,8 @@ def install_func(spbench_path, args):
         print("Installation canceled!\n")
         sys.exit()
 
-    os.system('bash ' + spbench_path + '/ppis/install_ppis.sh')
-    os.system('bash ' + spbench_path + '/libs/install_libs.sh ' + args.app_id)
+    runShellCmd('bash ' + spbench_path + '/ppis/install_ppis.sh')
+    runShellCmd('bash ' + spbench_path + '/libs/install_libs.sh ' + args.app_id)
 
     print(" ---------------------------------------------------------------")
     print(color.BOLD + "                         >> IMPORTANT <<                         " + color.END)

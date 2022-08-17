@@ -71,14 +71,14 @@ def compile_func(spbench_path, args):
             sys.exit()
         
         if args.clean:
-            os.system("make -C " + programm_path + " clean")
+            runShellCmd("make -C " + programm_path + " clean")
 
         #else:
         #    if app_id == 'ferret':
         #        # temporary (or not) solution to solve ferret compiling problem
         #        bin_file = spbench_path + '/bin/' + app_id + "/" + ppi_id + "/" + bench_id
         #        if fileExists(bin_file):
-        #            os.system("make -C " + programm_path + " clean")
+        #            runShellCmd("make -C " + programm_path + " clean")
 
         # Avoid using -j for ferret, because it is already used by its submake routine
         make_cmd = ""

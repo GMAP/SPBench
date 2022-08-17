@@ -47,6 +47,7 @@ class Rank;
 class Segmentation{
 private:
 	static inline void segmentation_op(spb::item_data &item);
+	static int operator_id;
 public:
 	static void op(spb::Item &item);
 	Segmentation(spb::Item &item){
@@ -59,6 +60,7 @@ public:
 class Extract{
 private:
 	static inline void extract_op(spb::item_data &item);
+	static int operator_id;
 public:
 	static void op(spb::Item &item);
 	Extract(spb::Item &item){
@@ -71,6 +73,7 @@ public:
 class Vectorization{
 private:
 	static inline void vectorization_op(spb::item_data &item);
+	static int operator_id;
 public:
 	static void op(spb::Item &item);
 	Vectorization(spb::Item &item){
@@ -83,6 +86,7 @@ public:
 class Rank{
 private:
 	static inline void rank_op(spb::item_data &item);
+	static int operator_id;
 public:
 	static void op(spb::Item &item);
 	Rank(spb::Item &item){

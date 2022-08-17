@@ -90,8 +90,8 @@ def rename_bench_func(spbench_path, args):
         registry_dic[app_id][ppi_id][new_bench_id] = registry_dic[app_id][ppi_id].pop(old_bench_id)
 
         # rename files
-        os.system('mv ' + old_bench_path + " " + new_bench_path)
-        os.system('mv ' + new_bench_path + old_bench_id +".cpp " + new_bench_path + new_bench_id + ".cpp")
+        runShellCmd('mv ' + old_bench_path + " " + new_bench_path)
+        runShellCmd('mv ' + new_bench_path + old_bench_id +".cpp " + new_bench_path + new_bench_id + ".cpp")
 
         # rewrite dictionary to JSON registry file
         writeDicToBenchRegistry(spbench_path, registry_dic)
