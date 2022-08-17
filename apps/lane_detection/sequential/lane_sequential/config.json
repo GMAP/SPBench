@@ -5,7 +5,7 @@
         "PPI_CXX_FLAGS":"-O3",
         "PRE_SRC_CMD": "",
         "POST_SRC_CMD": "",
-        "MACROS": "",
+        "MACROS": "-DNO_UPL",
         "PKG-CONFIG": {
                 "myPKG_1": "",
                 "myPKG_2": "",
@@ -15,12 +15,14 @@
         "INCLUDES": {
                 "myINC_1": "",
                 "myINC_2": "",
-                "myINC_N": ""
+                "myINC_N": "",
+                "UPL" : "-I $BENCH_DIR/libs/upl/include/upl/"
         },
         "LIBS": {
                 "myLIB_1": "",
                 "myLIB_2": "",
-                "myLIB_N": ""
+                "myLIB_N": "",
+                "UPL" : "-L $BENCH_DIR/libs/upl/lib/x86 -lupl"
         },
         "LDFLAGS": ""
     }

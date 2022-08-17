@@ -17,12 +17,14 @@
             "myINC_2": "",
             "myINC_N": "",
             "fastflow": "-I $BENCH_DIR/ppis/fastflow/",
-            "opencv": "-I $BENCH_DIR/libs/opencv/opencv-2.4.13.6/include/"
+            "opencv": "-I $BENCH_DIR/libs/opencv/opencv-2.4.13.6/include/",
+            "UPL" : "-I $BENCH_DIR/libs/upl/include/upl/"
     },
     "LIBS": {
             "myLIB_1": "",
             "myLIB_2": "",
-            "myLIB_N": ""
+            "myLIB_N": "",
+            "UPL" : "-L $BENCH_DIR/libs/upl/lib/x86 -lupl"
     },
     "LDFLAGS": "-lpthread"
 }

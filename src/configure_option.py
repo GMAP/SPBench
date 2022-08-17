@@ -54,15 +54,18 @@ def edit_json_func(spbench_path, args):
         print("\n Error!! JSON configuration file not found at:\n " + config_file + "\n")
         sys.exit()
 
+    editor_err = "\\n Text editor \'" + args.user_editor + "\' not found. Please select a different one."
+    editorChecking(args.user_editor, editor_err)
+
     # generate a command line to run
     cmd_line = args.user_editor + " " + config_file
     print("---------------------------------------------")
     print(" Running -> " + cmd_line)
     print("---------------------------------------------")
     # run the command line
-    os.system(cmd_line)
+    runShellCmd(cmd_line)
 
-    #if there is not a makefile yet, build one
+    #build a new makefile
     make_gen(spbench_path, selected_benchmark[0])
     
     sys.exit()

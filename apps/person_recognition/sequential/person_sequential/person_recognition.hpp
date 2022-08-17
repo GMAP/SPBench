@@ -24,6 +24,7 @@ class Recognize;
 class Detect{
 private:
 	static inline void detect_op(item_data &item);
+	static int operator_id;
 public:
 	static void op(Item &item);
 	Detect(Item &item){
@@ -37,6 +38,7 @@ public:
 class Recognize{
 private:
 	static inline void recognize_op(item_data &item);
+	static int operator_id;
 public:
 	static void op(Item &item);
 	Recognize(Item &item){

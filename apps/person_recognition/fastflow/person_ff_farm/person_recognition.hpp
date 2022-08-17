@@ -23,23 +23,28 @@ class Recognize;
 
 class Detect{
 private:
-	static inline void detect_op(spb::item_data &item);
+	static inline void detect_op(item_data &item);
+	static int operator_id;
 public:
-	static void op(spb::Item &item);
-	Detect(spb::Item &item){
+	static void op(Item &item);
+	Detect(Item &item){
 		op(item);
 	}
+	Detect(){};
+
 	virtual ~Detect(){}
 };
 
 class Recognize{
 private:
-	static inline void recognize_op(spb::item_data &item);
+	static inline void recognize_op(item_data &item);
+	static int operator_id;
 public:
-	static void op(spb::Item &item);
-	Recognize(spb::Item &item){
+	static void op(Item &item);
+	Recognize(Item &item){
 		op(item);
 	}
+	Recognize(){};
 	virtual ~Recognize(){}
 };
 

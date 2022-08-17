@@ -46,14 +46,16 @@ def new_func(spbench_path, args):
     """
 
     # check if it is not a reserved word
-    if args.benchmark_id in reserved_words:
-        print("\n " + args.benchmark_id + " is a SPBench reserved word")
-        print(" You can not use it to name a benchmark.\n")
+    if(args.benchmark_id.lower() in reserved_words):
+        print("\n Error, \'" + args.benchmark_id + "\' is a SPBench reserved word!\n")
+        print(" Please, select a different name for your benchmark. \n")
         sys.exit()
 
+    given_app_id = args.app_id.lower()
+
     # Check if the chosen app exists
-    if args.app_id not in apps_list:
-        print("\n Application \'" + args.app_id + "\' not found!\n")
+    if given_app_id not in apps_list:
+        print("\n Application \'" + given_app_id + "\' not found!\n")
         sys.exit()
 
     if args.benchmark_id == args.copy_from:
@@ -70,12 +72,12 @@ def new_func(spbench_path, args):
         if args.nsources:
             nsource = '_ns'
         
-        copy_from_path = (spbench_path + '/sys/apps/' + args.app_id + '/templates' + nsource + '/')
+        copy_from_path = (spbench_path + '/sys/apps/' + given_app_id + '/templates' + nsource + '/')
 
         #if args.nsources:
-        #    copy_from = args.app_id + '_ns'
+        #    copy_from = given_app_id + '_ns'
         #else:
-        copy_from = args.app_id
+        copy_from = given_app_id
         
         ok_to_copy = True
     else: # search for the selected benchmark to make a new copy
@@ -92,9 +94,9 @@ def new_func(spbench_path, args):
         copy_from_bench_id = copy_from_data[0]["bench_id"]
         
         #check if the copy-from is not from the same app
-        if copy_from_app_id != args.app_id: 
+        if copy_from_app_id != given_app_id: 
             print("\n "+color.BOLD+"WARNING"+color.END+": You are trying to make a new copy from a different application.\n")
-            print("  Selected application: " + args.app_id)
+            print("  Selected application: " + given_app_id)
             print(" Copy-from application: " + copy_from_app_id)
             if not askToProceed():
                 sys.exit()
@@ -158,11 +160,11 @@ def new_func(spbench_path, args):
         
         print("\n The existent benchmark will be "+color.BOLD+"deleted"+color.END+" and replaced by:\n")
         print("   Benchmark: " + args.benchmark_id)
-        print(" Application: " + args.app_id)
+        print(" Application: " + given_app_id)
         print("         PPI: " + args.ppi_id)
 
-        if existent_app_id != args.app_id: 
-            print("\n "+color.BOLD+"CAUTION"+color.END+":\n This benchmark ID was previously assigned to a different\n application: " + args.app_id)
+        if existent_app_id != given_app_id: 
+            print("\n "+color.BOLD+"CAUTION"+color.END+":\n This benchmark ID was previously assigned to a different\n application: " + given_app_id)
         if existent_ppi_id != args.ppi_id:
             print("\n "+color.BOLD+"CAUTION"+color.END+":\n This benchmark ID was previously assigned to a different\n PPI: " + args.ppi_id)
 
@@ -171,7 +173,7 @@ def new_func(spbench_path, args):
         delete_benchmark(spbench_path, args)
 
     # set the path for the new benchmark
-    new_path = spbench_path + "/apps/" +  args.app_id + "/" + args.ppi_id + "/" + args.benchmark_id + "/"
+    new_path = spbench_path + "/apps/" +  given_app_id + "/" + args.ppi_id + "/" + args.benchmark_id + "/"
 
     if fileExists(new_path):
         print("\n WARNING: There is already a directory for this benchmark.")
@@ -179,32 +181,32 @@ def new_func(spbench_path, args):
         print("\n" +color.BOLD+" >> Existent files in that directory will be deleted << " + color.END)
         if not askToProceed():
             sys.exit()
-        os.system('rm -r ' + new_path)
+        runShellCmd('rm -r ' + new_path)
 
     # if it is all ok to create a new benchmark, do it
     if ok_to_copy:
         os.makedirs(new_path) # copy the files from somewhere else (template or existent benchmark)
         
-        os.system('cp ' + copy_from_path + copy_from +".cpp " + new_path + args.benchmark_id + ".cpp")
+        runShellCmd('cp ' + copy_from_path + copy_from +".cpp " + new_path + args.benchmark_id + ".cpp")
 
-        os.system('cp ' + copy_from_path + args.app_id +".hpp " + new_path)
+        runShellCmd('cp ' + copy_from_path + given_app_id +".hpp " + new_path)
         
-        os.system('cp ' + copy_from_path + "config.json " + new_path + "config.json")
+        runShellCmd('cp ' + copy_from_path + "config.json " + new_path + "config.json")
 
-        os.system('cp -r ' + copy_from_path + "operators " + new_path)
+        runShellCmd('cp -r ' + copy_from_path + "operators " + new_path)
 
     else:
         print('\n Error while creating your new benchmark\n')
         sys.exit()
 
-    if args.ppi_id not in registry_dic[args.app_id]:
-        registry_dic[args.app_id].update({args.ppi_id:{}}) #update the dictionary with the new ppi
+    if args.ppi_id not in registry_dic[given_app_id]:
+        registry_dic[given_app_id].update({args.ppi_id:{}}) #update the dictionary with the new ppi
 
     # Add new benchmark to the app->ppi->list
     if args.nsources:
-        registry_dic[args.app_id][args.ppi_id].update({args.benchmark_id:"multiple"})
+        registry_dic[given_app_id][args.ppi_id].update({args.benchmark_id:"multiple"})
     else:
-        registry_dic[args.app_id][args.ppi_id].update({args.benchmark_id:"single"})
+        registry_dic[given_app_id][args.ppi_id].update({args.benchmark_id:"single"})
 
     # rewrite dictionary to JSON registry file
     writeDicToBenchRegistry(spbench_path, registry_dic)

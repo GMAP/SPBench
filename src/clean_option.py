@@ -54,15 +54,21 @@ def clean_func(spbench_path, args):
         #path where make will run
         benchmark_path = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/" 
 
+        # check if exists the make directory
+        if not dirExists(benchmark_path):
+            print("Error!!\n-> Benchmark not found: " + benchmark_path + "\n")
+            sys.exit()
+
         # Build the makefile if it does not exist yet
         if not fileExists(benchmark_path + 'Makefile'):
             make_gen(spbench_path, benchmark)
 
-        # check if exists the make directory
-        if not dirExists(benchmark_path):
-            print("Error!!\n-> Directory [" + benchmark_path + "] not found.\n-> Check if it exists or try to register it again!")
-            sys.exit()
-        
-        os.system("make -C " + benchmark_path + " clean")
+        runShellCmd("make -C " + benchmark_path + " clean")
+
+        # check and delete it if exists the directory that stores old operators
+        old_operators = benchmark_path + "operators_old"
+        if dirExists(old_operators):
+            print("rm -rf " + old_operators)
+            runShellCmd("rm -rf " + old_operators)
 
     sys.exit()       

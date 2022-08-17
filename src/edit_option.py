@@ -51,13 +51,17 @@ def edit_source_func(spbench_path, args):
         print("\n Error!! Source file not found at:\n " + bench_source_file + "\n")
         sys.exit()
 
+    editor_err = "\\n Text editor \'" + args.user_editor + "\' not found. Please select a different one."
+    editorChecking(args.user_editor, editor_err)
+
     # generate a command line to run
     cmd_line = args.user_editor + " " + bench_source_file
     print("---------------------------------------------")
     print(" Running -> " + cmd_line)
     print("---------------------------------------------")
+    
     # run the command line
-    os.system(cmd_line)
+    runShellCmd(cmd_line)
 
     #if there is not a makefile yet, build one
     make_path = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/Makefile"

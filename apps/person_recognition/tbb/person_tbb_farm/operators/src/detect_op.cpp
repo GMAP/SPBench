@@ -19,12 +19,12 @@ inline void spb::Detect::detect_op(spb::item_data &item){
 		maxScaleSize = cv::Size(DET_MAX_SIZE_RATIO  * width, DET_MAX_SIZE_RATIO  * height);
 
 	if(SPBench::memory_source_is_enabled()){
-		cvtColor(*(item.image_p), tmp, CV_BGR2GRAY);
+		cv::cvtColor(*(item.image_p), tmp, CV_BGR2GRAY);
 	} else {
-		cvtColor(item.image, tmp, CV_BGR2GRAY);
+		cv::cvtColor(item.image, tmp, CV_BGR2GRAY);
 	}
 	//convert the image to grayscale and normalize histogram:
-	equalizeHist(tmp, tmp);
+	cv::equalizeHist(tmp, tmp);
 
 	//clear the vector:
 	item.faces.clear();

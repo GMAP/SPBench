@@ -11,6 +11,7 @@ class Decompress;
 class Compress{
 private:
 	static inline void compress_op(spb::item_data &item);
+	static int operator_id;
 public:
 	static void op(spb::Item &item);
 	Compress(spb::Item &item){
@@ -24,6 +25,7 @@ public:
 class Decompress{
 private:
 	static inline void decompress_op(spb::item_data &item);
+	static int operator_id;
 public:
 	static void op(spb::Item &item);
 	Decompress(spb::Item &item){

@@ -119,7 +119,7 @@ def make_gen(stream_path, selected_benchmark):
     includes_cmd.append('-I $(SRC_DIR) ')
     includes_cmd.append('-I $(SRC_DIR)/include ')
     includes_cmd.append('-I $(SPB_LIB_DIR) ')
-    includes_cmd.append('-I $(SPB_HOME)/libs/upl/include/upl/ ')
+    #includes_cmd.append('-I $(SPB_HOME)/libs/upl/include/upl/ ')
     includes_cmd.append('-I $(BENCH_DIR)/operators/include/ ')
     
     libs = json_data["LIBS"]
@@ -129,7 +129,7 @@ def make_gen(stream_path, selected_benchmark):
             libs[key] = libs[key].replace('$BENCH_DIR', stream_path)
             libs_cmd.append(libs[key] + " ")
 
-    libs_cmd.append('-L $(SPB_HOME)/libs/upl/lib/ -lupl ')
+    #libs_cmd.append('-L $(SPB_HOME)/libs/upl/lib/ -lupl ')
 
     if app_id == 'ferret':
         libs_cmd.append('-L $(SRC_DIR)/parsec/lib ')
@@ -242,6 +242,6 @@ def make_gen(stream_path, selected_benchmark):
     Makefile.write('clean:\n')
     Makefile.write('\trm -f $(SRC_DIR)/parsec/obj/*\n')
     Makefile.write('\trm -f $(OBJ) $(BENCHMARK).o $(SRC_DIR)/$(APP_ID)_utils' + ns + '.o $(APP_ID).a $(SPB_LIB_DIR)/spbench.o $(BIN_DIR)/$(BENCHMARK)\n')
-    Makefile.write('\trm -r $(OBJ_PATH)\n\n')
+    Makefile.write('\trm -rf $(OBJ_PATH)\n\n')
 
     Makefile.close()

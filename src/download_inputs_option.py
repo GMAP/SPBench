@@ -56,15 +56,15 @@ def download_inputs_func(spbench_path, args):
 
     if args.app_id == "lane_detection" or args.app_id == "all":
         get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "lane_detection " + "trash " + overwrite_files
-        os.system("bash " + get_input_cmd)
+        runShellCmd("bash " + get_input_cmd)
     
     if args.app_id == "person_recognition" or args.app_id == "all":
         get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "person_recognition " + "trash " + overwrite_files
-        os.system("bash " + get_input_cmd)
+        runShellCmd("bash " + get_input_cmd)
     
     if args.app_id == "ferret" or args.app_id == "all":
         get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "ferret " + "trash " + overwrite_files
-        os.system("bash " + get_input_cmd)
+        runShellCmd("bash " + get_input_cmd)
     
     if args.app_id == "bzip2" or args.app_id == "all":
         available_classes = ["test", "small", "medium", "large", "huge", "all"]
@@ -76,6 +76,6 @@ def download_inputs_func(spbench_path, args):
                 print(" You can select from [small, medium, large, all] or leave this option empty.\n")
 
         get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "bzip2 " + args.class_id + " " + overwrite_files
-        os.system("bash " + get_input_cmd)
+        runShellCmd("bash " + get_input_cmd)
 
     sys.exit()

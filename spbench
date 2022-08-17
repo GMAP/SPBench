@@ -38,6 +38,7 @@ from sys import version_info
 python_3 = version_info[0]
 
 from src.new_bench_option import new_func
+from src.new_op_option import new_op_func
 from src.delete_option import delete_reg_func
 from src.exec_option import execute_func
 from src.compile_option import compile_func
@@ -47,7 +48,9 @@ from src.list_benchmarks_option import list_reg_func
 from src.install_option import install_func
 from src.configure_option import edit_json_func
 from src.edit_option import edit_source_func
+from src.edit_op_option import edit_op_source_func
 from src.list_inputs_option import list_inputs_func
+from src.list_op_option import list_op_func
 from src.new_input_option import new_input_func
 from src.delete_input_option import del_input_func
 from src.download_inputs_option import download_inputs_func
@@ -66,6 +69,8 @@ spbench_path = os.path.dirname(os.path.realpath(__file__))#os.path.dirname(sys.a
 
 def new(args):
     new_func(spbench_path, args)
+def new_op(args):
+    new_op_func(spbench_path, args)
 def delete_reg(args):
     delete_reg_func(spbench_path, args)
 def list_reg(args):
@@ -74,6 +79,8 @@ def edit_json(args):
     edit_json_func(spbench_path, args)
 def edit_source(args):
     edit_source_func(spbench_path, args)
+def edit_op_source(args):
+    edit_op_source_func(spbench_path, args)
 def execute(args):
     try:
         execute_func(spbench_path, args)
@@ -93,6 +100,8 @@ def download_inputs(args):
     download_inputs_func(spbench_path, args)
 def list_reg_inputs(args):
     list_inputs_func(spbench_path, args)
+def list_operators(args):
+    list_op_func(spbench_path, args)
 def delete_input(args):
     del_input_func(spbench_path, args)
 def install(args):
@@ -139,12 +148,15 @@ parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpForm
            exec - Execute a given benchmark
            list - List all available benchmarks
          delete - Delete a given benchmark
+         rename - Rename a given benchmark
+        list-op - List all available operators for a given benchmark
+        edit-op - Open an operator's source code of a given benchmark to edit it
        reset-op - Reset to default the source code of all operators for a given benchmark
     list-inputs - List all available inputs for running the benchmarks
       new-input - Add a new input custom input for the benchmarks
    delete-input - Delete a given input
 download-inputs - Download all available inputs provided by SPBench
-         rename - Rename a given benchmark
+         
         version - Print the current SPBench version
 -------------------------------------------------------------
         """)
@@ -167,11 +179,23 @@ parser_new = subparsers.add_parser('new',
     usage="""./spbench new [subcommands]""", 
     description="""  Description: Create a new benchmark.""")
 
+#subparser for 'new-op' option
+#parser_new_op = subparsers.add_parser('new-op', 
+#    formatter_class=argparse.RawDescriptionHelpFormatter, 
+#    usage="""./spbench new-op [subcommands]""", 
+#    description="""  Description: Create a new operator for a given benchmark.""")
+
 #subparser for 'edit' option
 parser_edit = subparsers.add_parser('edit', 
     formatter_class=argparse.RawDescriptionHelpFormatter, 
     usage="""./spbench edit [subcommands]""", 
     description="""  Description: Open a benchmark to edit the main source code.""")
+
+#subparser for 'edit' option
+parser_edit_op = subparsers.add_parser('edit-op', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench edit-op [subcommands]""", 
+    description="""  Description: Open an operator of a given benchmark to edit its source code.""")
 
 #subparser for 'configure' option
 parser_config = subparsers.add_parser('configure', 
@@ -219,13 +243,19 @@ parser_del = subparsers.add_parser('delete',
 parser_reset_op = subparsers.add_parser('reset-op', 
     formatter_class=argparse.RawDescriptionHelpFormatter, 
     usage="""./spbench reset-op [subcommands]""", 
-    description="""  Description: Reset to default the source code of all operators for a given benchmark.""")
+    description="""  Description: Reset to default the source code of all operators for a given benchmark (it still keeps the old operators as backup until this command is executed again).""")
 
 #subparser for list registered inputs
 parser_list_inputs = subparsers.add_parser('list-inputs', 
     formatter_class=argparse.RawDescriptionHelpFormatter, 
     usage="""./spbench list-inputs [subcommands]""", 
     description="""  Description: List all available inputs for running the benchmarks.""")
+
+#subparser for list operators inputs
+parser_list_op = subparsers.add_parser('list-op', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench list-op [subcommands]""", 
+    description="""  Description: List all available operators for a given benchmark.""")
 
 #subparser for register input
 parser_reg_inputs = subparsers.add_parser('new-input', 
@@ -269,7 +299,7 @@ parser_inst.add_argument('-app',
     required=False,
     default='all',
     choices=apps_list,
-    help='You can choose a specific application to install or you can use \'all\' to compile all benchmarks.')
+    help='You can choose a specific application to install or you can use \'all\' to install all applications.')
 parser_inst.set_defaults(func=install)
 
 ##
@@ -329,9 +359,36 @@ parser_edit.add_argument('-editor',
     dest='user_editor',
     required=False,
     default='nano', 
-    help='Enter the name of an text editor available in your machine, e.g. "vim", "nano", etc. (default: nano)')
+    help='Enter the name of a text editor available in your machine, e.g. "vim", "nano", etc. (default: nano)')
 
 parser_edit.set_defaults(func=edit_source)
+
+##
+# Edit benchmark's operator
+##
+parser_edit_op.add_argument('-benchmark',
+    action='store',
+    type=str,
+    dest='benchmark_id',
+    required=True,
+    help='Enter the name of an application benchmark to edit (mandatory)')
+
+parser_edit_op.add_argument('-operator',
+    action='store',
+    type=str,
+    dest='operator_id',
+    required=True,
+    help='Enter the name of the benchmark\'s operator to edit (mandatory)')
+
+parser_edit_op.add_argument('-editor',
+    action='store',
+    type=str,
+    dest='user_editor',
+    required=False,
+    default='nano', 
+    help='Enter the name of a text editor available in your machine, e.g. "vim", "nano", etc. (default: nano)')
+
+parser_edit_op.set_defaults(func=edit_op_source)
 
 ##
 # Configure benchmark
@@ -349,7 +406,7 @@ parser_config.add_argument('-editor',
     dest='user_editor',
     required=False,
     default='nano',
-    help='Enter the name of an text editor available in your machine, e.g. "vim", "nano", etc. (default: nano)')
+    help='Enter the name of a text editor available in your machine, e.g. "vim", "nano", etc. (default: nano)')
 
 parser_config.set_defaults(func=edit_json)
 
@@ -615,6 +672,17 @@ parser_list.add_argument('-ppi',
 parser_list.set_defaults(func=list_reg)
 
 ##
+# List operators
+##
+parser_list_op.add_argument('-benchmark',
+    action='store',
+    type=str,
+    dest='benchmark_id',
+    required=True,
+    help="You must give the name of the respective benchmark you want to see the operators list.")
+parser_list_op.set_defaults(func=list_operators)
+
+##
 # Delete benchmark
 ##
 parser_del.add_argument('-benchmark', 
@@ -771,7 +839,31 @@ parser_list_inputs.add_argument('-app',
     help="R|You can filter by application:\n" + str(apps_list) + " (optional)")
 parser_list_inputs.set_defaults(func=list_reg_inputs)
 
+##
+# Add operator for a given benchmark
+##
+#parser_new_op.add_argument('-operator', 
+#    action='store',
+#    type=str,
+#    dest='operator_id',
+#    required=True,
+#    help='Select a name for your new operator.')
 
+#parser_new_op.add_argument('-benchmark', 
+#    action='store',
+#    type=str,
+#    dest='benchmark_id',
+#    required=True,
+#    help='Select the name of the respective benchmark where this operator will be created.')
+
+#parser_new_op.add_argument('-from',
+#    action='store',
+#    type=str,
+#    dest='copy_from',
+#    required=False,
+#    default='',
+#    help="Use this option to create your new operator as a copy of an existent operator in this benchmark. Insert the name of the operator you want to copy from (Optional. Default: empty operator)")
+#parser_new_op.set_defaults(func=new_op)
 
 args = parser.parse_args()
 

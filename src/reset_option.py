@@ -77,20 +77,20 @@ def reset_operators_func(spbench_path, args):
         ##
         if dirExists (bench_path + '/operators'):
             if dirExists (bench_path + '/operators_old'):
-                os.system('rm -r ' + bench_path + '/operators_old')
-            os.system('mv ' + bench_path + '/operators ' + bench_path + '/operators_old')
+                runShellCmd('rm -r ' + bench_path + '/operators_old')
+            runShellCmd('mv ' + bench_path + '/operators ' + bench_path + '/operators_old')
         
         ##
         # header file is deleted
         ##
         if fileExists (bench_path + ' ' + app_id + '.hpp'):
-            os.system('rm ' + bench_path + ' ' + app_id + '.hpp')
+            runShellCmd('rm ' + bench_path + ' ' + app_id + '.hpp')
         
         ##
         # new operators are copied from template
         ##
-        os.system('cp ' + op_templates + app_id +".hpp " + bench_path)
-        os.system('cp -r ' + op_templates + "operators " + bench_path)
+        runShellCmd('cp ' + op_templates + app_id +".hpp " + bench_path)
+        runShellCmd('cp -r ' + op_templates + "operators " + bench_path)
 
         print("\n -> " + bench_id + " operators were reset!\n")
         print(" -> Old operators are available (until next reset) at: \n  " + bench_path +"/operators_old \n")

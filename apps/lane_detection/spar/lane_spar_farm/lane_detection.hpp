@@ -71,6 +71,7 @@ class Overlap;
 class Segment{
 private:
 	static inline void segment_op(item_data &item);
+	static int operator_id;
 public:
 	static void op(Item &item);
 	Segment(Item &item){
@@ -83,6 +84,7 @@ public:
 class Canny1{
 private:
 	static inline void canny1_op(item_data &item);
+	static int operator_id;
 public:
 	static void op(Item &item);
 	Canny1(Item &item){
@@ -95,6 +97,7 @@ public:
 class HoughT{
 private:
 	static inline void houghT_op(item_data &item);
+	static int operator_id;
 public:
 	static void op(Item &item);
 	HoughT(Item &item){
@@ -107,6 +110,7 @@ public:
 class HoughP{
 private:
 	static inline void houghP_op(item_data &item);
+	static int operator_id;
 public:
 	static void op(Item &item);
 	HoughP(Item &item){
@@ -119,6 +123,7 @@ public:
 class Bitwise{
 private:
 	static inline void bitwise_op(item_data &item);
+	static int operator_id;
 public:
 	static void op(Item &item);
 	Bitwise(Item &item){
@@ -131,6 +136,7 @@ public:
 class Canny2{
 private:
 	static inline void canny2_op(item_data &item);
+	static int operator_id;
 public:
 	static void op(Item &item);
 	Canny2(Item &item){
@@ -143,6 +149,7 @@ public:
 class Overlap{
 private:
 	static inline void overlap_op(item_data &item);
+	static int operator_id;
 public:
 	static void op(Item &item);
 	Overlap(Item &item){

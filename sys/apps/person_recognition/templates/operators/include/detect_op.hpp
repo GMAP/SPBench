@@ -2,7 +2,14 @@
 
 namespace spb{
 
+int Detect::operator_id = -1;
+
 void Detect::op(Item &item){
+
+	if(operator_id < 0){
+		operator_id = SPBench::getNewOpId();
+	}
+
 	Metrics metrics;
 	volatile unsigned long latency_op;
 	if(metrics.latency_is_enabled()){
@@ -18,7 +25,7 @@ void Detect::op(Item &item){
 	}
 	
 	if(metrics.latency_is_enabled()){
-		item.latency_op[1] = (current_time_usecs() - latency_op);
+		item.latency_op[operator_id] = (current_time_usecs() - latency_op);
 	}
 }
 

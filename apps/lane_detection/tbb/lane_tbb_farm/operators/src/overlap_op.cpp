@@ -16,9 +16,9 @@ inline void spb::Overlap::overlap_op(spb::item_data &item){
 	stream << "Line Segments: " << item.lines.size();
 
 	if(SPBench::memory_source_is_enabled()) {
-		putText(*(item.image_p), stream.str(), cv::Point(10, item.image_p->rows-10), 2, 0.8, cv::Scalar(0,0,255),0);
+		cv::putText(*(item.image_p), stream.str(), cv::Point(10, item.image_p->rows-10), 2, 0.8, cv::Scalar(0,0,255),0);
 	} else {
-		putText(item.image, stream.str(), cv::Point(10, item.image.rows-10), 2, 0.8, cv::Scalar(0,0,255),0);
+		cv::putText(item.image, stream.str(), cv::Point(10, item.image.rows-10), 2, 0.8, cv::Scalar(0,0,255),0);
 	}
 	item.lines.clear();
 }

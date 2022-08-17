@@ -16,13 +16,15 @@
             "myINC_2": "",
             "myINC_N": "",
             "ff": "-I $BENCH_DIR/ppis/fastflow/",
-            "bzlib": "-I $BENCH_DIR/libs/bzlib/include/"
+            "bzlib": "-I $BENCH_DIR/libs/bzlib/include/",
+            "UPL" : "-I $BENCH_DIR/libs/upl/include/upl/"
     },
     "LIBS": {
             "myLIB_1": "",
             "myLIB_2": "",
             "myLIB_N": "",
-            "bzlib": "-L $BENCH_DIR/libs/bzlib/lib/ -lbz2"
+            "bzlib": "-L $BENCH_DIR/libs/bzlib/lib/ -lbz2",
+            "UPL" : "-L $BENCH_DIR/libs/upl/lib/x86 -lupl"
     },
     "LDFLAGS": "-lpthread"
 }

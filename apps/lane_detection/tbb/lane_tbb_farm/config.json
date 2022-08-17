@@ -16,13 +16,15 @@
             "myINC_1": "",
             "myINC_2": "",
             "myINC_N": "",
-            "tbb": "-I $BENCH_DIR/ppis/tbb/tbb/include/"
+            "tbb": "-I $BENCH_DIR/ppis/tbb/tbb/include/",
+            "UPL" : "-I $BENCH_DIR/libs/upl/include/upl/"
     },
     "LIBS": {
             "myLIB_1": "",
             "myLIB_2": "",
             "myLIB_N": "",
-            "tbb": "-L $BENCH_DIR/ppis/tbb/tbb/ -ltbb"
+            "tbb": "-L $BENCH_DIR/ppis/tbb/tbb/ -ltbb",
+            "UPL" : "-L $BENCH_DIR/libs/upl/lib/x86 -lupl"
     },
     "LDFLAGS": "-lpthread"
 }

@@ -27,7 +27,10 @@
  */
 
 #include <spbench.hpp>
-#include <upl.h>
+
+#if !defined(NO_UPL)
+	#include <upl.h>
+#endif
 
 namespace spb{
 
@@ -44,6 +47,7 @@ std::string SPBench::bench_path; //stores executable name from arg[0] in init_be
 std::vector<std::string> SPBench::userArgs;
 std::vector<std::string> SPBench::operator_name_list;
 unsigned long SPBench::pattern_cycle_start_time = 0;
+int SPBench::number_of_operators = 0;
 
 void frequency_pattern(double elapsed_time);
 
@@ -110,6 +114,19 @@ std::string SPBench::getArg(int id){
 		exit(0);
 	}
 	return userArgs[id];
+}
+
+/**
+ * Get new operator ID.
+ *
+ * It computes an id for an operator.
+ *
+ * @param nothing
+ * @return Integer ID.
+ */
+int SPBench::getNewOpId(){
+	number_of_operators++;
+	return number_of_operators - 1;
 }
 
 /**
@@ -372,14 +389,24 @@ void SPBench::frequency_pattern(){
  * 
  * @return average load of the CPUs.
  */
-float Metrics::getCPUUsage(){return UPL_get_proc_load_average_now(UPL_getProcID());}
+float Metrics::getCPUUsage(){
+	#if !defined(NO_UPL)
+		return UPL_get_proc_load_average_now(UPL_getProcID());
+	#endif
+	return 0.0;
+}
 
 /**
  * Memory usage
  * 
  * @return memory usage of the respective process
  */
-float Metrics::getMemoryUsage(){return UPL_getProcMemUsage();}
+float Metrics::getMemoryUsage(){
+	#if !defined(NO_UPL)
+		return UPL_getProcMemUsage();
+	#endif
+	return 0.0;
+}
 
 /**
  * Instantaneous throughput
@@ -589,8 +616,10 @@ void monitor_metrics(unsigned long item_timestamp, unsigned long int sourceId){
 	if(time_elapsed_from_last_measurement_ms >= Metrics::get_monitoring_time_interval()){ //Time interval ms
 		metrics_vec[sourceId].last_measured_time = current_time;
 		item_data.timestamp = (current_time - metrics_vec[sourceId].start_throughput_clock)/1000000.0;
-		item_data.cpu_usage = UPL_get_proc_load_average_now(UPL_getProcID());
-		item_data.mem_usage = UPL_getProcMemUsage();
+		#if !defined(NO_UPL)
+			item_data.cpu_usage = UPL_get_proc_load_average_now(UPL_getProcID());
+			item_data.mem_usage = UPL_getProcMemUsage();
+		#endif
 		item_data.average_throughput = metrics_vec[sourceId].monitored_items_counter / item_data.timestamp;
 		item_data.instant_throughput = instantThroughput((time_elapsed_from_last_measurement_ms / 1000), sourceId);
 		item_data.average_latency = (metrics_vec[sourceId].global_latency_acc/metrics_vec[sourceId].monitored_items_counter) / 1000.0;
@@ -617,16 +646,18 @@ void monitor_metrics(unsigned long item_timestamp, unsigned long int sourceId){
  */
 void Metrics::init(){
 
-	if(upl_is_enabled()){
-		if(UPL_init_cache_miss_monitoring(&metrics.fd_cache) == 0){
-			std::cout << "Error when UPL_init_cache_miss_monitoring(...)" << std::endl;
-		}
+	#if !defined(NO_UPL)
+		if(upl_is_enabled()){
+			if(UPL_init_cache_miss_monitoring(&metrics.fd_cache) == 0){
+				std::cout << "Error when UPL_init_cache_miss_monitoring(...)" << std::endl;
+			}
 
-		metrics.rapl_fd = new int[4];
-		if(UPL_init_count_rapl(metrics.rapl_fd) == 0){
-			std::cout << "Error when UPL_init_count_rapl(...)" << std::endl;
+			metrics.rapl_fd = new int[4];
+			if(UPL_init_count_rapl(metrics.rapl_fd) == 0){
+				std::cout << "Error when UPL_init_count_rapl(...)" << std::endl;
+			}
 		}
-	}
+	#endif
 	if(throughput_is_enabled()){
 		metrics.start_throughput_clock = current_time_usecs();
 	}
@@ -645,16 +676,18 @@ data_metrics init_metrics(){
 
 	//execution_init_clock = current_time_usecs();
 	data_metrics metrics;
-	if(Metrics::upl_is_enabled()){
-		if(UPL_init_cache_miss_monitoring(&metrics.fd_cache) == 0){
-			std::cout << "Error when UPL_init_cache_miss_monitoring(...)" << std::endl;
-		}
+	#if !defined(NO_UPL)
+		if(Metrics::upl_is_enabled()){
+			if(UPL_init_cache_miss_monitoring(&metrics.fd_cache) == 0){
+				std::cout << "Error when UPL_init_cache_miss_monitoring(...)" << std::endl;
+			}
 
-		metrics.rapl_fd = new int[4];
-		if(UPL_init_count_rapl(metrics.rapl_fd) == 0){
-			std::cout << "Error when UPL_init_count_rapl(...)" << std::endl;
+			metrics.rapl_fd = new int[4];
+			if(UPL_init_count_rapl(metrics.rapl_fd) == 0){
+				std::cout << "Error when UPL_init_count_rapl(...)" << std::endl;
+			}
 		}
-	}
+	#endif
 	if(Metrics::throughput_is_enabled()){
 		metrics.start_throughput_clock = current_time_usecs();
 	}
@@ -680,21 +713,24 @@ void Metrics::stop(){
 	if(throughput_is_enabled()){
 		metrics.stop_throughput_clock = current_time_usecs();
 	}
-	if(upl_is_enabled()){
-		//UPL metrics
-		UPL_print_default_metrics();
-		long long r_cache = UPL_get_cache_miss(metrics.fd_cache);
-		if(r_cache < 0){
-			std::cout << "Error when UPL_get_cache_miss(...)" << std::endl;
-		}
-		std::cout << "UPLib -> Total cache-miss(KB): " << r_cache << std::endl;
 
-		if(UPL_finalize_count_rapl(metrics.rapl_fd) == 0){
-			std::cout << "Error when UPL_finalize_count_rapl(...)" << std::endl;
+	#if !defined(NO_UPL)
+		if(upl_is_enabled()){
+			//UPL metrics
+			UPL_print_default_metrics();
+			long long r_cache = UPL_get_cache_miss(metrics.fd_cache);
+			if(r_cache < 0){
+				std::cout << "Error when UPL_get_cache_miss(...)" << std::endl;
+			}
+			std::cout << "UPLib -> Total cache-miss(KB): " << r_cache << std::endl;
+
+			if(UPL_finalize_count_rapl(metrics.rapl_fd) == 0){
+				std::cout << "Error when UPL_finalize_count_rapl(...)" << std::endl;
+			}
+			std::cout << std::endl;
+			delete metrics.rapl_fd;
 		}
-		std::cout << std::endl;
-		delete metrics.rapl_fd;
-	}
+	#endif
 
 	if(print_latency_is_enabled()){
 		print_average_latency();
@@ -752,21 +788,24 @@ void compute_metrics(){
 		//if(Metrics::throughput_is_enabled()){
 		//	element.stop_throughput_clock = current_time_usecs();
 		//}
-		if(Metrics::upl_is_enabled()){
-			//UPL metrics
-			UPL_print_default_metrics();
-			long long r_cache = UPL_get_cache_miss(element.fd_cache);
-			if(r_cache < 0){
-				std::cout << "Error when UPL_get_cache_miss(...)" << std::endl;
-			}
-			std::cout << "UPLib . Total cache-miss(KB): " << r_cache << std::endl;
 
-			if(UPL_finalize_count_rapl(element.rapl_fd) == 0){
-				std::cout << "Error when UPL_finalize_count_rapl(...)" << std::endl;
+		#if !defined(NO_UPL)
+			if(Metrics::upl_is_enabled()){
+				//UPL metrics
+				UPL_print_default_metrics();
+				long long r_cache = UPL_get_cache_miss(element.fd_cache);
+				if(r_cache < 0){
+					std::cout << "Error when UPL_get_cache_miss(...)" << std::endl;
+				}
+				std::cout << "UPLib . Total cache-miss(KB): " << r_cache << std::endl;
+
+				if(UPL_finalize_count_rapl(element.rapl_fd) == 0){
+					std::cout << "Error when UPL_finalize_count_rapl(...)" << std::endl;
+				}
+				std::cout << std::endl;
+				delete element.rapl_fd;
 			}
-			std::cout << std::endl;
-			delete element.rapl_fd;
-		}
+		#endif
 
 		if(Metrics::print_latency_is_enabled()){
 			print_average_latency(element);
@@ -842,7 +881,6 @@ void print_throughput(data_metrics metrics){
 	}
 	printf("\n");
 }
-
 
 /**
  * Print average latency

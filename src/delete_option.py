@@ -76,7 +76,7 @@ def delete_benchmark(spbench_path, args):
     dir_to_remove = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/"
 
     if dirExists(dir_to_remove):
-        os.system("rm -r " + dir_to_remove)
+        runShellCmd("rm -r " + dir_to_remove)
 
     registry_dic = getBenchRegistry(spbench_path)
 
@@ -88,14 +88,14 @@ def delete_benchmark(spbench_path, args):
     if dirExists(ppi_dir):
         directory = os.listdir(ppi_dir) 
         if len(directory) == 0: 
-            os.system("rm -r " + ppi_dir)
+            runShellCmd("rm -r " + ppi_dir)
             # remove also the PPI key from registry
             del registry_dic[app_id][ppi_id]
 
     # remove the binary
     bin_path = spbench_path + "/bin/" + app_id + "/" + ppi_id + "/" + bench_id
     if os.path.exists(bin_path):
-        os.system("rm " + bin_path)
+        runShellCmd("rm " + bin_path)
 
     # update the registry
     writeDicToBenchRegistry(spbench_path, registry_dic)

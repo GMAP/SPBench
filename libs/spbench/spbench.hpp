@@ -41,6 +41,11 @@
 
 #include <stdexcept>
 
+#include <errno.h>
+#include <sys/stat.h>
+#include <math.h>
+#include <string.h>
+
 /* queue */
 #pragma once
 #include <iostream>
@@ -125,6 +130,17 @@ struct monitor_data{
 	float average_throughput;
 	float frequency;
 	int batch_size;
+	monitor_data():
+		timestamp(0),
+		cpu_usage(0.0),
+		mem_usage(0),
+		instant_latency(0.0),
+		average_latency(0.0),
+		instant_throughput(0.0),
+		average_throughput(0.0),
+		frequency(0.0),
+		batch_size(0)
+	{}
 };
 
 struct data_metrics {
@@ -206,7 +222,11 @@ private:
 
 	static frequencyPattern_t freq_patt;
 
+	static int number_of_operators;
+
 public:
+
+	static int getNewOpId();
 
 	static void frequency_pattern();
 
@@ -528,6 +548,14 @@ class Batch {
 		~Batch(){
 			latency_op.clear();
 		}
+};
+
+class Operator {
+	public:
+		int operator_id;
+		std::string operator_name;
+		Operator(){}
+		~Operator(){}
 };
 
 /* This class implements the main methods used by nsources benchmarks */
