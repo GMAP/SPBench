@@ -213,6 +213,8 @@ struct frequencyPattern_t{
 class SPBench{
 private:
 
+	std::thread source_thread;
+
 	static float items_reading_frequency; //usec precision
 	static int batch_size;
 	static float batch_interval;
@@ -244,6 +246,7 @@ public:
 	static std::string bench_path; //stores executable name from arg[0] in init_bench()
 
 	SPBench(){}
+
 	virtual ~SPBench(){}
 
 	unsigned long getCurrentTimeUsec(){
@@ -549,7 +552,7 @@ class Batch {
 			latency_op.clear();
 		}
 };
-
+/*
 class Operator {
 	public:
 		int operator_id;
@@ -557,7 +560,7 @@ class Operator {
 		Operator(){}
 		~Operator(){}
 };
-
+*/
 /* This class implements the main methods used by nsources benchmarks */
 class SuperSource{
 
@@ -590,7 +593,11 @@ class SuperSource{
 	public:
 		static int sourceObjCounter;
 
-		~SuperSource(){}
+		SuperSource(){}
+
+		~SuperSource(){
+			tryToJoin();
+		}
 		
 		void setFrequency(long sourceFrequency){
 			this->sourceFrequency = (sourceFrequency > 0 ? sourceFrequency : 0);

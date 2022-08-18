@@ -71,7 +71,6 @@ long Metrics::last_batch_size = 0;
 
 int SuperSource::sourceObjCounter = 0;
 
-
 std::vector<Metrics::item_metrics_data> Metrics::latency_vector;
 std::vector<Metrics::monitor_data> Metrics::monitor_vector;
 std::vector<unsigned long> Metrics::timestamps_vec;
@@ -905,12 +904,19 @@ void Metrics::print_average_latency(){
 
 	float max_latency = 0.0;
 	float min_latency = latency_vector[0].total_latency;
+	float max_ts = 0.0, min_ts = 0.0;
 	for(unsigned int i = 0; i < latency_vector.size(); i++){
 		for(unsigned int j = 0; j < latency_vector[i].local_latency.size(); j++) //get the latency of each operator 
 			operator_aux[j] = operator_aux[j] + (latency_vector[i].local_latency[j]/1000.0);
 		total += latency_vector[i].total_latency;
-		if(latency_vector[i].total_latency > max_latency) max_latency = latency_vector[i].total_latency;
-		if(latency_vector[i].total_latency < min_latency) min_latency = latency_vector[i].total_latency;
+		if(latency_vector[i].total_latency > max_latency) {
+			max_latency = latency_vector[i].total_latency;
+			max_ts = (latency_vector[i].item_sink_timestamp - execution_init_clock);
+		}
+		if(latency_vector[i].total_latency < min_latency) {
+			min_latency = latency_vector[i].total_latency;
+			max_ts = (latency_vector[i].item_sink_timestamp - execution_init_clock);
+		}
 	}
 	printf("\n--------------- AVERAGE LATENCY ---------------\n\n");
 	if(SPBench::get_operator_name_list().size() != latency_vector[0].local_latency.size()){
@@ -922,9 +928,9 @@ void Metrics::print_average_latency(){
 		for(unsigned int j = 0; j < operator_aux.size(); j++)	
 			printf("\tOperator %s = %f\n", SPBench::get_operator_name_list()[j].c_str(), (operator_aux[j]/latency_vector.size()));
 	}
-	printf("\n  End-to-end latency (ms) = %f\n", (total/latency_vector.size())/1000.0);
-	printf("\n     Maximum latency (ms) = %f\n", max_latency/1000.0);
-	printf("     Minimum latency (ms) = %f\n", min_latency/1000.0);
+	printf("\n  End-to-end latency (ms) = %.3f\n", (total/latency_vector.size())/1000.0);
+	printf("\n     Maximum latency (ms) = %.3f (at %.1f sec)\n", max_latency/1000.0, max_ts/1000000.0);
+	printf("     Minimum latency (ms) = %.3f (at %.1f sec)\n", min_latency/1000.0, min_ts/1000000.0);
 	printf("\n-----------------------------------------------\n");
 }
 
@@ -952,12 +958,19 @@ void print_average_latency(data_metrics metrics){
 
 	float max_latency = 0.0;
 	float min_latency = metrics.latency_vector_ns[0].total_latency;
+	float max_ts = 0.0, min_ts = 0.0;
 	for(unsigned int i = 0; i < metrics.latency_vector_ns.size(); i++){
 		for(unsigned int j = 0; j < metrics.latency_vector_ns[i].local_latency.size(); j++) //get the latency of each operator 
 			operator_aux[j] = operator_aux[j] + (metrics.latency_vector_ns[i].local_latency[j] / 1000.0);
 		total += metrics.latency_vector_ns[i].total_latency;
-		if(metrics.latency_vector_ns[i].total_latency > max_latency) max_latency = metrics.latency_vector_ns[i].total_latency;
-		if(metrics.latency_vector_ns[i].total_latency < min_latency) min_latency = metrics.latency_vector_ns[i].total_latency;
+		if(metrics.latency_vector_ns[i].total_latency > max_latency){
+			max_latency = metrics.latency_vector_ns[i].total_latency;
+			max_ts = (metrics.latency_vector_ns[i].item_sink_timestamp - metrics.latency_vector_ns[0].item_timestamp);
+		}
+		if(metrics.latency_vector_ns[i].total_latency < min_latency){
+			min_latency = metrics.latency_vector_ns[i].total_latency;
+			min_ts = (metrics.latency_vector_ns[i].item_sink_timestamp - metrics.latency_vector_ns[0].item_timestamp);
+		}
 	}
 	printf("-------------- AVERAGE LATENCIES --------------\n\n");
 	if(SPBench::get_operator_name_list().size() != metrics.latency_vector_ns[0].local_latency.size()){
@@ -970,8 +983,8 @@ void print_average_latency(data_metrics metrics){
 			printf("\t Operator %s = %f\n", SPBench::get_operator_name_list()[j].c_str(), (operator_aux[j]/metrics.latency_vector_ns.size()));
 	}
 	printf("\n End-to-end latency (ms) = %f \n", (total/metrics.latency_vector_ns.size())/1000.0);
-	printf("\n    Maximum latency (ms) = %f\n", max_latency/1000.0);
-	printf("    Minimum latency (ms) = %f\n\n", min_latency/1000.0);
+	printf("\n    Maximum latency (ms) = %.3f (at %.1f sec)\n", max_latency/1000.0, max_ts/1000000.0);
+	printf("     Minimum latency (ms) = %.3f (at %.1f sec)\n", min_latency/1000.0, min_ts/1000000.0);
 	return;
 }
 

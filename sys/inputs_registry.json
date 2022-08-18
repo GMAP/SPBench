@@ -43,43 +43,43 @@
     },
     "lane_detection": {
         "test": {
-            "input": "$BENCH_DIR/inputs/lane_detection/3s-360p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/test.mp4",
             "md5_test": "98d2882c63a09c80a71a5ad9848d7cb5"
         },
         "test-HQ": {
-            "input": "$BENCH_DIR/inputs/lane_detection/3s-720p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/test-HQ.mp4",
             "md5_test": "122dfe61abbe0314d265ec5816f06c73"
         },
         "small": {
-            "input": "$BENCH_DIR/inputs/lane_detection/15s-360p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/small.mp4",
             "md5_test": "b012281644eb61d392f293d23c73f21c"
         },
         "small-HQ": {
-            "input": "$BENCH_DIR/inputs/lane_detection/15s-720p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/small-HQ.mp4",
             "md5_test": "4c9391a1c53ada74bec4cc91e9a48578"
         },
         "medium": {
-            "input": "$BENCH_DIR/inputs/lane_detection/30s-360p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/medium.mp4",
             "md5_test": "3bef06bc4fb6136491f24db5dc6e7882"
         },
         "medium-HQ": {
-            "input": "$BENCH_DIR/inputs/lane_detection/30s-720p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/medium-HQ.mp4",
             "md5_test": "ad74f3d992fb369abc9650581385942f"
         },
         "large": {
-            "input": "$BENCH_DIR/inputs/lane_detection/60s-360p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/large.mp4",
             "md5_test": "1cee3753286975d5a197c3e485515a74"
         },
         "large-HQ": {
-            "input": "$BENCH_DIR/inputs/lane_detection/60s-720p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/large-HQ.mp4",
             "md5_test": "04d19335a19b1e98eea92f5311d884d6"
         },
         "huge": {
-            "input": "$BENCH_DIR/inputs/lane_detection/120s-360p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/huge.mp4",
             "md5_test": "0a7f149a59329b0d1f064a1c4bff1d60"
         },
         "huge-HQ": {
-            "input": "$BENCH_DIR/inputs/lane_detection/120s-720p.mp4",
+            "input": "$BENCH_DIR/inputs/lane_detection/huge-HQ.mp4",
             "md5_test": "fc0a98e39ec1d6c1bdbe87d263be4898"
         }
     },
