@@ -418,6 +418,10 @@ long Source::source_item_timestamp = current_time_usecs();
 
 bool Source::op(Item &item){
 
+	if(operator_id < 0){
+		operator_id = SPBench::getNewOpId();
+	}
+
 	//if last batch included the last item, ends computation
 	if(stream_end == true){
 		return false;
@@ -530,7 +534,7 @@ bool Source::op(Item &item){
 
 	//metrics computation
 	if(Metrics::latency_is_enabled()){
-		item.latency_op[0] = (current_time_usecs() - latency_op) ;
+		item.latency_op[operator_id] = (current_time_usecs() - latency_op) ;
 	}
 
 	item.batch_index = Metrics::batch_counter;
@@ -539,6 +543,10 @@ bool Source::op(Item &item){
 }
 
 void Sink::op(Item &item){
+	if(operator_id < 0){
+		operator_id = SPBench::getNewOpId();
+	}
+	
 	//metrics computation
 	unsigned long latency_op;
 	if(Metrics::latency_is_enabled()){
@@ -588,7 +596,7 @@ void Sink::op(Item &item){
 
 	if(Metrics::latency_is_enabled()){
 		double current_time_sink = current_time_usecs();
-		item.latency_op[5] = (current_time_sink - latency_op);
+		item.latency_op[operator_id] = (current_time_sink - latency_op);
 
 		unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		Metrics::global_latency_acc += total_item_latency; // to compute inst. average latency
