@@ -582,7 +582,11 @@ class SuperSource{
 	public:
 		static int sourceObjCounter;
 
-		~SuperSource(){}
+		SuperSource(){}
+		
+		~SuperSource(){
+			tryToJoin();
+		}
 		
 		void setFrequency(long sourceFrequency){
 			this->sourceFrequency = (sourceFrequency > 0 ? sourceFrequency : 0);
