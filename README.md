@@ -10,6 +10,23 @@ The main goal of SPBench is to enable users to easily create custom benchmarks f
 ## How to cite
 
  - GARCIA, A. M.; SCHEPKE, C. ; GRIEBLER, D. J. ; FERNANDES, L. G. . SPBench: A Framework for Creating Benchmarks of Stream Processing Applications. COMPUTING, v. 1, p. 1, 2021, doi: 10.1007/s00607-021-01025-6. \[[link](https://doi.org/10.1007/s00607-021-01025-6)\]
+ 
+Bibtex:
+```bibtex
+@article{GARCIA:SPBench:2022,
+	author={Adriano Marques Garcia and Dalvan Griebler and Claudio Schepke and Luiz Gustavo Fernandes},
+	title={{SPBench: a framework for creating benchmarks of stream processing applications}},
+	journal={Computing},
+	number={In press},
+	volume={In press},
+	pages={1-23},
+	publisher={Springer},
+	month={January},
+	year={2022},
+	doi={10.1007/s00607-021-01025-6},
+	url={https://doi.org/10.1007/s00607-021-01025-6},
+}
+```
 
 ### Other papers using SPBench
 
