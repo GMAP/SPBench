@@ -179,6 +179,8 @@ unsigned int outFileSize = 0;
 
 int Source::operator_id = -1;
 int Sink::operator_id = -1;
+int Source_d::operator_id = -1;
+int Sink_d::operator_id = -1;
 
 void set_operators_name() {
 	if (Metrics::latency_is_enabled()) {
