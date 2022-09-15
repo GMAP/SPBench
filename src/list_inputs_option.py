@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : list_inputs_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI List Inputs Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #

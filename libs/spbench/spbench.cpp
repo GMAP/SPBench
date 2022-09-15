@@ -33,8 +33,9 @@
 #endif
 
 namespace spb{
-
 unsigned int nthreads = 1;
+
+std::atomic<bool> execution_done(false);
 
 float SPBench::items_reading_frequency = -1; // if <= 0.0, then ignore frequency control
 //float SPBench::item_waiting_time = 0;
@@ -58,6 +59,7 @@ bool Metrics::latency_to_file = false;
 bool Metrics::upl = false;
 bool Metrics::throughput = false;
 bool Metrics::monitoring = false;
+bool Metrics::monitoring_thread = false;
 Metrics::data_metrics Metrics::metrics;
 long Metrics::batch_counter = 0; // batches processed
 long Metrics::items_counter = 0;
@@ -66,8 +68,8 @@ long Metrics::batches_at_sink_counter = 0;
 long Metrics::global_latency_acc = 0;
 long Metrics::execution_init_clock = 0;
 long Metrics::item_old_time = 0;
-long Metrics::monitored_items_counter = 0;
-long Metrics::last_batch_size = 0;
+
+std::thread Metrics::monitor_thread;
 
 int SuperSource::sourceObjCounter = 0;
 
@@ -78,6 +80,9 @@ std::vector<unsigned long> Metrics::timestamps_vec;
 // ns
 std::vector<data_metrics> metrics_vec;
 
+/**
+ * @return current time using gettimeofday()
+ */
 volatile unsigned long current_time_usecs() {
 	struct timeval time;
 	gettimeofday(&time, NULL);
@@ -96,6 +101,26 @@ std::string prepareOutFileAt(std::string out_path){
 		}
 	}
 	return (out_path + "/" + base_name(SPBench::getExecPath()));
+}
+
+/**
+ * Print current date and time.
+ *
+ * It prints the current date and time as: YYYY-MM-DD HH-MM-SS
+ *
+ * @return nothing
+ */
+void print_date_time(){
+
+	auto current_clock = std::chrono::system_clock::now();
+
+	std::time_t end_time = std::chrono::system_clock::to_time_t(current_clock);
+
+	std::tm* calendar_formatted = std::gmtime(&end_time);
+
+	std::cout << " " << calendar_formatted->tm_year+1900 << "-" << calendar_formatted->tm_mon+1 << "-" 
+				<< calendar_formatted->tm_mday << " " <<  calendar_formatted->tm_hour << ":" 
+				<< calendar_formatted->tm_min << ":" <<  calendar_formatted->tm_sec << std::endl;
 }
 
 /**
@@ -569,6 +594,7 @@ float instantLatency(float time_window_in_seconds, long sourceId){
 	return (inst_latency / (metrics_vec[sourceId].latency_vector_ns.size() - index)) / 1000.0; //ms
 }
 
+
 /**
  * Monitor metrics
  * 
@@ -577,7 +603,6 @@ float instantLatency(float time_window_in_seconds, long sourceId){
  * @return nothing.
  */
 void Metrics::monitor_metrics(){
-	monitored_items_counter++;
 	monitor_data item_data;
 	long current_time = current_time_usecs();
 	float time_elapsed_from_last_measurement_ms = (current_time - item_old_time)/1000.0;
@@ -591,10 +616,49 @@ void Metrics::monitor_metrics(){
 		item_data.average_latency = getAverageLatency();
 		item_data.instant_latency = getInstantLatency(time_elapsed_from_last_measurement_ms / 1000);
 		item_data.frequency = SPBench::getFrequency() < 0.0 ? 0.0 : SPBench::getFrequency();
-		item_data.batch_size = last_batch_size;
+		item_data.batch_size = latency_vector.back().batch_size;
 		monitor_vector.push_back(item_data);
 		//printf("%.4f %.4f %ld %.4f %.4f\n", item_data.timestamp, item_data.cpu_usage, item_data.mem_usage, item_data.throughput, item_data.latency_item);
 	}
+}
+
+/**
+ * Monitor metrics (threaded version)
+ * 
+ * It computes all monitoring metrics and stores it in a metrics vector
+ * It runs on an individual thread.
+ * 
+ * @return nothing.
+ */
+void Metrics::monitor_metrics_thread(){
+	
+	while(!execution_done){
+
+		// Do not do anything while there is no data available
+		if(latency_vector.size() < 1) continue;
+
+		float time_elapsed_from_last_measurement_ms = (current_time_usecs() - item_old_time)/1000.0;
+		
+		std::this_thread::sleep_for(std::chrono::milliseconds(Metrics::get_monitoring_time_interval() - (long) time_elapsed_from_last_measurement_ms));// - (long) time_elapsed_from_last_measurement_ms));
+	
+		monitor_data item_data;
+		item_old_time = current_time_usecs();
+		item_data.instant_throughput = getInstantThroughput(time_elapsed_from_last_measurement_ms / 1000);
+		item_data.instant_latency = getInstantLatency(time_elapsed_from_last_measurement_ms / 1000);
+
+		item_data.timestamp = (current_time_usecs() - execution_init_clock)/1000000.0;
+		item_data.cpu_usage = getCPUUsage();
+		item_data.mem_usage = getMemoryUsage();
+		item_data.average_throughput = getAverageThroughput();
+		
+		item_data.average_latency = getAverageLatency();
+		item_data.frequency = SPBench::getFrequency() < 0.0 ? 0.0 : SPBench::getFrequency();
+		item_data.batch_size = latency_vector.back().batch_size;
+		
+		monitor_vector.push_back(item_data);
+		//printf("%.4f %.4f %ld %.4f %.4f\n", item_data.timestamp, item_data.cpu_usage, item_data.mem_usage, item_data.instant_throughput, item_data.instant_latency);
+	}
+	return;
 }
 
 /**
@@ -607,9 +671,7 @@ void Metrics::monitor_metrics(){
  * @return nothing.
  */
 void monitor_metrics(unsigned long item_timestamp, unsigned long int sourceId){
-	metrics_vec[sourceId].monitored_items_counter++;
 	monitor_data item_data;
-	//data_metrics source_metrics = metrics_vec[sourceId];
 	long current_time = current_time_usecs();
 	float time_elapsed_from_last_measurement_ms = (current_time - metrics_vec[sourceId].last_measured_time)/1000.0;
 	if(time_elapsed_from_last_measurement_ms >= Metrics::get_monitoring_time_interval()){ //Time interval ms
@@ -619,9 +681,9 @@ void monitor_metrics(unsigned long item_timestamp, unsigned long int sourceId){
 			item_data.cpu_usage = UPL_get_proc_load_average_now(UPL_getProcID());
 			item_data.mem_usage = UPL_getProcMemUsage();
 		#endif
-		item_data.average_throughput = metrics_vec[sourceId].monitored_items_counter / item_data.timestamp;
+		item_data.average_throughput = metrics_vec[sourceId].batches_at_sink_counter / item_data.timestamp;
 		item_data.instant_throughput = instantThroughput((time_elapsed_from_last_measurement_ms / 1000), sourceId);
-		item_data.average_latency = (metrics_vec[sourceId].global_latency_acc/metrics_vec[sourceId].monitored_items_counter) / 1000.0;
+		item_data.average_latency = (metrics_vec[sourceId].global_latency_acc/metrics_vec[sourceId].batches_at_sink_counter) / 1000.0;
 		item_data.instant_latency = instantLatency((time_elapsed_from_last_measurement_ms / 1000), sourceId);
 		metrics_vec[sourceId].monitor_vector.push_back(item_data);
 		/*printf("%.4f %.4f %ld %.4f %.4f %.4f %.4f\n", 
@@ -703,7 +765,17 @@ data_metrics init_metrics(){
  * @return nothing.
  */
 void Metrics::stop(){
+	
+	std::cout << " The execution ended on:"; 
+	print_date_time();
+	std::cout << std::endl;
 
+	execution_done = true;
+
+	if (monitor_thread.joinable()){
+		monitor_thread.join();
+	}
+	
 	if(Metrics::items_counter < 1){
 		std::cout << "Error: your application processed zero items." << std::endl;
 		return;
@@ -740,7 +812,7 @@ void Metrics::stop(){
 	if(latency_to_file_is_enabled()){
 		write_latency(prepareOutFileAt("log") + "_latency.dat");
 	}
-	if (monitoring_is_enabled()){
+	if (monitoring_is_enabled() or monitoring_thread_is_enabled()){
 		FILE *monitor_file;
 		std::string file_name = (prepareOutFileAt("log") + "_monitoring_" + std::to_string(nthreads) + "nth.dat");
 
@@ -784,10 +856,6 @@ void compute_metrics(){
 			printf(  "===============================================\n");
 		}
 
-		//if(Metrics::throughput_is_enabled()){
-		//	element.stop_throughput_clock = current_time_usecs();
-		//}
-
 		#if !defined(NO_UPL)
 			if(Metrics::upl_is_enabled()){
 				//UPL metrics
@@ -816,7 +884,6 @@ void compute_metrics(){
 			printf("-----------------------------------------------\n");
 
 		if(Metrics::latency_to_file_is_enabled()){
-			//write_latency(out_file_path("log") + "_latency.dat");
 			write_latency(element);
 		}
 		if (Metrics::monitoring_is_enabled()){
@@ -851,8 +918,8 @@ void compute_metrics(){
 void Metrics::print_throughput(data_metrics metrics){
 	printf("------------------ THROUGHPUT -----------------\n\n");
 	printf("\tExecution time (sec) = %f\n\n", (metrics.stop_throughput_clock - metrics.start_throughput_clock) / 1000000.0);
-	printf("\tItens processed = %lu\n", items_at_sink_counter);
-	printf("\tItens-per-second = %f\n\n", items_at_sink_counter/((metrics.stop_throughput_clock - metrics.start_throughput_clock) / 1000000.0));
+	printf("\tItems processed = %lu\n", items_at_sink_counter);
+	printf("\tItems-per-second = %f\n\n", items_at_sink_counter/((metrics.stop_throughput_clock - metrics.start_throughput_clock) / 1000000.0));
 	if(items_at_sink_counter != batches_at_sink_counter){
 		printf("\tBatches processed = %lu\n", batches_at_sink_counter);
 		printf("\tBatches-per-second = %f\n", batches_at_sink_counter/((metrics.stop_throughput_clock - metrics.start_throughput_clock) / 1000000.0));
@@ -871,12 +938,12 @@ void Metrics::print_throughput(data_metrics metrics){
 void print_throughput(data_metrics metrics){
 	unsigned long clock = metrics.stop_throughput_clock - metrics.start_throughput_clock;
 	printf("------------------ THROUGHPUT -----------------\n\n");
-	printf("\tExecution time = %.2f (seconds)\n\n", (clock / 1000000.0));
+	printf("\tExecution time (sec) = %f\n\n", (clock / 1000000.0));
 	printf("\tItems processed = %lu\n", metrics.items_at_sink_counter);
-	printf("\tItems-per-second = %.4f\n", metrics.items_at_sink_counter/(clock / 1000000.0));
+	printf("\tItems-per-second = %f\n", metrics.items_at_sink_counter/(clock / 1000000.0));
 	if(metrics.items_at_sink_counter != metrics.batches_at_sink_counter){
 		printf("\n\tBatches processed = %lu\n", metrics.batches_at_sink_counter);
-		printf("\tBatches-per-second = %.4f\n", metrics.batches_at_sink_counter/(clock / 1000000.0));
+		printf("\tBatches-per-second = %f\n", metrics.batches_at_sink_counter/(clock / 1000000.0));
 	}
 	printf("\n");
 }
@@ -982,9 +1049,10 @@ void print_average_latency(data_metrics metrics){
 		for(unsigned int j = 0; j < operator_aux.size(); j++)	
 			printf("\t Operator %s = %f\n", SPBench::get_operator_name_list()[j].c_str(), (operator_aux[j]/metrics.latency_vector_ns.size()));
 	}
-	printf("\n End-to-end latency (ms) = %f \n", (total/metrics.latency_vector_ns.size())/1000.0);
-	printf("\n    Maximum latency (ms) = %.3f (at %.1f sec)\n", max_latency/1000.0, max_ts/1000000.0);
-	printf("     Minimum latency (ms) = %.3f (at %.1f sec)\n", min_latency/1000.0, min_ts/1000000.0);
+	printf("\n  End-to-end latency (ms) = %f \n", (total/metrics.latency_vector_ns.size())/1000.0);
+	printf("\n     Maximum latency (ms) = %.3f\n", max_latency/1000.0);
+	printf("     Minimum latency (ms) = %.3f\n", min_latency/1000.0);
+	printf("\n-----------------------------------------------\n");
 	return;
 }
 
@@ -1004,7 +1072,7 @@ void Metrics::write_latency(std::string file_name){
 	//write the head of the file
 	if(SPBench::get_operator_name_list().size() != latency_vector[0].local_latency.size()){
 		printf("Warning: the list of operator names does not match up the number of analyzed operators.\n");
-		printf("The names will be changed to default names.\n\n");
+		printf("Operators' names will be changed to default names.\n\n");
 		for(unsigned int i = 0; i < latency_vector[0].local_latency.size(); i++)
 			fprintf(latency_file, "Operator%d ", i);
 	} else {

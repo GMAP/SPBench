@@ -203,7 +203,6 @@ void decompress();
 
 namespace spb{
 
-
 class Item;
 
 class Source;

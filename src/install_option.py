@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : install_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI Intall Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #

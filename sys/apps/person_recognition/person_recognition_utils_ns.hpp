@@ -29,7 +29,6 @@
 #include <spbench.hpp>
 
 namespace spb{
-
 //inline bool file_exists (const std::string& name);
 
 #define	DEFS_H
@@ -146,12 +145,6 @@ class Source : public SuperSource{
 				exit(0);
 			}
 			return;
-		}
-
-		void tryToJoin(){ // If thread Object is Joinable then Join that thread.
-			if (source_thread.joinable()){
-				source_thread.join();
-			}
 		}
 
 	public:

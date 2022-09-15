@@ -48,10 +48,18 @@ def make_gen(stream_path, selected_benchmark):
     if(nsources):
         ns = "_ns"
     
-    programm_path = stream_path + "/apps/" +  app_id + "/" + ppi_id + "/" + bench_id + "/"
+    programm_path = stream_path + "/benchmarks/" +  app_id + "/" + ppi_id + "/" + bench_id + "/"
     #bin_path = stream_path + "/bin/" + app_id + "/" + ppi_id + "/" + bench_id
 
     json_file =  programm_path + "config.json"
+
+    global_json_file = stream_path + "/benchmarks/" + "global_config.json"
+
+    #check if config.json file exists
+    if os.path.exists(global_json_file) == False:
+        print("   Error!\n-> Not found: [" + global_json_file + "]\n")
+        print("-> Global configuration file not found.")
+        sys.exit()
     
     #check if config.json file exists
     if os.path.exists(json_file) == False:
@@ -65,6 +73,12 @@ def make_gen(stream_path, selected_benchmark):
         json_data = json.load(f)
     json_info.close()
 
+    #open JSON file
+    global_json_info = open(global_json_file, 'r')
+    with global_json_info as f:
+        global_json_data = json.load(f)
+    global_json_info.close()
+
     #set the full path of the benchmark source file
     sourceFileName = bench_id + ".cpp"
     source = programm_path + sourceFileName
@@ -76,42 +90,79 @@ def make_gen(stream_path, selected_benchmark):
     ##########################################
     # Retrieve data from the JSON file
     ##########################################
-    compiler = json_data["CXX"]
-    compiler = compiler.replace('$BENCH_DIR', stream_path)
 
-    compiler_flags = json_data["CXX_FLAGS"]
-    compiler_flags = compiler_flags.replace('$BENCH_DIR', stream_path)
+    if(global_json_data["CXX"]):
+        compiler = global_json_data["CXX"]
+    else:
+        compiler = json_data["CXX"]
+    compiler = compiler.replace('$SPB_HOME', stream_path)
+
+    if(json_data["CXX_FLAGS"]):
+        compiler_flags = global_json_data["CXX_FLAGS"]
+    else:
+        compiler_flags = json_data["CXX_FLAGS"]
+
+    if(global_json_data["EXTRA_CXX_FLAGS"]):
+        compiler_flags += " " + global_json_data["EXTRA_CXX_FLAGS"]
+
+    compiler_flags = compiler_flags.replace('$SPB_HOME', stream_path)
 
     # if no specific compiler were defined, use the general one
-    if not json_data["PPI_CXX"]:
-        ppi_compiler = compiler
+    if(global_json_data["PPI_CXX"]):
+        ppi_compiler = global_json_data["PPI_CXX"]
     else:
-        ppi_compiler = json_data["PPI_CXX"]
-        ppi_compiler = ppi_compiler.replace('$BENCH_DIR', stream_path)
+        if json_data["PPI_CXX"]:
+            ppi_compiler = json_data["PPI_CXX"]
+        else:
+            ppi_compiler = compiler
+    ppi_compiler = ppi_compiler.replace('$SPB_HOME', stream_path)
 
-    ppi_compiler_flags = json_data["PPI_CXX_FLAGS"]
-    ppi_compiler_flags = ppi_compiler_flags.replace('$BENCH_DIR', stream_path)
 
-    pre_src_cmd = json_data["PRE_SRC_CMD"]
-    pre_src_cmd = pre_src_cmd.replace('$BENCH_DIR', stream_path)
+    if(json_data["PPI_CXX_FLAGS"]):
+        ppi_compiler_flags = global_json_data["PPI_CXX_FLAGS"]
+    else:
+        ppi_compiler_flags = json_data["PPI_CXX_FLAGS"]
 
-    post_src_cmd = json_data["POST_SRC_CMD"]
-    post_src_cmd = post_src_cmd.replace('$BENCH_DIR', stream_path)
+    if(global_json_data["EXTRA_PPI_CXX_FLAGS"]):
+        ppi_compiler_flags += " " + global_json_data["EXTRA_PPI_CXX_FLAGS"]
+    ppi_compiler_flags = ppi_compiler_flags.replace('$SPB_HOME', stream_path)
 
-    macros = json_data["MACROS"]
+    if(global_json_data["PRE_SRC_CMD"]):
+        pre_src_cmd = global_json_data["PRE_SRC_CMD"]
+    else:
+        pre_src_cmd = json_data["PRE_SRC_CMD"]
+    pre_src_cmd = pre_src_cmd.replace('$SPB_HOME', stream_path)
 
+    if(global_json_data["POST_SRC_CMD"]):
+        post_src_cmd = global_json_data["POST_SRC_CMD"]
+    else:
+        post_src_cmd = json_data["POST_SRC_CMD"]
+    post_src_cmd = post_src_cmd.replace('$SPB_HOME', stream_path)
+
+    if(global_json_data["MACROS"]):
+        macros = global_json_data["MACROS"]
+    else:
+        macros = json_data["MACROS"]
+
+    if(global_json_data["EXTRA_MACROS"]):
+        macros += " " + global_json_data["EXTRA_MACROS"]
+    
     pkgconfig = json_data["PKG-CONFIG"]
+    global_pkgconfig = global_json_data["PKG-CONFIG"]
+    pkgconfig.update(global_pkgconfig)
     pkg_cmd = []
     for key in pkgconfig:
         if isNotBlank(pkgconfig[key]):
-            pkgconfig[key] = pkgconfig[key].replace('$BENCH_DIR', stream_path)
+            pkgconfig[key] = pkgconfig[key].replace('$SPB_HOME', stream_path)
             pkg_cmd.append('`'+pkgconfig[key]+'` ')
 
     includes = json_data["INCLUDES"]
+    global_includes = global_json_data["INCLUDES"]
+    includes.update(global_includes)
     includes_cmd = []
     for key in includes:
         if isNotBlank(includes[key]):
-            includes[key] = includes[key].replace('$BENCH_DIR', stream_path)
+            includes[key] = includes[key].replace('$SPB_HOME', stream_path)
             includes_cmd.append(includes[key] + " ")
         
     # Some default includes required by SPBench
@@ -119,24 +170,30 @@ def make_gen(stream_path, selected_benchmark):
     includes_cmd.append('-I $(SRC_DIR) ')
     includes_cmd.append('-I $(SRC_DIR)/include ')
     includes_cmd.append('-I $(SPB_LIB_DIR) ')
-    #includes_cmd.append('-I $(SPB_HOME)/libs/upl/include/upl/ ')
     includes_cmd.append('-I $(BENCH_DIR)/operators/include/ ')
     
     libs = json_data["LIBS"]
+    global_libs = global_json_data["LIBS"]
+    libs.update(global_libs)
     libs_cmd = []
     for key in libs:
         if isNotBlank(libs[key]):
-            libs[key] = libs[key].replace('$BENCH_DIR', stream_path)
+            libs[key] = libs[key].replace('$SPB_HOME', stream_path)
             libs_cmd.append(libs[key] + " ")
-
-    #libs_cmd.append('-L $(SPB_HOME)/libs/upl/lib/ -lupl ')
 
     if app_id == 'ferret':
         libs_cmd.append('-L $(SRC_DIR)/parsec/lib ')
 
-    ldflags = json_data["LDFLAGS"]
-    if app_id == 'ferret':
-        ldflags += ' -lrt -lm -lcass -lstdc++ -ljpeg -lgsl -lgslcblas'
+    if(global_json_data["LDFLAGS"]):
+        ldflags = global_json_data["LDFLAGS"]
+    else:
+        ldflags = json_data["LDFLAGS"]
+
+    if(global_json_data["EXTRA_LDFLAGS"]):
+        ldflags += " " + global_json_data["EXTRA_LDFLAGS"]
+
+    #if app_id == 'ferret':
+    #    ldflags += ' -lrt -lm -lcass -lstdc++ -ljpeg -lgsl -lgslcblas'
 
     ###########################################
     # Makefile writing
@@ -161,7 +218,7 @@ def make_gen(stream_path, selected_benchmark):
         Makefile.write('.PHONY:\t clean all $(BENCHMARK)\n\n')
 
     Makefile.write('SRC_DIR := $(SPB_HOME)/sys/apps/$(APP_ID)\n')
-    Makefile.write('BENCH_DIR := $(SPB_HOME)/apps/$(APP_ID)/$(PPI_ID)/$(BENCHMARK)\n')
+    Makefile.write('BENCH_DIR := $(SPB_HOME)/benchmarks/$(APP_ID)/$(PPI_ID)/$(BENCHMARK)\n')
     Makefile.write('SPB_LIB_DIR := $(SPB_HOME)/libs/spbench\n\n')
 
     Makefile.write('BIN_DIR := $(SPB_HOME)/bin/$(APP_ID)/$(PPI_ID)\n')
@@ -240,7 +297,8 @@ def make_gen(stream_path, selected_benchmark):
 
     Makefile.write('.PHONY: clean\n')
     Makefile.write('clean:\n')
-    Makefile.write('\trm -f $(SRC_DIR)/parsec/obj/*\n')
+    if app_id == 'ferret':
+        Makefile.write('\trm -f $(SRC_DIR)/parsec/obj/*\n')
     Makefile.write('\trm -f $(OBJ) $(BENCHMARK).o $(SRC_DIR)/$(APP_ID)_utils' + ns + '.o $(APP_ID).a $(SPB_LIB_DIR)/spbench.o $(BIN_DIR)/$(BENCHMARK)\n')
     Makefile.write('\trm -rf $(OBJ_PATH)\n\n')
 

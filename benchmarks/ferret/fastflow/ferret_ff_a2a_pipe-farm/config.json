@@ -1,0 +1,30 @@
+{
+        "CXX": "g++ -std=c++1y",
+        "CXX_FLAGS":"",
+        "PPI_CXX": "g++ -std=c++1y",
+        "PPI_CXX_FLAGS":"",
+        "PRE_SRC_CMD": "",
+        "POST_SRC_CMD": "",
+        "MACROS": "-DBLOCKING_MODE -DNO_DEFAULT_MAPPING -DFF_BOUNDED_BUFFER -DDEFAULT_BUFFER_CAPACITY=1",
+        "PKG-CONFIG": {
+                "myPKG_1": "",
+                "myPKG_2": "",
+                "myPKG_N": "",
+                "gsl": "pkg-config --cflags --libs gsl",
+                "jpeg": "pkg-config --cflags --libs libjpeg"
+            },
+        "INCLUDES": {
+                "myINC_1": "",
+                "myINC_2": "",
+                "myINC_N": "",
+                "fastflow":"-I $SPB_HOME/ppis/fastflow/",
+                "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
+        },
+        "LIBS": {
+                "myLIB_1": "",
+                "myLIB_2": "",
+                "myLIB_N": "",
+                "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
+        },
+        "LDFLAGS": "-lrt -lm -lcass -lstdc++ -ljpeg -lgsl -lgslcblas -lpthread"
+    }

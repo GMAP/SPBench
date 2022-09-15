@@ -63,7 +63,6 @@
 #define NUMBER_OF_OPERATORS 6
 
 namespace spb{
-
 class Item;
 class Source;
 class Sink;

@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : op_edit_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI Operator Edition Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -46,7 +46,7 @@ def edit_op_source_func(spbench_path, args):
     ppi_id = selected_benchmark[0]["ppi_id"]
     bench_id = selected_benchmark[0]["bench_id"]
 
-    operators_list_file = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/operators/operators.json"
+    operators_list_file = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/operators/operators.json"
     
     if not fileExists(operators_list_file):
         print("\n Error, file not found (operators list file): \n " + operators_list_file + "\n")
@@ -65,7 +65,7 @@ def edit_op_source_func(spbench_path, args):
         
         sys.exit()
 
-    operator_source = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/operators/src/" + operator_id + "_op.cpp"
+    operator_source = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/operators/src/" + operator_id + "_op.cpp"
 
     if not fileExists(operator_source):
         print("\n Error, operator source file not found: \n " + operator_source + "\n")
@@ -87,7 +87,7 @@ def edit_op_source_func(spbench_path, args):
     
 
     #if there is not a makefile yet, build one
-    #make_path = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/Makefile"
+    #make_path = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/Makefile"
     #if not fileExists(make_path):
     #    make_gen(spbench_path, selected_benchmark[0])
 

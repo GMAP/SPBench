@@ -6,10 +6,11 @@ cd $THIS_DIR
 
 APP=''
 CLASS=''
+PUB_DATA_URL="https://gmap.pucrs.br/public_data/spbench/workloads"
 
 if [ -z "$1" ]
 then
-    APP="all"
+	APP="all"
 else
 	APP=$1
 fi
@@ -18,9 +19,10 @@ if [ -z "$2" ]
 then
 	CLASS="all"
 else
-    CLASS=$2
+	CLASS=$2
 fi
 
+echo "---------------------------------------------------------------"
 if [[ $APP == "lane_detection" || $APP == "all" ]]; then
 
 	THIS_APP="lane_detection"
@@ -29,21 +31,95 @@ if [[ $APP == "lane_detection" || $APP == "all" ]]; then
 		mkdir $THIS_APP
 	fi
 
-	#cd $THIS_APP
+	cd $THIS_APP
 
-	FILE=lane_inputs.tar.gz
-
-	if [[ $3 == "force" ]]; then
-		rm $FILE
+	if [[ $CLASS == "test" || $CLASS == "all" ]]
+	then
+		THIS_CLASS=test
+		FILE=$THIS_CLASS.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
+		fi
+		echo " Building $THIS_APP $THIS_CLASS class..."
+		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
 	fi
 
-	if [ ! -f "$FILE" ]; then
-		echo " Downloading $FILE..."
-		wget https://gmap.pucrs.br/public_data/spbench/workloads/lane/$FILE
+	if [[ $CLASS == "small" || $CLASS == "all" ]]
+	then
+		THIS_CLASS=small
+		FILE=$THIS_CLASS.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
+		fi
+		echo " Building $THIS_APP $THIS_CLASS class..."
+		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
 	fi
-	echo " Building Lane Detection input classes..."
-	tar -xf $FILE
-	#cd ..
+
+	if [[ $CLASS == "medium" || $CLASS == "all" ]]
+	then
+		THIS_CLASS=medium
+		FILE=$THIS_CLASS.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
+		fi
+		echo " Building $THIS_APP $THIS_CLASS class..."
+		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
+	fi
+	
+	if [[ $CLASS == "large" || $CLASS == "all" ]]
+	then
+		THIS_CLASS=large
+		FILE=$THIS_CLASS.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
+		fi
+		echo " Building $THIS_APP $THIS_CLASS class..."
+		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
+	fi
+
+	if [[ $CLASS == "huge" || $CLASS == "all" ]]
+	then
+		THIS_CLASS=huge
+		FILE=$THIS_CLASS.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
+		fi
+		
+		echo " Building $THIS_APP $THIS_CLASS class..."
+		tar -xf $FILE	
+		echo " Done!"
+		echo "---------------------------------------------------------------"
+	fi
+
+	cd ..
 fi
 
 if [[ $APP == "person_recognition" || $APP == "all" ]]
@@ -54,8 +130,10 @@ then
 		mkdir $THIS_APP
 	fi
 
-	#cd $THIS_APP
+	cd $THIS_APP
+	
 	echo " Building Person Recognition input classes..."
+	
 	FILE=person_inputs.tar.gz
 
 	if [[ $3 == "force" ]]; then
@@ -64,38 +142,97 @@ then
 	
 	if [ ! -f "$FILE" ]; then
 		echo " Downloading $FILE..."
-		wget https://gmap.pucrs.br/public_data/spbench/workloads/person/$FILE
+		wget $PUB_DATA_URL/$THIS_APP/$FILE
 	fi
 
-
-
 	tar -xf $FILE
-	#cd ..
+	echo " Done!"
+	echo "---------------------------------------------------------------"
+
+	cd ..
 fi
 
 if [[ $APP == "ferret" || $APP == "all" ]]
 then
+
 	THIS_APP="ferret"
 
 	if [ ! -d "ferret" ]; then
 		mkdir $THIS_APP
 	fi
 
-	#cd $THIS_APP
+	cd $THIS_APP
 
-	FILE=ferret_inputs.tar.gz
-
-	if [[ $3 == "force" ]]; then
-		rm $FILE
+	if [[ $CLASS == "test" || $CLASS == "small" || $CLASS == "all" ]]
+	then
+		THIS_CLASS=small
+		FILE=$THIS_CLASS.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
+		fi
+		echo " Building $THIS_APP $THIS_CLASS class..."
+		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
 	fi
 
-	if [ ! -f "$FILE" ]; then
-		echo " Downloading $FILE..."
-		wget https://gmap.pucrs.br/public_data/spbench/workloads/ferret/$FILE
+	if [[ $CLASS == "medium" || $CLASS == "all" ]]
+	then
+		THIS_CLASS=medium
+		FILE=$THIS_CLASS.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
+		fi
+		echo " Building $THIS_APP $THIS_CLASS class..."
+		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
 	fi
-	echo " Building Ferret input classes..."
-	tar -xf $FILE
-	#cd ..
+	
+	if [[ $CLASS == "large" || $CLASS == "all" ]]
+	then
+		THIS_CLASS=large
+		FILE=$THIS_CLASS.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
+		fi
+		echo " Building $THIS_APP $THIS_CLASS class..."
+		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
+	fi
+
+	if [[ $CLASS == "huge" || $CLASS == "all" ]]
+	then
+		THIS_CLASS=huge
+		FILE=$THIS_CLASS.tar.gz
+		if [[ $3 == "force" ]]; then
+			rm $FILE
+		fi
+		if [ ! -f "$FILE" ]; then
+			echo " Downloading $FILE..."
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
+		fi
+		
+		echo " Building $THIS_APP $THIS_CLASS class..."
+		tar -xf $FILE	
+		echo " Done!"
+		echo "---------------------------------------------------------------"
+	fi
+
+	cd ..
 fi
 
 if [[ $APP == "bzip2" || $APP == "all" ]]
@@ -111,76 +248,89 @@ then
 
 	if [[ $CLASS == "test" || $CLASS == "all" ]]
 	then
-		FILE=bzip2_test.tar.gz
+		THIS_CLASS=test
+		FILE=$THIS_CLASS.tar.gz
 		if [[ $3 == "force" ]]; then
 			rm $FILE
 		fi
 		if [ ! -f "$FILE" ]; then
 			echo " Downloading $FILE..."
-			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
 		fi
-		echo " Building bzip2 test class..."
+		echo " Building $THIS_APP $THIS_CLASS class..."
 		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
 	fi
 
 	if [[ $CLASS == "small" || $CLASS == "all" ]]
 	then
-		FILE=bzip2_small.tar.gz
+		THIS_CLASS=small
+		FILE=$THIS_CLASS.tar.gz
 		if [[ $3 == "force" ]]; then
 			rm $FILE
 		fi
 		if [ ! -f "$FILE" ]; then
 			echo " Downloading $FILE..."
-			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
 		fi
-		echo " Building bzip2 small class..."
+		echo " Building $THIS_APP $THIS_CLASS class..."
 		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
 	fi
 
 	if [[ $CLASS == "medium" || $CLASS == "all" ]]
 	then
-		FILE=bzip2_medium.tar.gz
+		THIS_CLASS=medium
+		FILE=$THIS_CLASS.tar.gz
 		if [[ $3 == "force" ]]; then
 			rm $FILE
 		fi
 		if [ ! -f "$FILE" ]; then
 			echo " Downloading $FILE..."
-			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
 		fi
-		echo " Building bzip2 medium class..."
+		echo " Building $THIS_APP $THIS_CLASS class..."
 		tar -xf $FILE
+		echo " Done!"
 	fi
 	
 	if [[ $CLASS == "large" || $CLASS == "all" ]]
 	then
-		FILE=bzip2_large.tar.gz
+		THIS_CLASS=large
+		FILE=$THIS_CLASS.tar.gz
 		if [[ $3 == "force" ]]; then
 			rm $FILE
 		fi
 		if [ ! -f "$FILE" ]; then
 			echo " Downloading $FILE..."
-			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
 		fi
-		echo " Building bzip2 large class..."
+		echo " Building $THIS_APP $THIS_CLASS class..."
 		tar -xf $FILE
+		echo " Done!"
+		echo "---------------------------------------------------------------"
 	fi
 
 	if [[ $CLASS == "huge" || $CLASS == "all" ]]
 	then
-		FILE=bzip2_large.tar.gz
+		THIS_CLASS=huge
+		FILE=large.tar.gz
 		if [[ $3 == "force" ]]; then
 			rm $FILE
 		fi
 		if [ ! -f "$FILE" ]; then
 			echo " Downloading $FILE..."
-			wget https://gmap.pucrs.br/public_data/spbench/workloads/bzip2/$FILE
+			wget $PUB_DATA_URL/$THIS_APP/$FILE
 		fi
+		
+		echo " Building $THIS_APP $THIS_CLASS class..."
 		tar -xf $FILE
-
-		echo " Building bzip2 huge class..."
-
-		cat enwiki-20211120-pages-articles-multistream9.xml > enwiki-20211120-pages-articles-multistream9-2x.xml
-		cat enwiki-20211120-pages-articles-multistream9.xml >> enwiki-20211120-pages-articles-multistream9-2x.xml
+		cp enwiki-20211120-pages-articles-multistream9.xml enwiki-20211120-pages-articles-multistream9-2x.xml
+		cat enwiki-20211120-pages-articles-multistream9.xml >> enwiki-20211120-pages-articles-multistream9-2x.xml		
+		echo " Done!"
+		echo "---------------------------------------------------------------"
 	fi
 
 	cd ..

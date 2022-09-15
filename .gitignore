@@ -25,7 +25,7 @@
 *.la
 #*.a
 *.lib
-/apps/**/*.a
+/benchmarks/**/*.a
 
 # Executables
 *.exe
@@ -39,7 +39,7 @@
 *.tar.*
 
 # Makefiles
-apps/**/Makefile
+benchmarks/**/Makefile
 
 # Log files
 *.log
@@ -56,6 +56,8 @@ sys/apps/ferret/parsec/
 /ppis/*
 /libs/*
 
+!/inputs/*.json
 !/ppis/*/*.sh
 !/libs/*/*.sh
+
 

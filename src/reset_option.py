@@ -69,7 +69,7 @@ def reset_operators_func(spbench_path, args):
         ##
         # get the path for the benchmark to be reset
         ##
-        bench_path = spbench_path + "/apps/" +  app_id + "/" + ppi_id + "/" + bench_id + ""
+        bench_path = spbench_path + "/benchmarks/" +  app_id + "/" + ppi_id + "/" + bench_id + ""
 
         ##
         # last set of operators before the reset are kept, for backup purposes

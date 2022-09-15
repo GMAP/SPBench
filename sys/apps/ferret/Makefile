@@ -2,7 +2,7 @@ PREFIX = ${PARSECDIR}/pkgs/apps/ferret/inst/${PARSECPLAT}
 TARGET = ferret
 ARCH = parsec
 
-CFLAGS += -no-pie -O3
+CFLAGS += 
 
 LDLIBS += `pkg-config --cflags --libs gsl` $(LIBS) -lrt -lm -lcass -lgsl -lgslcblas -ljpeg -lstdc++ `pkg-config --cflags --libs libjpeg`
 #`pkg-config --cflags --libs gsl` $(LIBS) -lrt -lm -lcass -lgsl -lgslcblas -ljpeg -lstdc++ `pkg-config --cflags --libs libjpeg`

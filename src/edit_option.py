@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : edit_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI Benchmark Edition Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -27,7 +27,6 @@
 ##
 
 import sys
-import os
 
 from src.utils import *
 from src.make_gen import *
@@ -45,7 +44,7 @@ def edit_source_func(spbench_path, args):
     ppi_id = selected_benchmark[0]["ppi_id"]
     bench_id = selected_benchmark[0]["bench_id"]
 
-    bench_source_file = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/" + bench_id + ".cpp"
+    bench_source_file = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/" + bench_id + ".cpp"
     
     if not fileExists(bench_source_file):
         print("\n Error!! Source file not found at:\n " + bench_source_file + "\n")
@@ -64,7 +63,7 @@ def edit_source_func(spbench_path, args):
     runShellCmd(cmd_line)
 
     #if there is not a makefile yet, build one
-    make_path = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/Makefile"
+    make_path = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/Makefile"
     if not fileExists(make_path):
         make_gen(spbench_path, selected_benchmark[0])
 

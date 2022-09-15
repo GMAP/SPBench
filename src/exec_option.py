@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : exec_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI Benchmark Execution Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -28,9 +28,9 @@
 
 #from __future__ import print_function
 
-
 import sys
 import os
+import datetime
 
 from src.errors import *
 from src.utils import *
@@ -74,9 +74,9 @@ def execute_func(spbench_path, args):
                     print(" You can also run \'./spbench new-input -h\' to register a new input.")
                     continue
             if app_id == 'ferret' or app_id == 'person_recognition':
-                input_list.append(inputs_dic[key]['input'].replace('$BENCH_DIR', spbench_path) + ' ' + key)
+                input_list.append(inputs_dic[key]['input'].replace('$SPB_HOME', spbench_path) + ' ' + key)
             else:
-                input_list.append(inputs_dic[key]['input'].replace('$BENCH_DIR', spbench_path))
+                input_list.append(inputs_dic[key]['input'].replace('$SPB_HOME', spbench_path))
 
             # if it is a single source benchmark, get only the first input
             if not nsources:
@@ -139,12 +139,10 @@ def execute_func(spbench_path, args):
             if float(min_freq) > float(max_freq):
                 raise ArgumentTypeError("Argument error! Maximum frequency must be higher than minimum frequency: " + frequency_pattern)
 
-
         # Check for errors in repetitions
         if args.repetitions:
             if not args.repetitions.isdigit():
                 raise ArgumentTypeError("Argument error! The number of repetitions must be an integer higher than or equal to one: " + args.repetitions)
-
 
         # Check for errors in batch size
         if args.batch_size:
@@ -161,11 +159,23 @@ def execute_func(spbench_path, args):
             if not args.nthreads.isdigit():
                 raise ArgumentTypeError("Argument error! Number of threads must be a integer number higher than or equal to one: " + args.nthreads)
         
-        # Check for errors in monitoring interval
-        if args.time_interval:
-            if not args.time_interval.isdigit():
-                raise ArgumentTypeError("Argument error! Time interval for monitoring must be an integer number higher than or equal to one: " + args.time_interval)
+        if nsources and args.time_interval_thr:
+            raise ArgumentTypeError("Argument error! -monitor-thread feature is not available for multi-source benchmarks. You can use the -monitor instead!")
+
+        if args.time_interval and args.time_interval_thr:
+            raise ArgumentTypeError("Argument error! You can not use both -monitor and -monitor-thread arguments at once!")
+        else:
+            # Check for errors in monitoring interval
+            if args.time_interval:
+                if not args.time_interval.isdigit():
+                    raise ArgumentTypeError("Argument error! Time interval for monitoring must be an integer number higher than or equal to one: " + args.time_interval)
+            
+            # Check for errors in monitoring interval
+            if args.time_interval_thr:
+                if not args.time_interval_thr.isdigit():
+                    raise ArgumentTypeError("Argument error! Time interval for monitoring must be an integer number higher than or equal to one: " + args.time_interval_thr)
         
+
         # Check for errors in frequency
         if args.items_frequency:
             if not isPositiveFloat(args.items_frequency):
@@ -188,6 +198,9 @@ def execute_func(spbench_path, args):
                 batch_interval = " -B" + args.batch_interval
 
             time_interval = ''
+            if args.time_interval_thr:
+                time_interval = " -M" + args.time_interval_thr
+                
             if args.time_interval:
                 time_interval = " -m" + args.time_interval
 
@@ -218,6 +231,8 @@ def execute_func(spbench_path, args):
                 batch_interval = " -B " + args.batch_interval
 
             time_interval = ''
+            if args.time_interval_thr:
+                time_interval = " -M " + args.time_interval_thr
             if args.time_interval:
                 time_interval = " -m " + args.time_interval
 
@@ -241,6 +256,14 @@ def execute_func(spbench_path, args):
 
         # build the execution command line and run it
         cmd_line = spbench_path + "/bin/" + app_id + "/" + ppi_id + "/" + bench_id + exec_arguments + user_args
+
+        if(args.executor):
+            cmd_line = args.executor + " " + cmd_line
+
+        if(args.print_exec_line):
+            print(cmd_line)
+            continue
+
         print("Execution string >> " + cmd_line)
         print("\n Running benchmark: " + bench_id)
         if not nsources:
@@ -259,21 +282,21 @@ def execute_func(spbench_path, args):
                     print("     #  #                  #  #  - - - - - - - -> Maximum: " + max_freq + " items per second")
                     print("  #        #            #        #                    ")
                     print("             #        #            #        #          ")
-                    print("                #  #                  #  # - - -> Minimum: "+ min_freq + " items per second")
+                    print("                #  #                  #  # - - -> Minimum: " + min_freq + " items per second")
                     print("                        |____________________| -> Periods: " + period + " seconds")
                 elif(pattern == 'binary'):
                     print("\n Frequency pattern: binary\n")
                     print("         # # # # #       # # # #  - -> Maximum: " + max_freq + " items per second")
                     print("         #       #       #           ")
                     print("         #       #       #           ")
-                    print(" # # # # #       # # # # #  - - - - -> Minimum: "+ min_freq + " items per second")
+                    print(" # # # # #       # # # # #  - - - - -> Minimum: " + min_freq + " items per second")
                     print("                 |______________| - -> Periods: " + period + " seconds")
                 elif(pattern == 'spike'):
                     print("\n Frequency pattern: spike\n")
                     print("            #            #  - -> Maximum: " + max_freq + " items per second")
                     print("           ##           ##   ")
                     print("          # #          # #   ")
-                    print(" # # # # #  # # # # # #  # # #-> Minimum: "+ min_freq + " items per second")
+                    print(" # # # # #  # # # # # #  # # #-> Minimum: " + min_freq + " items per second")
                     print("                     |____| - -> Spikes:  " + str(spike_p) + " seconds")
                     print("            |_____________| - -> Periods: " + period + " seconds")
                 elif(pattern == 'increasing'):
@@ -281,14 +304,14 @@ def execute_func(spbench_path, args):
                     print("          # # # # # # # ...  -> Maximum: " + max_freq + " items per second")
                     print("       #")
                     print("    #")
-                    print(" # - - - - - - - - - - - - - -> Minimum: "+ min_freq + " items per second")
+                    print(" # - - - - - - - - - - - - - -> Minimum: " + min_freq + " items per second")
                     print("|__________| - - - - - - - - -> Period:  " + period + " seconds")
                 elif(pattern == 'decreasing'):
                     print("\n Frequency pattern: decreasing\n")
                     print(" # - - - - - - - - - - - - - -> Maximum: " + max_freq + " items per second")
                     print("    #")
                     print("       #")
-                    print("          # # # # # # # ...  -> Minimum: "+ min_freq + " items per second")
+                    print("          # # # # # # # ...  -> Minimum: " + min_freq + " items per second")
                     print("|__________| - - - - - - - - -> Period:  " + period + " seconds")
                 else:
                     print("Invalid frequency pattern:", pattern)
@@ -303,15 +326,101 @@ def execute_func(spbench_path, args):
         # Try to execute the benchmark
         print('\n')
 
+        latencies = []
+        throughputs = []
+        exec_times = []
+
         for n in range (0, int(args.repetitions)):
 
             if(int(args.repetitions) > 1):
                 print("\n ~~~> Execution " + str(n+1) + " from " + args.repetitions)
 
             # run the command line
-            runShellCmd(cmd_line)
+            output = runShellWithReturn(cmd_line)
+
+            print(output)
+
+            end_latency = 0
+            max_latency = 0
+            min_latency = 0
+            exec_time = 0
+            throughput = 0
+
+            output_lines = output.splitlines()
+            for line in output_lines:
+                
+                if("End-to-end latency" in line):
+                    end_latency = line.split()[4]
+                    if(isPositiveFloat(end_latency)):
+                        latencies.append(float(end_latency))
+
+                if("Maximum latency" in line):
+                    max_latency = line.split()[4]
+
+                if("Minimum latency" in line):
+                    min_latency = line.split()[4]
+                
+                if("Execution time" in line):
+                    exec_time = line.split()[4]
+                    if(isPositiveFloat(exec_time)):
+                        exec_times.append(float(exec_time))
+                
+                if("Items-per-second" in line):
+                    throughput = line.split()[2]
+                    if(isPositiveFloat(throughput)):
+                        throughputs.append(float(throughput))
+
+            ##
+            # Writing results to the general log file
+            ##
+            time_now = datetime.datetime.now()
+            print_time = time_now.strftime("%d/%m/%y %H:%M:%S")
+            log_line = []
+            log_line.append(str(print_time))
+            log_line.append(bench_id)
+            log_line.append(str((round(float(end_latency), 3))))
+            log_line.append(str(round(float(throughput), 3)))
+            log_line.append(str(round(float(exec_time), 3)))
+            log_line.append(str(round(float(max_latency), 3)))
+            log_line.append(str(round(float(min_latency), 3)))
+            log_line.append(','.join(inputs_ID_list))
+            log_line.append(args.nthreads)
+            log_line.append(args.batch_size)
+            log_line.append(args.batch_interval)
+            log_line.append(args.items_frequency)
+            log_line.append(args.frequency_pattern + "\n")
+
+            log_header = ("Time;Benchmark;Latency;Throughput;Exec. time;Max lat.;Min lat.;Input;N threads;Batch size;Batch int.;Frequency;Freq. patt.\n")
+
+            log_file = spbench_path + "/log/general_log.csv"
+
+            log_dir = spbench_path + "/log"
+
+            if(not dirExists(log_dir)):
+                try: 
+                    os.mkdir(log_dir) 
+                except OSError as error: 
+                    print(error)
             
+            if(not fileExists(log_file)):
+                with open(log_file, 'w') as general_log_file:
+                    general_log_file.write(log_header)
+
+            with open(log_file, 'r+') as general_log_file:
+                general_log_file.seek(0)
+                current_header = general_log_file.readline()
+
+                if(log_header not in current_header):
+                    general_log_file.seek(0)
+                    general_log_file.write(log_header)
+
+                general_log_file.seek(0, 2)
+                general_log_file.write(';'.join(log_line))
+                general_log_file.truncate()
+            
+            ##
             # result correctness checking
+            ##
             if args.test_result:
                 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                 for input in inputs_ID_list:
@@ -332,7 +441,7 @@ def execute_func(spbench_path, args):
                     if app_id == 'bzip2':
                         # bzip2 output files can alse be used as workload for decompression.
                         # this way, the output files are in the same directory as input files and we must address this special case here
-                        bzip2_out_file = (inputs_registry_dic[app_id][input]['input'].replace('$BENCH_DIR', spbench_path))
+                        bzip2_out_file = (inputs_registry_dic[app_id][input]['input'].replace('$SPB_HOME', spbench_path))
                         if '-d' in exec_arguments:
                             # if decompress is selected, remove the '.bz2'
                             checking_file = os.path.splitext(bzip2_out_file)[0]
@@ -372,7 +481,43 @@ def execute_func(spbench_path, args):
                         print(" - Resulting md5 hash: " + resulting_md5)
                     print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                 print("")
+            # end of the correcteness checking
+
+        ##
+        # Compute and print the metrics sumary
+        ##
+        if(int(args.repetitions) > 1):
+
+            if(latencies):
+                latency_average = sum(latencies)/len(latencies)
+                latency_error = stdev(latencies)
+
+            if(exec_times):
+                exec_time_average = sum(exec_times)/len(exec_times)
+                exec_time_error = stdev(exec_times)
+
+            if(throughputs):
+                thr_average = sum(throughputs)/len(throughputs)
+                thr_error = stdev(throughputs)
+
+            if(latencies or exec_times or throughputs):
+                print("*************** RESULTS SUMARY ***************\n")
+                print("             Benchmark:", bench_id)
+                print("           Repetitions:", args.repetitions)
+                if(latencies):
+                    print("\n       Average latency:", latency_average)
+                    print("     Latency std. dev.:", latency_error)
+                if(throughputs):
+                    print("\n    Average throughput:", thr_average)
+                    print("  Throughput std. dev.:", thr_error)
+                if(exec_times):
+                    print("\n    Average exec. time:", exec_time_average)
+                    print("  Exec. time std. dev.:", exec_time_error)
+
+                if nsources:
+                    print("\n CAUTION: This is a multi-source benchmark.")
+                    print("          This summary includes all different")
+                    print("          sources and may not be accurate.")
+                print("\n********************************************")
 
     sys.exit()
-
-           

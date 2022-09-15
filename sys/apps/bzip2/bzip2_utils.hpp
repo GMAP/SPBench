@@ -258,7 +258,6 @@ public:
 class Source{
 public:
 	static long source_item_timestamp;
-	static int operator_id;
 	static bool op(Item &item);
 	Source(){}
 	virtual ~Source(){}
@@ -267,7 +266,6 @@ public:
 class Sink{
 public:
 	static void op(Item &item);
-	static int operator_id;
 	Sink(){}
 	virtual ~Sink(){}
 };
@@ -275,7 +273,6 @@ public:
 class Source_d{
 public:
 	static long source_item_timestamp;
-	static int operator_id;
 	static bool op(Item &item);
 	Source_d(){}
 	virtual ~Source_d(){}
@@ -284,7 +281,6 @@ public:
 class Sink_d{
 public:
 	static void op(Item &item);
-	static int operator_id;
 	Sink_d(){}
 	virtual ~Sink_d(){}
 };

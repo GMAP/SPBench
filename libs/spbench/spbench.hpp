@@ -38,13 +38,14 @@
 #include <chrono>
 #include <cstdlib>
 #include <sstream>
-
+#include <atomic>
 #include <stdexcept>
 
 #include <errno.h>
 #include <sys/stat.h>
 #include <math.h>
 #include <string.h>
+#include <ctime>
 
 /* queue */
 #pragma once
@@ -59,7 +60,6 @@
 #define MAX_CAPACITY 50
 
 namespace spb{
-
 extern unsigned int nthreads;
 
 class SPBench;
@@ -160,7 +160,6 @@ struct data_metrics {
 		
 		/* monitoring variables */
 		std::vector<monitor_data> monitor_vector; //computed at sink
-		long monitored_items_counter; //counted at sink
 		long last_measured_time;
 		
 		int sourceId;
@@ -176,7 +175,6 @@ struct data_metrics {
 		batches_at_sink_counter(0),
 		items_at_sink_counter(0),
 		global_latency_acc(0),
-		monitored_items_counter(0),
 		last_measured_time(current_time_usecs()),
 		sourceId(0),
 		source_name("unnamed")
@@ -213,6 +211,8 @@ struct frequencyPattern_t{
 class SPBench{
 private:
 
+	std::thread source_thread;
+
 	static float items_reading_frequency; //usec precision
 	static int batch_size;
 	static float batch_interval;
@@ -244,6 +244,7 @@ public:
 	static std::string bench_path; //stores executable name from arg[0] in init_bench()
 
 	SPBench(){}
+
 	virtual ~SPBench(){}
 
 	unsigned long getCurrentTimeUsec(){
@@ -281,6 +282,7 @@ public:
 	static bool latency_to_file;
 	static bool throughput;
 	static bool monitoring;
+	static bool monitoring_thread;
 	static bool latency;
 
 	static long batch_counter; // batches processed at source
@@ -290,9 +292,9 @@ public:
 	static long global_latency_acc;
 	static long execution_init_clock;
 	static long item_old_time;
-	static long monitored_items_counter;
 	static long monitoring_time_interval;
-	static long last_batch_size;
+
+	static std::thread monitor_thread;
 
 	struct monitor_data;
 	struct item_metrics_data;
@@ -338,6 +340,7 @@ public:
 	};
 	
 	static void monitor_metrics();
+	static void monitor_metrics_thread();
 	//static bool file_exists (const std::string&);
 	static void init();
 	static void stop();
@@ -353,7 +356,6 @@ public:
 
 	// To store timestamps for computing instant latency and throughput
 	static std::vector<unsigned long> timestamps_vec;
-
 
 	Metrics(){}
 
@@ -384,6 +386,13 @@ public:
 
 	static void enable_monitoring(){monitoring = true;}
 	static bool monitoring_is_enabled(){return monitoring;}
+
+	static void enable_monitoring_thread(){monitoring_thread = true;}
+	static bool monitoring_thread_is_enabled(){return monitoring_thread;}
+
+	static void start_monitoring(){
+		monitor_thread = std::thread(monitor_metrics_thread);
+	}
 
 	static void enable_latency(){latency = true;}
 	static bool latency_is_enabled(){return latency;}
@@ -539,7 +548,7 @@ class Batch {
 		int batch_index;
 
 		Batch(int operators):
-			latency_op(operators, 0.0),
+			//latency_op(operators, 0.0),
 			timestamp(0.0),
 			batch_size(0),
 			batch_index(0)
@@ -583,7 +592,7 @@ class SuperSource{
 		static int sourceObjCounter;
 
 		SuperSource(){}
-		
+
 		~SuperSource(){
 			tryToJoin();
 		}

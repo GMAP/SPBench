@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : delete_input_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI Delete Input Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #

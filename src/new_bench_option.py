@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : new_bench_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI New Benchmark Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -127,7 +127,7 @@ def new_func(spbench_path, args):
                 sys.exit()
             args.nsources = True
             
-        copy_from_path = spbench_path + "/apps/" +  copy_from_app_id + '/' + copy_from_ppi_id + '/' + copy_from_bench_id + "/"
+        copy_from_path = spbench_path + "/benchmarks/" +  copy_from_app_id + '/' + copy_from_ppi_id + '/' + copy_from_bench_id + "/"
         if fileExists(copy_from_path + copy_from_bench_id + '.cpp'):
             if fileExists(copy_from_path + 'config.json'):
                 copy_from = copy_from_bench_id
@@ -173,7 +173,7 @@ def new_func(spbench_path, args):
         delete_benchmark(spbench_path, args)
 
     # set the path for the new benchmark
-    new_path = spbench_path + "/apps/" +  given_app_id + "/" + args.ppi_id + "/" + args.benchmark_id + "/"
+    new_path = spbench_path + "/benchmarks/" +  given_app_id + "/" + args.ppi_id + "/" + args.benchmark_id + "/"
 
     if fileExists(new_path):
         print("\n WARNING: There is already a directory for this benchmark.")

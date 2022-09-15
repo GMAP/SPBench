@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : new_input_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI New Input Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -49,7 +49,7 @@ def new_input_func(spbench_path, args):
     # check if this input is already registered for this application
     if args.input_id in inputs_registry[args.app_id]:
         print("\n There is already an input named \'"+ args.input_id +"\' for " + args.app_id + ".\n")
-        print(" Registered input -> " + inputs_registry[args.app_id][args.input_id]["input"].replace('$BENCH_DIR', spbench_path))
+        print(" Registered input -> " + inputs_registry[args.app_id][args.input_id]["input"].replace('$SPB_HOME', spbench_path))
 
         if not askToProceed():
             sys.exit()

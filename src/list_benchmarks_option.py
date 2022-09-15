@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : list_benchmarks_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI List Benchmarks Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #

@@ -1,36 +1,44 @@
+* v0.4.2-alpha
+  - [New feature] Now, all the benchmark set can be moved to another place just by moving the "benchmarks" folder and replacing it in the new place.
+  - [New feature] SPBench now keeps a persistent execution log in a log.csv file inside the 'logs' folder. This general log contains some results and parameters of each execution.
+  - [Library update] UPL now has support for x86 (/spbench/libs/upl/lib/x86) and ARM (/spbench/libs/upl/lib/arm) architectures
+  - [Feature update] All inputs now can be downloaded by the specific workload class (except the Person Recognition ones because they are quite small).
+  - [Metric update] Monitoring metrics now can also run on an individual thread (-monitor-thread <ms_interval>). 
+  - [Metric update] SPbench now prints the date and time on which each benchmark execution ended on.
+  - [CLI update] Exec command now allows for running selected benchmark n times. If the user is measuring average latency and throughput, it will show a summary of the results containing the average results from the execution and the respective standard deviations.
+  - [CLI update] Command 'clean' now can be used with '-logs' or '-outputs' to delete all logs and outputs.
+  - [CLI update] Exec command now allows users to change the benchmark executor (e.g., run a benchmark with perf or mpirun).
+  - [CLI update] Added '-print' option to the exec command, which only prints the execution line the SPBench would run on the screen, but without running it. Users may want to use this execution line to manually change some aspects of the execution.
+  - [New CLI feature] Added the 'global-config' option.
+
 * v0.4.1-alpha
-  - Operators edition
-  - UPL now can be disabled to avoid architectural incompatibility issues
-  - Min and max latency now show the moment in time where it they were registered
-  - Fixed bug with lane detection output correctness check
+  - [New feature] Operators edition for individual benchmarks is enabled.
+  - [Feature update] UPL can now be disabled to avoid architectural incompatibility issues.
+  - [Metric update] Min and max latency now show the moment in time where they were registered.
+  - [Bug fix] Fixed bug with lane detection output correctness check.
 
 * v0.4-alpha
 
-  - General:
-    - new batching mode: by time interval
-    - new feature: frequency patterns (for n-sources benchmarks it is only globally available)
-    - yasm(v1.3.0) library is now provided within SPBench
-  
-  - Metrics:
-    - new metric: instantaneous throughput
-    - new metric: instantaneous latency
-    - metric update: benchmark monitoring now registers also current frequency and batch size (not available for n-sources)
-    - metric update: benchmark monitoring now uses the same instantaneous metrics system
-    - metric update: average latency now displays min and max latency
-  
-  - CLI:
-    - new feature: users now can use the exec argument '-repeat <n_repetitions>' to run a benchmark n times
-    - new feature: users now can use -app and -ppi filters to select multiple benchmarks to execute
-  
-  - Workload:
-    - new workload classes: Test and Huge
-    - new input video for lane detection with low-quality (360p) and mid-quality (720p) options.
-  
-  - Other:
-    - frequency parameter is now defined as items per second instead of item interval
-    - update in the frequency control: now the waiting time is added before the item reading at source
-    - update in the frequency control: now it counts the processing time of the previous item in the source as part of the waiting time
-    - PPI update: FastFlow release 3 was replaced by its last version available in the github repository (august 2022)
-    - new benchmark: pipe-farm ferret-fastflow using all-to-all inter-farm communication
-    - benchmark update: improved implementation for ferret-fastflow pipe-farm
+  - [New feature] batching size can now be set as a time interval.
+  - [New feature] frequency patterns (for n-sources benchmarks, it is only globally available).
+  - [Library update] yasm(v1.3.0) library is now provided within SPBench.
+
+  - [new metric] instantaneous throughput.
+  - [new metric] instantaneous latency.
+  - [metric update] benchmark monitoring now registers also the current frequency and batch size (not available for n-sources).
+  - [metric update] benchmark monitoring now uses the same instantaneous metrics system.
+  - [metric update] average latency now displays min and max latency.
+
+  - [New CLI feature] users now can use the exec argument '-repeat <n_repetitions>' to run a benchmark n times.
+  - [New CLI feature] users now can use -app and -ppi filters to select multiple benchmarks to execute.
+
+  - [Workload update] new workload classes: Test and Huge.
+  - [Workload update] new input video for lane detection with low-quality (360p) and mid-quality (720p) options.
+
+  - [Update] frequency parameter is now defined as items per second instead of item interval.
+  - [Update] frequency control: now, the waiting time is added before the item reading at the source.
+  - [Update] frequency control: now, it counts the processing time of the previous item in the source as part of the waiting time.
+  - [PPI update] FastFlow release 3 was replaced by its last version available in the GitHub repository (august 2022).
+  - [New benchmark] pipe-farm ferret-fastflow using all-to-all inter-farm communication.
+  - [Benchmark update] improved implementation for ferret-fastflow pipe-farm.
 

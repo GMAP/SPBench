@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : clean_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench Clean Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -35,7 +35,9 @@ from src.make_gen import *
 def clean_func(spbench_path, args):
     
     # get the selected benchmarks
-    selected_benchmarks = registryDicToList(filterRegistry(getBenchRegistry(spbench_path), args))
+    selected_benchmarks = {}
+    if(args.benchmark_id or args.app_id or args.ppi_id):
+        selected_benchmarks = registryDicToList(filterRegistry(getBenchRegistry(spbench_path), args))
     
     for benchmark in selected_benchmarks:
         app_id = benchmark["app_id"]
@@ -52,7 +54,7 @@ def clean_func(spbench_path, args):
             os.makedirs(bin_path)
 
         #path where make will run
-        benchmark_path = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/" 
+        benchmark_path = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/" 
 
         # check if exists the make directory
         if not dirExists(benchmark_path):
@@ -64,11 +66,28 @@ def clean_func(spbench_path, args):
             make_gen(spbench_path, benchmark)
 
         runShellCmd("make -C " + benchmark_path + " clean")
+        print("make -C " + benchmark_path + " clean")
 
         # check and delete it if exists the directory that stores old operators
         old_operators = benchmark_path + "operators_old"
         if dirExists(old_operators):
             print("rm -rf " + old_operators)
             runShellCmd("rm -rf " + old_operators)
+
+
+    if(args.clean_logs or args.clean_outputs):
+        print("-------------------------------------------")
+
+    if(args.clean_logs):
+        print("-> Cleaning logs... ", end='')
+        runShellCmd("rm -rf ./log")
+        print("Done!")
+        print("-------------------------------------------")
+
+    if(args.clean_outputs):
+        print("-> Cleaning outputs... ", end='')
+        runShellCmd("rm -rf ./outputs")
+        print("Done!")
+        print("-------------------------------------------")
 
     sys.exit()       

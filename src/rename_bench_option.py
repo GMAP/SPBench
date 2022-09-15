@@ -65,8 +65,8 @@ def rename_bench_func(spbench_path, args):
     old_bench_id = old_bench_data[0]["bench_id"]
     new_bench_id = args.new_bench_id
         
-    old_bench_path = spbench_path + "/apps/" +  app_id + '/' + ppi_id + '/' + old_bench_id + "/"
-    new_bench_path = spbench_path + "/apps/" +  app_id + '/' + ppi_id + '/' + new_bench_id + "/"
+    old_bench_path = spbench_path + "/benchmarks/" +  app_id + '/' + ppi_id + '/' + old_bench_id + "/"
+    new_bench_path = spbench_path + "/benchmarks/" +  app_id + '/' + ppi_id + '/' + new_bench_id + "/"
 
     ok_to_rename = False
     if dirExists(old_bench_path):

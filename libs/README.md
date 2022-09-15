@@ -3,22 +3,41 @@
 ## Attention.
 The folowing packages are required to install SPBench dependencies:
  
-- build-essential 
+- build-essential
+- pkg-config
 - cmake
-- python (tested on python3 and python2.7)
+- python (tested on python3)
 
 You can run the command bellow to install theses dependencies or ask a system admin.
 
-``
-sudo apt-get install -y build-essential cmake python3
-``
+`sudo apt-get install -y build-essential pkg-config cmake python3`
 
 ## Installation
-For Lane Detection you first must install yasm -> ffmpeg -> OpenCV -> UPL.
+For Lane Detection or Person Recognition you first must install yasm -> ffmpeg -> OpenCV -> UPL.
 
 For Bzip2 you need to install the bzlib -> UPL.
 
 For Ferret, you must install GSL -> JPEG -> UPL
+
+## yasm
+
+Go inside the yasm folder
+
+``
+cd yasm
+``
+
+Compile the sources
+
+``
+./setup_yasm.sh
+``
+
+Load the configurations.
+
+``
+source setup_yasm_vars.sh
+``
 
 ## ffmpeg
 

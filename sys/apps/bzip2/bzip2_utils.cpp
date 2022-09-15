@@ -177,11 +177,6 @@ char* MemReadData;
 char* MemWriteData;
 unsigned int outFileSize = 0;
 
-int Source::operator_id = -1;
-int Sink::operator_id = -1;
-int Source_d::operator_id = -1;
-int Sink_d::operator_id = -1;
-
 void set_operators_name() {
 	if (Metrics::latency_is_enabled()) {
 		if (global_decomp == 1) {
@@ -200,10 +195,6 @@ void set_operators_name() {
 long Source::source_item_timestamp = current_time_usecs();
 
 bool Source::op(Item &item){
-
-	if(operator_id < 0){
-		operator_id = SPBench::getNewOpId();
-	}
 
 	//if last batch included the last item, ends computation
 	if(stream_end == true){
@@ -296,7 +287,7 @@ bool Source::op(Item &item){
 	}
 
 	if (Metrics::latency_is_enabled()) {
-		item.latency_op[operator_id] = (current_time_usecs() - latency_op);
+		item.latency_op.push_back(current_time_usecs() - latency_op);
 	}
 
 	item.batch_index = Metrics::batch_counter;
@@ -305,10 +296,6 @@ bool Source::op(Item &item){
 }
 
 void Sink::op(Item& item) {
-
-	if(operator_id < 0){
-		operator_id = SPBench::getNewOpId();
-	}
 
 	unsigned long latency_op;
 	if (Metrics::latency_is_enabled()) {
@@ -371,7 +358,7 @@ void Sink::op(Item& item) {
 
 	if(Metrics::latency_is_enabled()){
 		double current_time_sink = current_time_usecs();
-		item.latency_op[operator_id] = (current_time_sink - latency_op);
+		item.latency_op.push_back(current_time_sink - latency_op);
 
 		unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
@@ -385,9 +372,7 @@ void Sink::op(Item& item) {
 		Metrics::latency_vector.push_back(latency);
 		item.latency_op.clear();
 	}
-
-	if (Metrics::monitoring_is_enabled()) {
-		Metrics::last_batch_size = item.batch_size;
+	if(Metrics::monitoring_is_enabled()){
 		Metrics::monitor_metrics();
 	}
 }
@@ -484,6 +469,11 @@ int direct_compress(char* OutFilename)
 		}
 	}
 	bytesLeft = fileSize;
+
+	if(Metrics::monitoring_thread_is_enabled()){
+		Metrics::start_monitoring();
+	}
+
 	// Stream region
 	compress();
 
@@ -528,10 +518,6 @@ int direct_compress(char* OutFilename)
 long Source_d::source_item_timestamp = current_time_usecs();
 
 bool Source_d::op(Item &item){
-
-	if(operator_id < 0){
-		operator_id = SPBench::getNewOpId();
-	}
 
 	//if last batch included the last item, ends computation
 	if(stream_end == true){
@@ -664,7 +650,7 @@ bool Source_d::op(Item &item){
 	}
 
 	if (Metrics::latency_is_enabled()) {
-		item.latency_op[operator_id] = (current_time_usecs() - latency_op);
+		item.latency_op.push_back(current_time_usecs() - latency_op);
 	}
 
 	item.batch_index = Metrics::batch_counter;
@@ -673,10 +659,6 @@ bool Source_d::op(Item &item){
 }
 
 void Sink_d::op(Item& item) {
-
-	if(operator_id < 0){
-		operator_id = SPBench::getNewOpId();
-	}
 
 	unsigned long latency_op;
 	if (Metrics::latency_is_enabled()) {
@@ -736,7 +718,7 @@ void Sink_d::op(Item& item) {
 
 		if(Metrics::latency_is_enabled()){
 		double current_time_sink = current_time_usecs();
-		item.latency_op[operator_id] = (current_time_sink - latency_op);
+		item.latency_op.push_back(current_time_sink - latency_op);
 
 		unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
@@ -750,9 +732,7 @@ void Sink_d::op(Item& item) {
 		Metrics::latency_vector.push_back(latency);
 		item.latency_op.clear();
 	}
-
-	if (Metrics::monitoring_is_enabled()) {
-		Metrics::last_batch_size = item.batch_size;
+	if(Metrics::monitoring_is_enabled()){
 		Metrics::monitor_metrics();
 	}
 }
@@ -956,6 +936,10 @@ int direct_decompress(char* OutFilename)
 #endif
 
 		bytesLeft = fileSize;
+	}
+
+	if(Metrics::monitoring_thread_is_enabled()){
+		Metrics::start_monitoring();
 	}
 
 	decompress();
@@ -1348,6 +1332,8 @@ void usage(char* progname, const char* reason)
 #endif
 	fprintf(stderr, " -b#      : where # is the number of itens per batch (default 1)\n");
 	fprintf(stderr, " -B#      : where # is the time size of the batch (default 0)\n");
+	fprintf(stderr, " -m#	   : where # is the time interval in milliseconds. It monitors latency, throughput, and CPU and memory usage.\n");
+	fprintf(stderr, " -M#      : where # is the time interval in milliseconds. It monitors latency, throughput, and CPU and memory usage, running it on an individual thread.\n");
 	fprintf(stderr, " -Q#      : where # is the file block size in 100k (default 9 = 900k)\n");
 	fprintf(stderr, " -t#      : where # is the number of threads (default");
 	fprintf(stderr, " -c       : output to standard out (stdout)\n");
@@ -1747,7 +1733,36 @@ int bzip2_main(int argc, char* argv[])
 						usage(argv[0], "Cannot parse -m argument");
 					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
 					Metrics::set_monitoring_time_interval(atoi(cmdLineTemp));
+					if (Metrics::monitoring_thread_is_enabled())
+					{
+						fprintf(stderr, " *ERROR: You can not use both -m and -M parameters. You must select only one at once. Aborting...\n");
+						return 1;
+					}
 					Metrics::enable_monitoring();
+					j += cmdLineTempCount;
+#ifdef PBZIP_DEBUG
+					fprintf(stderr, "-t%d\n", monitoring_time_interval);
+#endif
+					break;
+				case 'M': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					if (cmdLineTempCount == 0)
+						usage(argv[0], "Cannot parse -M argument");
+					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					Metrics::set_monitoring_time_interval(atoi(cmdLineTemp));
+					if (Metrics::monitoring_is_enabled())
+					{
+						fprintf(stderr, " *ERROR: You can not use both -m and -M parameters. You must select only one at once. Aborting...\n");
+						return 1;
+					}
+					Metrics::enable_monitoring_thread();
 					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
 					fprintf(stderr, "-t%d\n", monitoring_time_interval);
@@ -1764,6 +1779,7 @@ int bzip2_main(int argc, char* argv[])
 					SPBench::setArg(cmdLineTemp);
 					j += cmdLineTempCount;
 					break;
+				
 				case 'h': usage(argv[0], "HELP"); break;
 				case 'd': decompress = 1; break;
 				case 'k': optimized_memory = true; SPBench::enable_memory_source(); break;

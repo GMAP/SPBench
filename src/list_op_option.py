@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : list_op_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI List Operators Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -30,7 +30,7 @@ import sys
 
 from src.utils import *
 
-#print all inputs
+#print all operators
 def list_op_func(spbench_path, args):
 
     if args.benchmark_id == 'all':
@@ -44,7 +44,7 @@ def list_op_func(spbench_path, args):
     ppi_id = selected_benchmark[0]["ppi_id"]
     bench_id = selected_benchmark[0]["bench_id"]
 
-    operators_list_file = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/operators/operators.json"
+    operators_list_file = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/operators/operators.json"
     
     if not fileExists(operators_list_file):
         print("\n Error, file not found (operators list file): \n " + operators_list_file)

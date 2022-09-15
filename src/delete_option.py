@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : delete_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI Delete Benchmark Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -73,7 +73,7 @@ def delete_benchmark(spbench_path, args):
     bench_id = selected_benchmark[0]["bench_id"]
 
     # remove the respective directory and files
-    dir_to_remove = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/"
+    dir_to_remove = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/"
 
     if dirExists(dir_to_remove):
         runShellCmd("rm -r " + dir_to_remove)
@@ -84,7 +84,7 @@ def delete_benchmark(spbench_path, args):
     del registry_dic[app_id][ppi_id][bench_id]
 
     # if there is no other benchmark related to this PPI, remove also the PPI directory
-    ppi_dir = spbench_path + "/apps/" + app_id + "/" + ppi_id
+    ppi_dir = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id
     if dirExists(ppi_dir):
         directory = os.listdir(ppi_dir) 
         if len(directory) == 0: 

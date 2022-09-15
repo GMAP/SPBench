@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : configure_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI Configure Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -27,14 +27,11 @@
 ##
 
 import sys
-import os
 
 from src.utils import *
 from src.make_gen import *
 
-def edit_json_func(spbench_path, args):
-    #TODO
-    #diferenciar flags da PPI e as do compilador (problema com spar-ferret)
+def configure_func(spbench_path, args):
     
     if args.benchmark_id == 'all':
         print("\n Error!! You cannot configure all benchmarks at once.\n Try again using a single benchmark ID.\n")
@@ -48,7 +45,7 @@ def edit_json_func(spbench_path, args):
     bench_id = selected_benchmark[0]["bench_id"]
 
     # get the config.json path
-    config_file = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/config.json"
+    config_file = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/config.json"
 
     if not fileExists(config_file):
         print("\n Error!! JSON configuration file not found at:\n " + config_file + "\n")
@@ -62,10 +59,19 @@ def edit_json_func(spbench_path, args):
     print("---------------------------------------------")
     print(" Running -> " + cmd_line)
     print("---------------------------------------------")
+
+    # compute md5 hash of the json file    
+    json_md5 = md5(config_file)
+    
     # run the command line
     runShellCmd(cmd_line)
 
+    # if nothing was changed, exit
+    if(json_md5 == md5(config_file)):
+        sys.exit()
+
     #build a new makefile
+    print(" Updating compiling configurations for: " + selected_benchmark[0]["bench_id"] + "\n")
     make_gen(spbench_path, selected_benchmark[0])
     
     sys.exit()

@@ -10,23 +10,6 @@ The main goal of SPBench is to enable users to easily create custom benchmarks f
 ## How to cite
 
  - GARCIA, A. M.; SCHEPKE, C. ; GRIEBLER, D. J. ; FERNANDES, L. G. . SPBench: A Framework for Creating Benchmarks of Stream Processing Applications. COMPUTING, v. 1, p. 1, 2021, doi: 10.1007/s00607-021-01025-6. \[[link](https://doi.org/10.1007/s00607-021-01025-6)\]
- 
-Bibtex:
-```bibtex
-@article{GARCIA:SPBench:2022,
-	author={Adriano Marques Garcia and Dalvan Griebler and Claudio Schepke and Luiz Gustavo Fernandes},
-	title={{SPBench: a framework for creating benchmarks of stream processing applications}},
-	journal={Computing},
-	number={In press},
-	volume={In press},
-	pages={1-23},
-	publisher={Springer},
-	month={January},
-	year={2022},
-	doi={10.1007/s00607-021-01025-6},
-	url={https://doi.org/10.1007/s00607-021-01025-6},
-}
-```
 
 ### Other papers using SPBench
 
@@ -51,6 +34,7 @@ Bibtex:
  - SPar
  - GrPPI (forthcoming)
  - Standard C++ Threads (forthcoming)
+ - OpenMP (forthcoming)
 
 # SPBench Framework
 
@@ -70,11 +54,15 @@ The folowing packages are required to install SPBench:
 - build-essential
 - pkg-config
 - cmake
-- python (tested on python3 and python2.7)
+- python (tested on python3)
 
 You can run the command bellow to install theses packages or ask a system admin.
 
 `sudo apt-get install -y build-essential pkg-config cmake python3`
+
+Some benchmark libraries may not work with GCC-10 or newer versions.
+
+We are still working these compatibility issues. For now, we recommend using GCC-9.
 
 To install SPBench you can run:
 
@@ -95,9 +83,9 @@ For custom and manual installations, see libs/README.md or ppis/README.md.
 
 or
 
-`python[2.7 or 3] spbench [command] <arguments>`
+`python3 spbench [command] <arguments>`
 
-Try: `./spbench -h` or `python[2.7 or 3] spbench -h `
+Try: `./spbench -h` or `python3 spbench -h `
  
 See the [documentation](https://spbench-doc.readthedocs.io/en/latest/) for more info about SPBench.
 

@@ -34,7 +34,6 @@
 #include <ferret_utils_ns.hpp>
 
 namespace spb{
-
 void input_parser(char * argv);
 
 void set_operators_name();
@@ -540,7 +539,7 @@ void Source::source_op(){
 		}
 		
 		if(Metrics::latency_is_enabled()){
-			item.latency_op[0] = (current_time_usecs() - latency_op);
+			item.latency_op.push_back(current_time_usecs() - latency_op);
 		}
 
 		// put item in the output queue
@@ -603,6 +602,7 @@ void Sink::op(Item &item){
 			free(ret);
 
 			num_item++;
+			metrics_vec[item.sourceId].items_at_sink_counter++;
 		}
 	}
 
@@ -614,8 +614,8 @@ void Sink::op(Item &item){
 	if(Metrics::latency_is_enabled()){
 
 		double current_time_sink = current_time_usecs();
-		item.latency_op[3] = (current_time_sink - latency_op);
-
+		item.latency_op.push_back(current_time_sink - latency_op);
+		
 		volatile unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		metrics_vec[item.sourceId].global_latency_acc += total_item_latency; // to compute real time average latency
 		

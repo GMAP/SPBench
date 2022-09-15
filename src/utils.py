@@ -31,6 +31,7 @@ import sys
 import os
 import json
 import subprocess
+import math
 
 from sys import version_info 
 python_3 = version_info[0]
@@ -58,7 +59,7 @@ apps_list_all.insert(0, 'all')
 def getBenchRegistry(spbench_path):
     """return a dictionay with the benchmarks registered data
     """
-    registry_file = spbench_path + "/sys/registry.json"
+    registry_file = spbench_path + "/benchmarks/benchmarks_registry.json"
     #check if the registry exists
     if os.path.exists(registry_file) == False:
         print("\n There is no benchmarks registered.\n Registry file not found at " + registry_file + "\n")
@@ -68,7 +69,7 @@ def getBenchRegistry(spbench_path):
 def getInputsRegistry(spbench_path):
     """return a dictionay with the inputs registered data
     """
-    registry_file = spbench_path + "/sys/inputs_registry.json"
+    registry_file = spbench_path + "/inputs/inputs_registry.json"
     #check if the registry exists
     if os.path.exists(registry_file) == False:
         print("\n There is no inputs registered.\n Registry file not found at " + registry_file + "\n")
@@ -113,7 +114,6 @@ def outputExists(output_file):
 def isNotBlank (my_string):
     return bool(my_string and my_string.strip())
 
-
 def benchmarkExists(spbench_path, selected_bench):
     """check if a given benchmark exists
     """
@@ -126,7 +126,6 @@ def benchmarkExists(spbench_path, selected_bench):
                 if selected_bench == bench_key:
                     return True
     return False
-
 
 def editorChecking(programm, err_msg):
     """check if a given programm exists in shell
@@ -142,16 +141,39 @@ def runShellCmd(shell_cmd_line):
             retcode = subprocess.call(shell_cmd_line, shell=True)
             if -retcode < 0:
                 print(" Process was terminated by signal", -retcode, file=sys.stderr)
-                print()
-                sys.exit()
+                print("\n Unsuccessful execution\n")
         except OSError as e:
             print(" Execution failed:", e, file=sys.stderr)
             print()
-            sys.exit()
         except KeyboardInterrupt as e:
             print(" KeyboardInterrupt")
-            print()
+            print("\n Unsuccessful execution\n")
             sys.exit()
+    else:
+        os.system(shell_cmd_line)
+
+def runShellWithReturn(shell_cmd_line):
+    """Run a shell command line and return the output from the command
+    """
+    if(python_3 == 3):
+        #success = False
+        try:
+            output = subprocess.check_output(shell_cmd_line, stderr=subprocess.STDOUT, shell=True).decode()
+            #success = True 
+        except subprocess.CalledProcessError as e:
+            output = e.output.decode()
+            print(output)
+            print("\n Unsuccessful execution\n")
+        except Exception as e:
+            # check_call can raise other exceptions, such as FileNotFoundError
+            output = str(e)
+            print(output)
+            print("\n Unsuccessful execution\n")
+        except KeyboardInterrupt as e:
+            print(" KeyboardInterrupt")
+            print("\n Unsuccessful execution\n")
+            sys.exit()
+        return(output)
     else:
         os.system(shell_cmd_line)
 
@@ -171,14 +193,14 @@ def askToProceed():
 def writeDicToBenchRegistry(spbench_path, registry_dic):
     """write dictionary to JSON registry file
     """
-    with open(spbench_path + "/sys/registry.json", 'w') as f:
+    with open(spbench_path + "/benchmarks/benchmarks_registry.json", 'w') as f:
         json.dump(registry_dic, f, indent=4)
     f.close()
 
 def writeDicToInputRegistry(spbench_path, registry_dic):
     """write dictionary to JSON inputs registry file
     """
-    with open(spbench_path + "/sys/inputs_registry.json", 'w') as f:
+    with open(spbench_path + "/inputs/inputs_registry.json", 'w') as f:
         json.dump(registry_dic, f, indent=4)
     f.close()
 
@@ -268,14 +290,10 @@ def filterRegistry(inputDictionary, args, copy_from = False):
             print(" Run \'./spbench [command] --help\' to see all available options.\n")
             
             sys.exit()
-            #selected_benchmarks = filterBenchRegByBench(inputDictionary, "all")
     else:
         if bench_id.lower() == 'all':
             selected_benchmarks = inputDictionary
         else:
-        #    print("\n Warning! You selected all benchmarks for this procedure.\n")
-        #    if not askToProceed():
-        #        sys.exit()
             selected_benchmarks = filterBenchRegByBench(inputDictionary, bench_id)
     
     # check if dictionary is empty
@@ -316,3 +334,13 @@ def print_dic(registry_dic):
     aux = json.dumps(registry_dic, indent=3)
     print(aux)
     return
+
+def variance(data, ddof=0):
+	n = len(data)
+	mean = sum(data) / n
+	return sum((x - mean) ** 2 for x in data) / (n - ddof)
+
+def stdev(data):
+	var = variance(data)
+	std_dev = math.sqrt(var)
+	return std_dev

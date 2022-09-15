@@ -1,0 +1,29 @@
+{
+    "CXX": "g++ -std=c++1y",
+    "CXX_FLAGS":"",
+    "PPI_CXX": "$SPB_HOME/ppis/SPar/bin/spar",
+    "PPI_CXX_FLAGS":"-spar_ordered -spar_ondemand -spar_blocking",
+    "PRE_SRC_CMD": "-spar_file",
+    "POST_SRC_CMD": "",
+    "MACROS": "-DNO_DEFAULT_MAPPING",
+    "PKG-CONFIG": {
+            "myPKG_1": "",
+            "myPKG_2": "",
+            "myPKG_N": "",
+            "opencv"    :"pkg-config --cflags --libs opencv"
+        },
+    "INCLUDES": {
+            "myINC_1": "",
+            "myINC_2": "",
+            "myINC_N": "",
+            "opencv": "-I $SPB_HOME/libs/opencv/opencv-2.4.13.6/include/",
+            "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
+    },
+    "LIBS": {
+            "myLIB_1": "",
+            "myLIB_2": "",
+            "myLIB_N": "",
+            "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
+    },
+    "LDFLAGS": ""
+}

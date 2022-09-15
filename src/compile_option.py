@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : compile_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI Compile Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -59,7 +59,7 @@ def compile_func(spbench_path, args):
             os.makedirs(bin_path)
 
         #path where make will run
-        programm_path = spbench_path + "/apps/" + app_id + "/" + ppi_id + "/" + bench_id + "/" 
+        programm_path = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/" 
 
         # Build the makefile if it does not exist yet
         if not fileExists(programm_path + 'Makefile'):

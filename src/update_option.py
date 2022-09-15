@@ -39,6 +39,6 @@ def update_func(spbench_path, args):
         #ppi_id = benchmark["ppi_id"]
         #bench_id = benchmark["bench_id"]
 
-        print("Setting up benchmark: " + benchmark["bench_id"])
+        print(" Updating compiling configurations for: " + benchmark["bench_id"])
 
         make_gen(spbench_path, benchmark)

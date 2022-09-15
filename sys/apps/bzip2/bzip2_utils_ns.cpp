@@ -381,7 +381,7 @@ bool Source::source_comp(){
 		}
 
 		if(Metrics::latency_is_enabled()){
-			item.latency_op[0] = (current_time_usecs() - latency_op);
+			item.latency_op.push_back(current_time_usecs() - latency_op);
 		}
 
 		// put item in the output queue
@@ -435,6 +435,7 @@ void Sink::sink_c(Item &item){
 				delete [] item_data.CompDecompData;
 		}*/
 		num_item++;
+		metrics_vec[item.sourceId].items_at_sink_counter++;
 	}
 	
 	metrics_vec[item.sourceId].batches_at_sink_counter++;
@@ -445,7 +446,7 @@ void Sink::sink_c(Item &item){
 	if(Metrics::latency_is_enabled()){
 
 		double current_time_sink = current_time_usecs();
-		item.latency_op[2] = (current_time_sink - latency_op);
+		item.latency_op.push_back(current_time_sink - latency_op);
 
 		volatile unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		metrics_vec[item.sourceId].global_latency_acc += total_item_latency; // to compute real time average latency
@@ -806,7 +807,7 @@ void Source::source_decomp(){
 		item_frequency_control(item.timestamp, sourceFrequency);
 
 		if(Metrics::latency_is_enabled()){
-			item.latency_op[0] = (current_time_usecs() - latency_op);
+			item.latency_op.push_back(current_time_usecs() - latency_op);
 		}
 		
 		
@@ -863,6 +864,7 @@ void Sink::sink_d(Item &item){
 				delete [] item_data.CompDecompData;
 		}*/
 		num_item++;
+		metrics_vec[item.sourceId].items_at_sink_counter++;
 	}
 	
 	metrics_vec[item.sourceId].batches_at_sink_counter++;
@@ -873,7 +875,7 @@ void Sink::sink_d(Item &item){
 	if(Metrics::latency_is_enabled()){
 
 		double current_time_sink = current_time_usecs();
-		item.latency_op[2] = (current_time_sink - latency_op);
+		item.latency_op.push_back(current_time_sink - latency_op);
 
 		volatile unsigned long total_item_latency = (current_time_sink - item.timestamp);
 		metrics_vec[item.sourceId].global_latency_acc += total_item_latency; // to compute real time average latency

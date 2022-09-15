@@ -1,8 +1,8 @@
 {
         "CXX": "g++ -std=c++1y",
-        "CXX_FLAGS":"-no-pie -O3",
+        "CXX_FLAGS":"",
         "PPI_CXX": "g++ -std=c++1y",
-        "PPI_CXX_FLAGS":"-no-pie -O3",
+        "PPI_CXX_FLAGS":"",
         "PRE_SRC_CMD": "",
         "POST_SRC_CMD": "",
         "MACROS": "",
@@ -17,13 +17,13 @@
                 "myINC_1": "",
                 "myINC_2": "",
                 "myINC_N": "",
-                "UPL" : "-I $BENCH_DIR/libs/upl/include/upl/"
+                "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
         },
         "LIBS": {
                 "myLIB_1": "",
                 "myLIB_2": "",
                 "myLIB_N": "",
-                "UPL" : "-L $BENCH_DIR/libs/upl/lib/x86 -lupl"
+                "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
         },
         "LDFLAGS": "-ljpeg -lgsl -lgslcblas -lpthread"
     }

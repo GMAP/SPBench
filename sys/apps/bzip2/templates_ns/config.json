@@ -1,6 +1,6 @@
 {
     "CXX": "g++ -std=c++1y",
-    "CXX_FLAGS":"-O3 -finline-functions",
+    "CXX_FLAGS":"-finline-functions",
     "PPI_CXX": "",
     "PPI_CXX_FLAGS":"",
     "PRE_SRC_CMD": "",
@@ -15,15 +15,15 @@
             "myINC_1": "",
             "myINC_2": "",
             "myINC_N": "",
-            "bzlib": "-I $BENCH_DIR/libs/bzlib/include/",
-            "UPL" : "-I $BENCH_DIR/libs/upl/include/upl/"
+            "bzlib": "-I $SPB_HOME/libs/bzlib/include/",
+            "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
     },
     "LIBS": {
             "myLIB_1": "",
             "myLIB_2": "",
             "myLIB_N": "",
-            "bzlib": "-L $BENCH_DIR/libs/bzlib/lib/ -lbz2",
-            "UPL" : "-L $BENCH_DIR/libs/upl/lib/x86 -lupl"
+            "bzlib": "-L $SPB_HOME/libs/bzlib/lib/ -lbz2",
+            "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
     },
     "LDFLAGS": "-lpthread"
 }
