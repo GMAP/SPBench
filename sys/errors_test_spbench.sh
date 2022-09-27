@@ -17,7 +17,7 @@
 ../spbench global-config -editor cat
 ../spbench update -bench teste
 ../spbench compile -bench teste
-../spbench new-input -id teste -app lane_detection -input-string "$BENCH_DIR/my_test/string" -md5 "myasdasdtestjfaksdmd5"
+../spbench new-input -id teste -app lane_detection -input-string "$SPB_HOME/my_test/string" -md5 "myasdasdtestjfaksdmd5"
 ../spbench delete-input -id teste -app lane_detection
 ../spbench exec -bench teste -nth 4 -input test -latency -thr -freq-patt spike,10,5,10,100 -batch 2 -monitor 250 -repeat 2
 ../spbench clean -bench teste

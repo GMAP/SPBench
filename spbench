@@ -64,7 +64,7 @@ from src.utils import *
 
 from argparse import ArgumentParser,SUPPRESS
 
-spbench_version="v0.4.2-alpha"
+spbench_version="v0.4.3-alpha"
 
 spbench_path = os.path.dirname(os.path.realpath(__file__))#os.path.dirname(sys.argv[0])
 
@@ -574,7 +574,7 @@ parser_exec.add_argument('-nthreads',
     dest='nthreads',
     required=False,
     default='',
-    help='Number of threads. It can be used inside the parallel benchmarks. Default value: 1. (Optional)')
+    help='Number of threads. It can be used inside the benchmarks as a global variable. You can insert a single number or a range using the \':\' character (e.g. -nthreads 1:10). You can also define iteration step of the range (e.g. -nthreads 4:4:16 would run the benchmarks with 4, 8, 12, and 16 threads). Default value: 1. (Optional)')
 
 parser_exec.add_argument('-batch', 
     action='store',
@@ -703,6 +703,13 @@ parser_exec.add_argument('-print',
     dest='print_exec_line',
     required=False,
     help='(Optional) When this parameter is added, the exec command will only print on the screen the execution command it would use to run the benchmark. You may use it to manually change some aspect of the execution.')
+
+parser_exec.add_argument('-quiet', 
+     action='store_true',
+     default=False,
+     dest='quiet',
+     required=False,
+     help='Run it in quiet mode. Results can be retrieved from the \'log/general_log.csv\' file (optional)')
 
 parser_exec.add_argument('-d', 
     action='append_const',

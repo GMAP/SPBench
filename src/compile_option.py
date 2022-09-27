@@ -94,7 +94,7 @@ def compile_func(spbench_path, args):
             print(" Version: " + bench_id)
             print("\n Common problems regarding SPBench:")
             print(" - Required library not installed.")
-            print("   See libs/README.md and ppis/README.md \n   and make sure everything is setup.\n")
+            print("   See libs/README.md and ppis/README.md \n   and make sure everything is setted up.\n")
             print(" - Required library is installed but not loaded.")
             print("   Run \'source setup_vars.sh\'\n")
             print(" - Missing or wrong compiling parameters.")

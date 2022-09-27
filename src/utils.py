@@ -161,14 +161,14 @@ def runShellWithReturn(shell_cmd_line):
             output = subprocess.check_output(shell_cmd_line, stderr=subprocess.STDOUT, shell=True).decode()
             #success = True 
         except subprocess.CalledProcessError as e:
-            output = e.output.decode()
-            print(output)
-            print("\n Unsuccessful execution\n")
+            output = e.output.decode() + "\n Unsuccessful execution\n"
+            #print(output)
+            #print("\n Unsuccessful execution\n")
         except Exception as e:
             # check_call can raise other exceptions, such as FileNotFoundError
-            output = str(e)
-            print(output)
-            print("\n Unsuccessful execution\n")
+            output = str(e) + "\n Unsuccessful execution\n"
+            #print(output)
+            #print("\n Unsuccessful execution\n")
         except KeyboardInterrupt as e:
             print(" KeyboardInterrupt")
             print("\n Unsuccessful execution\n")

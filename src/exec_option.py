@@ -26,8 +26,6 @@
  ##############################################################################
 ##
 
-#from __future__ import print_function
-
 import sys
 import os
 import datetime
@@ -40,6 +38,9 @@ python_3 = version_info[0]
 
 def execute_func(spbench_path, args):
     
+    is_range = False
+    nthreads = ["1"]
+
     inputs_registry_dic = getInputsRegistry(spbench_path) 
 
     # get list of selected benchmarks to run
@@ -102,6 +103,43 @@ def execute_func(spbench_path, args):
             else: # generate a '-i input_id_list' argument
                 input_id += " -i " + os.path.abspath(input)
 
+        # Check for errors in nthreads
+        if args.nthreads:
+            # check if it is a range or not
+            if args.nthreads.isdigit():
+                nthreads[0] = args.nthreads
+            else:
+                # check format and get the range values
+                nthreads = args.nthreads.replace(" ", "").lower()
+                # check if it the range number of parameters
+                if len(nthreads.split(':')) < 2 or len(nthreads.split(':')) > 3:
+                    raise ArgumentTypeError("Argument error! Invalid format for nthreads range: " + nthreads + "\n  Expected: -nthreads start:end or start:step:end\n\n")
+
+                range_arg = nthreads.split(':')
+                for value in range_arg:
+                    if not value.isdigit():
+                        raise ArgumentTypeError("Argument error! Values in the range must be integer numbers higher than or equal to one: " + args.nthreads)
+
+                range_start = int(range_arg[0])
+                if len(range_arg) == 2:
+                    range_step = 1
+                    range_end = int(range_arg[1])
+                elif len(range_arg) == 3:
+                    range_step = int(range_arg[1])
+                    range_end = int(range_arg[2])
+                else:
+                    raise ArgumentTypeError("Argument error! Invalid format for nthreads range: " + nthreads + "\n  Expected: -nthreads start:end or start:step:end\n\n")
+
+                if range_start < 1 or range_end < 1:
+                    raise ArgumentTypeError("Argument error! Values in the range must be integer numbers higher than or equal to one: " + args.nthreads)
+
+                if range_start <= range_end:
+                    nthreads = range((range_start), (range_end)+1, (range_step))
+                if range_start > range_end:
+                    nthreads = range((range_start), (range_end)-1, -abs((range_step)))
+
+                is_range = True
+
         # Check for errors in frequency pattern
         frequency_pattern = ''
         isPositiveFloat = lambda x: x.replace('.','',1).isdigit()
@@ -153,11 +191,6 @@ def execute_func(spbench_path, args):
         if args.batch_interval:
             if not isPositiveFloat(args.batch_interval):
                 raise ArgumentTypeError("Argument error! Batch interval window must be a number higher than or equal to zero: " + args.batch_interval)
-
-        # Check for errors in nthreads
-        if args.nthreads:
-            if not args.nthreads.isdigit():
-                raise ArgumentTypeError("Argument error! Number of threads must be a integer number higher than or equal to one: " + args.nthreads)
         
         if nsources and args.time_interval_thr:
             raise ArgumentTypeError("Argument error! -monitor-thread feature is not available for multi-source benchmarks. You can use the -monitor instead!")
@@ -186,8 +219,8 @@ def execute_func(spbench_path, args):
         user_args = ''
         num_threads = ''
         if app_id == 'bzip2':
-            if args.nthreads:
-                num_threads = " -t" + args.nthreads
+            #if args.nthreads:
+            #    num_threads = " -t" + args.nthreads
 
             batch_size = ''
             if args.batch_size:
@@ -219,8 +252,8 @@ def execute_func(spbench_path, args):
             other_args = ' --force --keep'
 
         else:
-            if args.nthreads:
-                num_threads = " -t " + args.nthreads
+            #if args.nthreads:
+            #    num_threads = " -t " + args.nthreads
 
             batch_size = ''
             if args.batch_size:
@@ -252,7 +285,7 @@ def execute_func(spbench_path, args):
         if args.exec_arguments:
             exec_arguments = exec_arguments.join(args.exec_arguments) # join the input argument with the remaining arguments
 
-        exec_arguments = input_id + num_threads + batch_size + batch_interval + time_interval + items_frequency + frequency_pattern + " " + exec_arguments + other_args
+        exec_arguments = input_id + batch_size + batch_interval + time_interval + items_frequency + frequency_pattern + " " + exec_arguments + other_args
 
         # build the execution command line and run it
         cmd_line = spbench_path + "/bin/" + app_id + "/" + ppi_id + "/" + bench_id + exec_arguments + user_args
@@ -261,12 +294,23 @@ def execute_func(spbench_path, args):
             cmd_line = args.executor + " " + cmd_line
 
         if(args.print_exec_line):
-            print(cmd_line)
+            if app_id == 'bzip2':
+                if is_range:
+                    num_threads = " -t" + str(range_end)
+                else:
+                    num_threads = " -t" + args.nthreads
+            else:
+                if is_range:
+                    num_threads = " -t " + str(range_end)
+                else:
+                    num_threads = " -t " + args.nthreads
+
+            print(cmd_line + num_threads)
             continue
 
-        print("Execution string >> " + cmd_line)
+        #print("Execution string >> " + cmd_line)
         print("\n Running benchmark: " + bench_id)
-        if not nsources:
+        if not nsources and not args.quiet:
             print("    Selected input: " + inputs_ID_list[0])
             if batch_size:
                 print("        Batch size: " + args.batch_size + " items per batch")
@@ -319,205 +363,264 @@ def execute_func(spbench_path, args):
             elif args.items_frequency:
                 print("  Target frequency: " + args.items_frequency)
         else:
-            print("   Selected inputs: ")
-            for input_key in inputs_ID_list:
-                print("       -> " + input_key)
-
-        # Try to execute the benchmark
-        print('\n')
+            if not args.quiet:
+                print("   Selected inputs: ")
+                for input_key in inputs_ID_list:
+                    print("       -> " + input_key)
+        #print('\n')
 
         latencies = []
         throughputs = []
         exec_times = []
 
-        for n in range (0, int(args.repetitions)):
+        # prepare the performance log
+        log_dir = spbench_path + "/log"
+        if is_range and (int(args.repetitions) > 1):
+            range_log_file = log_dir + "/" + bench_id + "_" + str(range_start) + "-" + str(range_step) + "-" + str(range_end) + ".dat"
+            nth_log_header = ("Thread Average_latency Std_dev_latency Average_throughput Std_dev_throughput Average_exec_time Std_dev_exec_time\n")
 
-            if(int(args.repetitions) > 1):
-                print("\n ~~~> Execution " + str(n+1) + " from " + args.repetitions)
+            #if(not fileExists(range_log_file)):
+            with open(range_log_file, 'w') as nth_log_file:
+                nth_log_file.write(nth_log_header)
 
-            # run the command line
-            output = runShellWithReturn(cmd_line)
+        # prepare the general execution log
+        log_header = ("Time;Benchmark;Latency;Throughput;Exec. time;Max lat.;Min lat.;Input;N threads;Batch size;Batch int.;Frequency;Freq. patt.\n")
+        log_file = log_dir + "/general_log.csv"
 
-            print(output)
+        if(not dirExists(log_dir)):
+            try: 
+                os.mkdir(log_dir) 
+            except OSError as error: 
+                print(error)
+        
+        if(not fileExists(log_file)):
+            with open(log_file, 'w') as general_log_file:
+                general_log_file.write(log_header)
 
-            end_latency = 0
-            max_latency = 0
-            min_latency = 0
-            exec_time = 0
-            throughput = 0
+        # run the benchmark for n threads
+        for nthread in nthreads:
 
-            output_lines = output.splitlines()
-            for line in output_lines:
-                
-                if("End-to-end latency" in line):
-                    end_latency = line.split()[4]
-                    if(isPositiveFloat(end_latency)):
-                        latencies.append(float(end_latency))
-
-                if("Maximum latency" in line):
-                    max_latency = line.split()[4]
-
-                if("Minimum latency" in line):
-                    min_latency = line.split()[4]
-                
-                if("Execution time" in line):
-                    exec_time = line.split()[4]
-                    if(isPositiveFloat(exec_time)):
-                        exec_times.append(float(exec_time))
-                
-                if("Items-per-second" in line):
-                    throughput = line.split()[2]
-                    if(isPositiveFloat(throughput)):
-                        throughputs.append(float(throughput))
-
-            ##
-            # Writing results to the general log file
-            ##
-            time_now = datetime.datetime.now()
-            print_time = time_now.strftime("%d/%m/%y %H:%M:%S")
-            log_line = []
-            log_line.append(str(print_time))
-            log_line.append(bench_id)
-            log_line.append(str((round(float(end_latency), 3))))
-            log_line.append(str(round(float(throughput), 3)))
-            log_line.append(str(round(float(exec_time), 3)))
-            log_line.append(str(round(float(max_latency), 3)))
-            log_line.append(str(round(float(min_latency), 3)))
-            log_line.append(','.join(inputs_ID_list))
-            log_line.append(args.nthreads)
-            log_line.append(args.batch_size)
-            log_line.append(args.batch_interval)
-            log_line.append(args.items_frequency)
-            log_line.append(args.frequency_pattern + "\n")
-
-            log_header = ("Time;Benchmark;Latency;Throughput;Exec. time;Max lat.;Min lat.;Input;N threads;Batch size;Batch int.;Frequency;Freq. patt.\n")
-
-            log_file = spbench_path + "/log/general_log.csv"
-
-            log_dir = spbench_path + "/log"
-
-            if(not dirExists(log_dir)):
-                try: 
-                    os.mkdir(log_dir) 
-                except OSError as error: 
-                    print(error)
+            # add nthread parameter to the execution line
+            if app_id == 'bzip2':
+                num_threads = " -t" + str(nthread)
+            else:
+                num_threads = " -t " + str(nthread)
             
-            if(not fileExists(log_file)):
-                with open(log_file, 'w') as general_log_file:
-                    general_log_file.write(log_header)
+            exec_line = cmd_line + num_threads
 
-            with open(log_file, 'r+') as general_log_file:
-                general_log_file.seek(0)
-                current_header = general_log_file.readline()
+            if is_range:
+                print("\n ~~~> Running " + bench_id + " with " + str(nthread) + " threads!")
 
-                if(log_header not in current_header):
+            latencies = []
+            exec_times = []
+            throughputs = []
+
+            # run the benchmark n times
+            for n in range(0, int(args.repetitions)):
+
+                if(int(args.repetitions) > 1):
+                    print("\n ~~~~~~> Execution " + str(n+1) + " from " + args.repetitions)
+
+                # run the command line
+                output = runShellWithReturn(exec_line)
+
+                if not args.quiet:
+                    print(output)
+
+                end_latency = 0
+                max_latency = 0
+                min_latency = 0
+                exec_time = 0
+                throughput = 0
+
+                output_lines = output.splitlines()
+                for line in output_lines:
+                    
+                    if("End-to-end latency" in line):
+                        end_latency = line.split()[4]
+                        if(isPositiveFloat(end_latency)):
+                            latencies.append(float(end_latency))
+
+                    if("Maximum latency" in line):
+                        max_latency = line.split()[4]
+
+                    if("Minimum latency" in line):
+                        min_latency = line.split()[4]
+                    
+                    if("Execution time" in line):
+                        exec_time = line.split()[4]
+                        if(isPositiveFloat(exec_time)):
+                            exec_times.append(float(exec_time))
+                    
+                    if("Items-per-second" in line):
+                        throughput = line.split()[2]
+                        if(isPositiveFloat(throughput)):
+                            throughputs.append(float(throughput))
+
+                if args.quiet:
+                    if '-l' in args.exec_arguments:
+                        print(" Average latency (ms) = " + str((round(float(end_latency), 3))))
+                    if '-x' in args.exec_arguments:
+                        print("     Items per second = " + str((round(float(throughput), 3))))
+                        print(" Execution time (sec) = " + str((round(float(exec_time), 3))))
+                ##
+                # Writing results to the general log file
+                ##
+                time_now = datetime.datetime.now()
+                print_time = time_now.strftime("%d/%m/%y %H:%M:%S")
+                log_line = []
+                log_line.append(str(print_time))
+                log_line.append(bench_id)
+                log_line.append(str((round(float(end_latency), 3))))
+                log_line.append(str(round(float(throughput), 3)))
+                log_line.append(str(round(float(exec_time), 3)))
+                log_line.append(str(round(float(max_latency), 3)))
+                log_line.append(str(round(float(min_latency), 3)))
+                log_line.append(','.join(inputs_ID_list))
+                log_line.append(str(nthread))
+                log_line.append(args.batch_size)
+                log_line.append(args.batch_interval)
+                log_line.append(args.items_frequency)
+                log_line.append(args.frequency_pattern + "\n")
+
+                with open(log_file, 'r+') as general_log_file:
                     general_log_file.seek(0)
-                    general_log_file.write(log_header)
+                    current_header = general_log_file.readline()
 
-                general_log_file.seek(0, 2)
-                general_log_file.write(';'.join(log_line))
-                general_log_file.truncate()
-            
-            ##
-            # result correctness checking
-            ##
-            if args.test_result:
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                for input in inputs_ID_list:
-                    print("\n Checking result correctness for input \'" + input + '\'...\n')
+                    if(log_header not in current_header):
+                        general_log_file.seek(0)
+                        general_log_file.write(log_header)
 
-                    # check if there is a md5 hash associated to this input
-                    if not bool(inputs_registry_dic[app_id][input].get('md5_test')):
-                        print(" -> Result checking unavailable for this input!")
-                        print("\n - Make sure that input \'" + input + "\' has an expected\n   md5 hash associated to it.")
-                        print("   Run \'./spbench list-inputs\' to check it.")
-                        print("\n - Check the documentation for more info on how\n   to fix it (link)(forthcoming).")
-                        print("\n - Or run \'./spbench edit_input -h\' to associate\n   an verification hash (forthcoming feature).")
+                    general_log_file.seek(0, 2)
+                    general_log_file.write(';'.join(log_line))
+                    general_log_file.truncate()
+                
+                ##
+                # result correctness checking
+                ##
+                if args.test_result:
+                    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                    for input in inputs_ID_list:
+                        if not args.quiet:
+                            print("\n Checking result correctness for input \'" + input + '\'...\n')
+
+                        # check if there is a md5 hash associated to this input
+                        if not bool(inputs_registry_dic[app_id][input].get('md5_test')):
+                            print(" -> Result checking unavailable for this input!")
+                            if not args.quiet:
+                                print("\n - Make sure that input \'" + input + "\' has an expected\n   md5 hash associated to it.")
+                                print("   Run \'./spbench list-inputs\' to check it.")
+                                print("\n - Check the documentation for more info on how\n   to fix it (link)(forthcoming).")
+                                print("\n - Or run \'./spbench edit_input -h\' to associate\n   an verification hash (forthcoming feature).")
+                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                            continue
+                        
+                        checking_file = ''
+
+                        if app_id == 'bzip2':
+                            # bzip2 output files can alse be used as workload for decompression.
+                            # this way, the output files are in the same directory as input files and we must address this special case here
+                            bzip2_out_file = (inputs_registry_dic[app_id][input]['input'].replace('$SPB_HOME', spbench_path))
+                            if '-d' in exec_arguments:
+                                # if decompress is selected, remove the '.bz2'
+                                checking_file = os.path.splitext(bzip2_out_file)[0]
+                            else: # else, add a '.bz2'
+                                checking_file = bzip2_out_file + ".bz2"
+                        
+                        elif app_id == 'ferret':
+                            # ferret output is disordered, so it requires sorting the output
+                            output_file = spbench_path + "/outputs/" + bench_id + '_' + input + ".out"
+
+                            # check if output exists before sorting it
+                            if not outputExists(output_file): continue 
+
+                            checking_file = spbench_path + "/outputs/" + bench_id + '_' + input + "_sorted.out"
+                            sorting_cmd = "sort " + output_file + " > " + checking_file
+                            os.system(sorting_cmd)
+
+                        else: # lane and person
+                            checking_file = spbench_path + "/outputs/" + bench_id + '_' + input + ".avi"
+
+                        # also check the ouput for bzip2, person, and lane
+                        if not outputExists(checking_file): continue
+
+                        # compute md5 hash for the output file    
+                        resulting_md5 = md5(checking_file)
+
+                        if app_id == 'ferret': # deleting ferret's sorted output
+                            os.system('rm ' + checking_file)
+                        
+                        # compare the computed hash to the one stored in the inputs database
+                        if resulting_md5 == inputs_registry_dic[app_id][input]['md5_test']:
+                            print(" -> SUCCESS!")
+                        else:
+                            print(" -> UNSUCCESSFUL!\n")
+                            if not args.quiet:
+                                print(" Incorrect output")
+                                print(" - Expected md5 hash:  " + inputs_registry_dic[app_id][input]['md5_test'])
+                                print(" - Resulting md5 hash: " + resulting_md5)
                         print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                        continue
-                    
-                    checking_file = ''
+                    print("")
+                # end of the correcteness checking
 
-                    if app_id == 'bzip2':
-                        # bzip2 output files can alse be used as workload for decompression.
-                        # this way, the output files are in the same directory as input files and we must address this special case here
-                        bzip2_out_file = (inputs_registry_dic[app_id][input]['input'].replace('$SPB_HOME', spbench_path))
-                        if '-d' in exec_arguments:
-                            # if decompress is selected, remove the '.bz2'
-                            checking_file = os.path.splitext(bzip2_out_file)[0]
-                        else: # else, add a '.bz2'
-                            checking_file = bzip2_out_file + ".bz2"
-                    
-                    elif app_id == 'ferret':
-                        # ferret output is disordered, so it requires sorting the output
-                        output_file = spbench_path + "/outputs/" + bench_id + '_' + input + ".out"
+            ##
+            # Compute and print the metrics sumary
+            ##
+            if(int(args.repetitions) > 1):
 
-                        # check if output exists before sorting it
-                        if not outputExists(output_file): continue 
-
-                        checking_file = spbench_path + "/outputs/" + bench_id + '_' + input + "_sorted.out"
-                        sorting_cmd = "sort " + output_file + " > " + checking_file
-                        os.system(sorting_cmd)
-
-                    else: # lane and person
-                        checking_file = spbench_path + "/outputs/" + bench_id + '_' + input + ".avi"
-
-                    # also check the ouput for bzip2, person, and lane
-                    if not outputExists(checking_file): continue
-
-                    # compute md5 hash for the output file    
-                    resulting_md5 = md5(checking_file)
-
-                    if app_id == 'ferret': # deleting ferret's sorted output
-                        os.system('rm ' + checking_file)
-                    
-                    # compare the computed hash to the one stored in the inputs database
-                    if resulting_md5 == inputs_registry_dic[app_id][input]['md5_test']:
-                        print(" -> SUCCESS!")
-                    else:
-                        print(" -> UNSUCCESSFUL!\n")
-                        print(" Incorrect output")
-                        print(" - Expected md5 hash:  " + inputs_registry_dic[app_id][input]['md5_test'])
-                        print(" - Resulting md5 hash: " + resulting_md5)
-                    print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                print("")
-            # end of the correcteness checking
-
-        ##
-        # Compute and print the metrics sumary
-        ##
-        if(int(args.repetitions) > 1):
-
-            if(latencies):
-                latency_average = sum(latencies)/len(latencies)
-                latency_error = stdev(latencies)
-
-            if(exec_times):
-                exec_time_average = sum(exec_times)/len(exec_times)
-                exec_time_error = stdev(exec_times)
-
-            if(throughputs):
-                thr_average = sum(throughputs)/len(throughputs)
-                thr_error = stdev(throughputs)
-
-            if(latencies or exec_times or throughputs):
-                print("*************** RESULTS SUMARY ***************\n")
-                print("             Benchmark:", bench_id)
-                print("           Repetitions:", args.repetitions)
                 if(latencies):
-                    print("\n       Average latency:", latency_average)
-                    print("     Latency std. dev.:", latency_error)
-                if(throughputs):
-                    print("\n    Average throughput:", thr_average)
-                    print("  Throughput std. dev.:", thr_error)
-                if(exec_times):
-                    print("\n    Average exec. time:", exec_time_average)
-                    print("  Exec. time std. dev.:", exec_time_error)
+                    latency_average = sum(latencies)/len(latencies)
+                    latency_error = stdev(latencies)
 
-                if nsources:
-                    print("\n CAUTION: This is a multi-source benchmark.")
-                    print("          This summary includes all different")
-                    print("          sources and may not be accurate.")
-                print("\n********************************************")
+                if(exec_times):
+                    exec_time_average = sum(exec_times)/len(exec_times)
+                    exec_time_error = stdev(exec_times)
+
+                if(throughputs):
+                    thr_average = sum(throughputs)/len(throughputs)
+                    thr_error = stdev(throughputs)
+
+                if (latencies or exec_times or throughputs) and not args.quiet:
+                    print("*************** RESULTS SUMARY ***************\n")
+                    print("             Benchmark:", bench_id)
+                    print("           Repetitions:", args.repetitions)
+                    if(latencies):
+                        print("\n       Average latency:", latency_average)
+                        print("     Latency std. dev.:", latency_error)
+                    if(throughputs):
+                        print("\n    Average throughput:", thr_average)
+                        print("  Throughput std. dev.:", thr_error)
+                    if(exec_times):
+                        print("\n    Average exec. time:", exec_time_average)
+                        print("  Exec. time std. dev.:", exec_time_error)
+
+                    if nsources:
+                        print("\n CAUTION: This is a multi-source benchmark.")
+                        print("          This summary includes all different")
+                        print("          sources and may not be accurate.")
+                    print("\n********************************************")
+            
+                ##
+                # Generate a specific performance log if repetitions and nthreads range are enabled
+                ##
+                if is_range:
+                    with open(range_log_file, 'r+') as nth_log_file:
+                        nth_log_file.seek(0)
+                        current_header = nth_log_file.readline()
+
+                        if(nth_log_header not in current_header):
+                            nth_log_file.seek(0)
+                            nth_log_file.write(nth_log_header)
+
+                        nth_log_file.seek(0, 2)
+                        nth_log_file.write(
+                            str(nthread) + " " + 
+                            str(latency_average) + " " + 
+                            str(latency_error) + " " + 
+                            str(thr_average) + " " + 
+                            str(thr_error) + " " + 
+                            str(exec_time_average) + " " + 
+                            str(exec_time_error) + "\n")
+                        nth_log_file.truncate()
 
     sys.exit()

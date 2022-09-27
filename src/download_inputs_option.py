@@ -31,7 +31,7 @@ import sys
 from src.utils import *
 
 # download the inputs for the SPBench applications 
-def download_inputs_func(spbench_path, args):
+def download_inputs_func(spbench_path, args, skip = False):
 
     # Check if the chosen app exists
     if args.app_id:
@@ -45,7 +45,7 @@ def download_inputs_func(spbench_path, args):
     if args.force:
         overwrite_files = "force"
 
-    if args.app_id == "all" and args.class_id == "all":
+    if args.app_id == "all" and args.class_id == "all" and skip == False:
         print("\n Warning: No specific application selected.")
         print(" It will download all the inputs for all SPBench applications.")
         print("\n Aproximate size of all inputs: 1.3 GB.")
@@ -53,7 +53,7 @@ def download_inputs_func(spbench_path, args):
             sys.exit()
 
     print("\n >> It may take a while to finish <<\n")
-
+    
     if args.app_id == "lane_detection" or args.app_id == "all":
         get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "lane_detection " + args.class_id + " " + overwrite_files
         runShellCmd("bash " + get_input_cmd)

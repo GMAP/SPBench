@@ -1,0 +1,33 @@
+{
+        "CXX": "g++ -std=c++1y",
+        "CXX_FLAGS":"-no-pie -O3",
+        "PPI_CXX": "g++ -std=c++1y",
+        "PPI_CXX_FLAGS":"-no-pie -O3",
+        "PRE_SRC_CMD": "",
+        "POST_SRC_CMD": "",
+        "MACROS": "-DGRPPI_TBB -DGRPPI_FF -DGRPPI_OMP",
+        "PKG-CONFIG": {
+                "myPKG_1": "",
+                "myPKG_2": "",
+                "myPKG_N": "",
+                "gsl": "pkg-config --cflags --libs gsl",
+                "jpeg": "pkg-config --cflags --libs libjpeg"
+            },
+        "INCLUDES": {
+                "myINC_1": "",
+                "myINC_2": "",
+                "myINC_N": "",
+		"ff": "-I $SPB_HOME/ppis/grppi/fastflow-2.2.0/",
+                "grppi": "-I $SPB_HOME/ppis/grppi/grppi-0.4.0/include/",
+                "grppi_": "-I $SPB_HOME/ppis/grppi/grppi-0.4.0/grppi/include/",
+                "tbb": "-I $SPB_HOME/ppis/tbb/tbb/include/",
+                "gsl": "-L $SPB_HOME/libs/gsl/gsl-2.6/include/",
+                "jpeg": "-L $SPB_HOME/libs/jpeg/libjpeg-turbo-1.5.2/include/"
+	},
+        "LIBS": {
+                "myLIB_1": "-L $SPB_HOME/ppis/tbb/tbb/ -ltbb",
+                "myLIB_2": "",
+                "myLIB_N": ""
+        },
+        "LDFLAGS": "-ljpeg -lgsl -lgslcblas -lpthread -fopenmp"
+    }

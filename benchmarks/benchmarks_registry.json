@@ -12,6 +12,9 @@
         },
         "fastflow": {
             "bzip2_ff_farm": "simple"
+        },
+        "grppi": {
+            "bzip2_grppi_farm": "single"
         }
     },
     "lane_detection": {
@@ -27,6 +30,9 @@
         },
         "fastflow": {
             "lane_ff_farm": "simple"
+        },
+        "grppi": {
+            "lane_grppi_farm": "simple"
         }
     },
     "ferret": {
@@ -48,6 +54,12 @@
             "ferret_ff_farm": "simple",
             "ferret_ff_pipeline": "simple",
             "ferret_ff_a2a_pipe-farm": "single"
+        },
+        "grppi": {
+            "ferret_grppi_pipe-farm": "single",
+            "ferret_grppi_pipeline": "single",
+            "ferret_grppi_farm": "simple",
+            "ferret_grppi_farm-pipe": "single"
         }
     },
     "person_recognition": {
@@ -64,6 +76,8 @@
         "fastflow": {
             "person_ff_farm": "simple"
         },
-        "mpi": {}
+        "grppi": {
+            "person_grppi_farm": "single"
+        }
     }
 }
