@@ -1,8 +1,11 @@
 #include <lane_detection.hpp>
 
-std::atomic<bool> done(false);
+int main (int argc, char* argv[]){
+	// Disabling internal OpenCV's support for multithreading 
+	cv::setNumThreads(0);
+	spb::init_bench(argc, argv); // Initializations
 
-void stream_region(){
+	spb::Metrics::init();
 	while(1){
 		spb::Item item;
 		if (!spb::Source::op(item)) break;
@@ -15,32 +18,6 @@ void stream_region(){
 		spb::Overlap::op(item);
 		spb::Sink::op(item);
 	}
-	done = true;
-	return;
-}
-
-int main (int argc, char* argv[]){
-	// Disabling internal OpenCV's support for multithreading 
-	cv::setNumThreads(0);
-	spb::init_bench(argc, argv); // Initializations
-
-	spb::Metrics::init();
-
-	std::thread stream_thread(stream_region);
-
-	while(!done){
-		sleep(1);
-		std::cout << spb::Metrics::getAverageLatency() 
-		<< " " << spb::Metrics::getInstantThroughput(2)
-		<< std::endl;
-	}
-
-	if (stream_thread.joinable()){
-		stream_thread.join();
-	}
-	
-	
-
 	spb::Metrics::stop();
 	spb::end_bench();
 	return 0;
