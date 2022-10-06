@@ -97,7 +97,7 @@ def make_gen(stream_path, selected_benchmark):
         compiler = json_data["CXX"]
     compiler = compiler.replace('$SPB_HOME', stream_path)
 
-    if(json_data["CXX_FLAGS"]):
+    if(global_json_data["CXX_FLAGS"]):
         compiler_flags = global_json_data["CXX_FLAGS"]
     else:
         compiler_flags = json_data["CXX_FLAGS"]
@@ -117,14 +117,14 @@ def make_gen(stream_path, selected_benchmark):
             ppi_compiler = compiler
     ppi_compiler = ppi_compiler.replace('$SPB_HOME', stream_path)
 
-
-    if(json_data["PPI_CXX_FLAGS"]):
+    if(global_json_data["PPI_CXX_FLAGS"]):
         ppi_compiler_flags = global_json_data["PPI_CXX_FLAGS"]
     else:
         ppi_compiler_flags = json_data["PPI_CXX_FLAGS"]
 
     if(global_json_data["EXTRA_PPI_CXX_FLAGS"]):
         ppi_compiler_flags += " " + global_json_data["EXTRA_PPI_CXX_FLAGS"]
+
     ppi_compiler_flags = ppi_compiler_flags.replace('$SPB_HOME', stream_path)
 
     if(global_json_data["PRE_SRC_CMD"]):
