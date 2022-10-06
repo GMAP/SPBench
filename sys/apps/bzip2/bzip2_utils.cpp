@@ -1563,8 +1563,8 @@ int bzip2_main(int argc, char* argv[])
 					}
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse -P argument");
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					numCPU = atoi(cmdLineTemp);
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					numCPU = atoi(argv[i] + j + 1);
 					if (numCPU > 4096)
 					{
 						fprintf(stderr, "Bzip2: *ERROR: Maximal number of supported processors is 4096!  Aborting...\n");
@@ -1591,8 +1591,10 @@ int bzip2_main(int argc, char* argv[])
 					}
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse -t argument");
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					nthreads = atoi(cmdLineTemp);
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+
+					nthreads = atoi(argv[i] + j + 1);
+
 					if (nthreads < 1)
 					{
 						fprintf(stderr, "Bzip2: *ERROR: Minimum number of supported processors is 1!  Aborting...\n");
@@ -1615,14 +1617,15 @@ int bzip2_main(int argc, char* argv[])
 					}
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse -b argument");
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					SPBench::setBatchSize(atoi(cmdLineTemp));
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					SPBench::setBatchSize(atoi(argv[i] + j + 1));
 					if (SPBench::getBatchSize() < 1)
 					{
 						fprintf(stderr, "Bzip2: *ERROR: Minimum batch size is 1!  Aborting...\n");
 						return 1;
 					}
 					j += cmdLineTempCount;
+
 #ifdef PBZIP_DEBUG
 					fprintf(stderr, "-b%d\n", batch_size);
 #endif
@@ -1639,8 +1642,8 @@ int bzip2_main(int argc, char* argv[])
 					}
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse -B argument");
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					SPBench::setBatchInterval(atoi(cmdLineTemp));
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					SPBench::setBatchInterval(atoi(argv[i] + j + 1));
 					if (SPBench::getBatchInterval() <= 0)
 					{
 						fprintf(stderr, "Bzip2: *ERROR: Minimum batch time size is 0!  Aborting...\n");
@@ -1663,8 +1666,8 @@ int bzip2_main(int argc, char* argv[])
 					}
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse -F argument");
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					SPBench::setFrequency(atoi(cmdLineTemp));
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					SPBench::setFrequency(atoi(argv[i] + j + 1));
 					//SPBench::enable_memory_source();
 
 					if (SPBench::getFrequency() < 0)
@@ -1685,9 +1688,9 @@ int bzip2_main(int argc, char* argv[])
 						cmdLineTempCount++;
 					}
 
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount + 1);
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount + 1);
 					try {
-						input_freq_pattern_parser(cmdLineTemp);
+						input_freq_pattern_parser(argv[i] + j + 1);
 					}
 					catch (const std::invalid_argument& e) {
 						std::cerr << "exception: " << e.what() << std::endl;
@@ -1708,8 +1711,8 @@ int bzip2_main(int argc, char* argv[])
 					}
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse file block size");
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					blockSize = atoi(cmdLineTemp) * 100000;
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					blockSize = atoi(argv[i] + j + 1) * 100000;
 					if ((blockSize < 100000) || (blockSize > 1000000000))
 					{
 						fprintf(stderr, "Bzip2: *ERROR: File block size Min: 100k and Max: 10000k!  Aborting...\n");
@@ -1731,8 +1734,8 @@ int bzip2_main(int argc, char* argv[])
 					}
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse -m argument");
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					Metrics::set_monitoring_time_interval(atoi(cmdLineTemp));
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					Metrics::set_monitoring_time_interval(atoi(argv[i] + j + 1));
 					if (Metrics::monitoring_thread_is_enabled())
 					{
 						fprintf(stderr, " *ERROR: You can not use both -m and -M parameters. You must select only one at once. Aborting...\n");
@@ -1755,8 +1758,8 @@ int bzip2_main(int argc, char* argv[])
 					}
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse -M argument");
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					Metrics::set_monitoring_time_interval(atoi(cmdLineTemp));
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
+					Metrics::set_monitoring_time_interval(atoi(argv[i] + j + 1));
 					if (Metrics::monitoring_is_enabled())
 					{
 						fprintf(stderr, " *ERROR: You can not use both -m and -M parameters. You must select only one at once. Aborting...\n");
@@ -1774,9 +1777,8 @@ int bzip2_main(int argc, char* argv[])
 						k++;
 						cmdLineTempCount++;
 					}
-
-					strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount + 1);
-					SPBench::setArg(cmdLineTemp);
+					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount + 1);
+					SPBench::setArg(argv[i] + j + 1);
 					j += cmdLineTempCount;
 					break;
 				
