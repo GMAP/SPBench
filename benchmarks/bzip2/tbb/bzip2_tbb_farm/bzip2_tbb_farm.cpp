@@ -31,6 +31,7 @@ public:
 	void* operator() (void* new_item){
 		spb::Item * item = static_cast <spb::Item*> (new_item);
 		spb::Sink::op(*item);
+		delete item;
 		return NULL;
 	}
 };

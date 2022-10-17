@@ -3,7 +3,6 @@
 #include <ff/ff.hpp>
 
 struct Emitter: ff::ff_node_t<spb::Item>{
-
 	spb::Item * svc(spb::Item * task){
 		while (1){
 			spb::Item * item = new spb::Item();
@@ -30,6 +29,7 @@ struct Worker: ff::ff_node_t<spb::Item>{
 struct Collector: ff::ff_node_t<spb::Item>{
 	spb::Item * svc(spb::Item * item){
 		spb::Sink::op(*item);
+		delete item;
 		return GO_ON;
 	}
 }Collector;

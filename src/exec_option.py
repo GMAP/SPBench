@@ -432,6 +432,13 @@ def execute_func(spbench_path, args):
                 min_latency = 0
                 exec_time = 0
                 throughput = 0
+                
+                latency_average = 0
+                thr_average = 0
+                exec_time_average = 0
+                exec_time_error = 0
+                latency_error = 0
+                thr_error = 0
 
                 output_lines = output.splitlines()
                 for line in output_lines:
@@ -458,9 +465,9 @@ def execute_func(spbench_path, args):
                             throughputs.append(float(throughput))
 
                 if args.quiet:
-                    if '-l' in args.exec_arguments:
+                    if args.exec_arguments and "-l" in args.exec_arguments:
                         print(" Average latency (ms) = " + str((round(float(end_latency), 3))))
-                    if '-x' in args.exec_arguments:
+                    if args.exec_arguments and "-x" in args.exec_arguments:
                         print("     Items per second = " + str((round(float(throughput), 3))))
                         print(" Execution time (sec) = " + str((round(float(exec_time), 3))))
                 ##

@@ -44,6 +44,7 @@ struct Rank: ff::ff_node_t<spb::Item>{
 struct Sink: ff::ff_node_t<spb::Item>{
     spb::Item * svc(spb::Item * item){
         spb::Sink::op(*item);
+		delete item;
         return GO_ON;
     }
 };

@@ -622,7 +622,7 @@ parser_exec.add_argument('-freq-pattern',
     dest='frequency_pattern',
     required=False,
     default='',
-    help='(Optional) Usage example: [-freq-pattern wave,10,5,80] (pattern,period,max,min). This argument overwrites the -frequency command and sets a varying frequency for the input stream. You can select and set a frequency variation pattern. For this argument you need to supply a tuple string: <pattern,period,max,min>, where pattern can be "wave", "spike", "binary", "increasing" or "decreasing". Period is the duration in seconds of one cycle of the pattern. And min is the minimum frequency and max the maximum frequency, defined in items per second. For the spike pattern you can also set the duration of the spikes as percentage of the period (0-100) (e.g. <pattern,period,max,min,spike>). The default spike duration is 10 percent of the period.')
+    help='(Optional) Usage example: [-freq-pattern wave,10,5,80] (pattern,period,min,max). This argument overwrites the -frequency command and sets a varying frequency for the input stream. You can select and set a frequency variation pattern. For this argument you need to supply a tuple string: <pattern,period,max,min>, where pattern can be "wave", "spike", "binary", "increasing" or "decreasing". Period is the duration in seconds of one cycle of the pattern. And min is the minimum frequency and max the maximum frequency, defined in items per second. For the spike pattern you can also set the duration of the spikes as percentage of the period (0-100) (e.g. <pattern,period,max,min,spike>). The default spike duration is 10 percent of the period.')
 
 parser_exec.add_argument('-in-memory',
     action='append_const',

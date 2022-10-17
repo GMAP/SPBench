@@ -60,6 +60,7 @@ struct Sink: ff::ff_minode_t<spb::Item>{
     Sink(){}
     spb::Item * svc(spb::Item * item){
         spb::Sink::op(*item);
+		delete item;
         return GO_ON;
     }
 };
