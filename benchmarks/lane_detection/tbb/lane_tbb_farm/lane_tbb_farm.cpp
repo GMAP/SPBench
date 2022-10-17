@@ -37,6 +37,7 @@ public:
 	void* operator() (void* new_item){
 		spb::Item * item = static_cast <spb::Item*> (new_item);
 		spb::Sink::op(*item);
+		delete item;
 		return NULL;
 	}
 };
@@ -47,8 +48,6 @@ int main (int argc, char* argv[]){
 	cv::setNumThreads(0);
 
 	spb::init_bench(argc, argv); //Initializations
-
-	spb::Metrics::init();
 	
 	//TBB code:
 	tbb::task_scheduler_init init_parallel(spb::nthreads);
@@ -61,6 +60,8 @@ int main (int argc, char* argv[]){
 	pipeline.add_filter(process);
 	stage3 write;
 	pipeline.add_filter(write);
+
+	spb::Metrics::init();
 
 	pipeline.run(spb::nthreads*10);
 

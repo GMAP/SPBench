@@ -10,19 +10,12 @@
         "MACROS": "",
         "EXTRA_MACROS": "",
         "PKG-CONFIG": {
-                "myPKG_1": "",
-                "myPKG_2": "",
-                "myPKG_N": ""
+                "myPKG": ""
         },
         "INCLUDES": {
-                "myINC_1": "",
-                "myINC_2": "",
-                "myINC_N": ""
+                "UPL": "-I $SPB_HOME/libs/upl/include/upl/"
         },
         "LIBS": {
-                "myLIB_1": "",
-                "myLIB_2": "",
-                "myLIB_N": "",
                 "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
         },
         "LDFLAGS": "",

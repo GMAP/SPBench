@@ -30,6 +30,7 @@ import sys
 import os
 
 from src.utils import *
+from src.download_inputs_option import *
 
 from sys import version_info 
 python_3 = version_info[0]
@@ -46,7 +47,7 @@ def install_func(spbench_path, args):
     print(" To install them, you can run:\n")
     print(" sudo apt-get install -y build-essential cmake python3.\n")
     print(" Or ask a system admin if you don't have sudo access.")
-    print("---------------------------------------------\n")
+    print(" ---------------------------------------------------------------\n")
 
     print(" You are installing dependencies for the following\n application:")
     print("\n -> " + args.app_id + "\n")
@@ -65,22 +66,43 @@ def install_func(spbench_path, args):
         
     # user input support for python 2 and 3
     if(python_3 == 3):
-        answer = input("\nDo you want to proceed with the installation? [yes/no]\n")
+        answer = input(color.BOLD + "\n Do you want to proceed with the installation? [yes/no]\n" + color.END)
     else:
-        answer = raw_input("\nDo you want to proceed with the installation? [yes/no]\n")
+        answer = raw_input(color.BOLD + "\n Do you want to proceed with the installation? [yes/no]\n" + color.END)
 
     if(answer.lower() not in ["y","yes"]):
         print("Installation canceled!\n")
         sys.exit()
 
-    runShellCmd('bash ' + spbench_path + '/ppis/install_ppis.sh')
-    runShellCmd('bash ' + spbench_path + '/libs/install_libs.sh ' + args.app_id)
+    print(" For running the benchmarks you can use the inputs provided by SPBench.")
+    print(" Otherwise, you can use your own inputs.")
+
+    print(" You can download them now or later, using the command \'./spbench download-inputs\'")
+    print("\n Aproximated size of all inputs: 1.3 GB.")
+
+    download_inputs_flag = True
+    # user input support for python 2 and 3
+    if(python_3 == 3):
+        answer = input(color.BOLD + "\n Do you want to download all benchmark inputs now? [yes/no]\n" + color.END)
+    else:
+        answer = raw_input(color.BOLD + "\n Do you want to download all benchmark inputs now? [yes/no]\n" + color.END)
+
+    if(answer.lower() not in ["y","yes"]):
+        download_inputs_flag = False
+
+    #runShellCmd('bash ' + spbench_path + '/ppis/install_ppis.sh')
+    #runShellCmd('bash ' + spbench_path + '/libs/install_libs.sh ' + args.app_id)
 
     print(" ---------------------------------------------------------------")
     print(color.BOLD + "                         >> IMPORTANT <<                         " + color.END)
     print(" ---------------------------------------------------------------\n")
     print(" Now you must run \'source setup_vars.sh\'\n to load the libraries.\n")
-    print(" Obs: You must load the libraries before using\n SPBench every time you star a new session!")
-    print(" ---------------------------------------------------------------\n")
+    print(" Obs: You must load the libraries before using\n SPBench every time you star a new session!\n")
+    
+    if download_inputs_flag:
+        args.app_id = "all"
+        args.class_id = "all"
+        args.force = True
+        download_inputs_func(spbench_path, args, True)
 
     sys.exit()

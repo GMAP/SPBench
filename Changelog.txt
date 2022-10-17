@@ -1,3 +1,9 @@
+v0.4.3-alpha
+  - [CLI update] Exec command now allows users to set a range for nthreads. It will execute the benchmark in loop iterating throughout the range.
+  - [New benchmarks] SPBench now includes benchmarks using GrPPI.
+  - [CLI update] Exec command now have a "quiet" option. It will run the benchmarks showing less information on the screen.
+  - [New feature] If repetitions and nthreads range are used together in the exec command, a specific resulting log will be automatically generated inside the log folder. This log file will store average latency, throughput, and exec. time, with their respective std. deviation side by side.
+
 * v0.4.2-alpha
   - [New feature] Now, all the benchmark set can be moved to another place just by moving the "benchmarks" folder and replacing it in the new place.
   - [New feature] SPBench now keeps a persistent execution log in a log.csv file inside the 'logs' folder. This general log contains some results and parameters of each execution.

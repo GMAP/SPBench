@@ -27,6 +27,7 @@ struct Worker: ff::ff_node_t<spb::Item>{
 struct Collector: ff::ff_node_t<spb::Item>{
     spb::Item * svc(spb::Item * item){
         spb::Sink::op(*item);
+		delete item;
         return GO_ON;
     }
 }Collector;

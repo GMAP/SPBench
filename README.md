@@ -48,7 +48,7 @@ The main goal of SPBench is to enable users to easily create custom benchmarks f
  - Intel TBB
  - FastFlow
  - SPar
- - GrPPI (forthcoming)
+ - GrPPI (backends: Intel TBB, FastFlow, OpenMP, and C++11 threads)
  - Standard C++ Threads (forthcoming)
  - OpenMP (forthcoming)
 
