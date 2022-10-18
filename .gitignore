@@ -53,11 +53,14 @@ benchmarks/**/Makefile
 /inputs/*
 *_old
 sys/apps/ferret/parsec/
-/ppis/*
+/ppis/grppi/**
+/ppis/SPar/*
+/ppis/fastflow/*
+/ppis/tbb/*
 /libs/*
 
-!/inputs/*.json
-!/ppis/*/*.sh
-!/libs/*/*.sh
+!./inputs/*.json
+!setup_*.sh
+!./libs/*/*.sh
 
 
