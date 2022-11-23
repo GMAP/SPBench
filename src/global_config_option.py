@@ -40,11 +40,11 @@ def global_config_func(spbench_path, args):
         print("\n Error!! JSON configuration file not found at:\n " + config_file + "\n")
         sys.exit()
 
-    editor_err = "\\n Text editor \'" + args.user_editor + "\' not found. Please, select a different one."
-    editorChecking(args.user_editor, editor_err)
+    # get a text editor if there is one
+    text_editor = getTextEditor(args.user_editor)
 
     # generate a command line to run
-    cmd_line = args.user_editor + " " + config_file
+    cmd_line = text_editor + " " + config_file
     print("---------------------------------------------")
     print(" Running -> " + cmd_line)
     print("---------------------------------------------")

@@ -1,5 +1,13 @@
-v0.4.3-alpha
-  - [CLI update] Exec command now allows users to set a range for nthreads. It will execute the benchmark in loop iterating throughout the range.
+* v0.4.4-alpha
+  - [New benchmarks] Added Lane Detection implementations using a pipeline of farms and a farm of pipelines with FastFlow and Intel TBB
+  - [New benchmarks] Added Ferret using a farm of pipelines with FastFlow
+  - [CLI update] CLI now shows a "Did you mean <similar_bench_name>?" when no benchmark is found hwne searching by the id provided.
+  - [CLI update] Exec command now have a -debug parameter that allows users to show debug messages or any output (usually prints added by users) on-the-fly.
+  - [Benchmark update] Missing commands have been added to correctly free up memory in FastFlow benchmarks.
+  - [Benchmark update] Ferret pipe-farm was improved and now it uses one less thread.
+
+* v0.4.3-alpha
+  - [CLI update] Exec command now allows users to set a range for nthreads. It will execute the benchmark in a loop, iterating throughout the range.
   - [New benchmarks] SPBench now includes benchmarks using GrPPI.
   - [CLI update] Exec command now have a "quiet" option. It will run the benchmarks showing less information on the screen.
   - [New feature] If repetitions and nthreads range are used together in the exec command, a specific resulting log will be automatically generated inside the log folder. This log file will store average latency, throughput, and exec. time, with their respective std. deviation side by side.

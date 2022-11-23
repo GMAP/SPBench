@@ -1,8 +1,8 @@
 {
         "CXX": "g++ -std=c++1y",
-        "CXX_FLAGS":"",
+        "CXX_FLAGS":"-O3",
         "PPI_CXX": "g++ -std=c++1y",
-        "PPI_CXX_FLAGS":"",
+        "PPI_CXX_FLAGS":"-O3",
         "PRE_SRC_CMD": "",
         "POST_SRC_CMD": "",
         "MACROS": "-DBLOCKING_MODE -DNO_DEFAULT_MAPPING -DFF_BOUNDED_BUFFER -DDEFAULT_BUFFER_CAPACITY=1",

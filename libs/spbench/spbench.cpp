@@ -255,10 +255,10 @@ void SPBench::setFrequencyPattern(std::string freq_pattern, float freq_period, f
 
 			freq_patt.range_freq = freq_high - freq_low;
 			freq_patt.amplitude = freq_patt.range_freq / 2;
-			freq_patt.off_set = freq_low + freq_patt.amplitude;
+			freq_patt.off_set = freq_low + freq_patt.amplitude; // vertical shift
 			freq_patt.step = freq_patt.range_freq / freq_period;
 			freq_patt.wavelength = 1/freq_patt.period;
-			freq_patt.wave_preset = 2 * M_PI * freq_patt.wavelength;
+			freq_patt.wave_preset = 2 * M_PI * freq_patt.wavelength; // we do this here because it can be computed only once
 			
 			if(freq_pattern == "wave")
 				setFrequency(freq_patt.off_set);
@@ -911,18 +911,19 @@ void compute_metrics(){
 /**
  * Print global average throughput
  * 
- * It prints throughput related metrics at the end of the execution.
+ * It prints throughput metrics at the end of the execution.
  * 
  * @return nothing.
  */
 void Metrics::print_throughput(data_metrics metrics){
+	unsigned long clock = metrics.stop_throughput_clock - metrics.start_throughput_clock;
 	printf("------------------ THROUGHPUT -----------------\n\n");
-	printf("\tExecution time (sec) = %f\n\n", (metrics.stop_throughput_clock - metrics.start_throughput_clock) / 1000000.0);
+	printf("\tExecution time (sec) = %f\n\n", clock / 1000000.0);
 	printf("\tItems processed = %lu\n", items_at_sink_counter);
-	printf("\tItems-per-second = %f\n\n", items_at_sink_counter/((metrics.stop_throughput_clock - metrics.start_throughput_clock) / 1000000.0));
+	printf("\tItems-per-second = %f\n\n", items_at_sink_counter/(clock / 1000000.0));
 	if(items_at_sink_counter != batches_at_sink_counter){
 		printf("\tBatches processed = %lu\n", batches_at_sink_counter);
-		printf("\tBatches-per-second = %f\n", batches_at_sink_counter/((metrics.stop_throughput_clock - metrics.start_throughput_clock) / 1000000.0));
+		printf("\tBatches-per-second = %f\n", batches_at_sink_counter/(clock / 1000000.0));
 	}
 	printf("\n-----------------------------------------------\n");
 }
@@ -930,7 +931,7 @@ void Metrics::print_throughput(data_metrics metrics){
 /**
  * Print global average throughput for n-sources benchmarks
  * 
- * It prints throughput related metrics at the end of the execution.
+ * It prints throughput metrics at the end of the execution.
  * 
  * @param metrics data metrics of a specific source
  * @return nothing.
@@ -976,7 +977,7 @@ void Metrics::print_average_latency(){
 		for(unsigned int j = 0; j < latency_vector[i].local_latency.size(); j++) //get the latency of each operator 
 			operator_aux[j] = operator_aux[j] + (latency_vector[i].local_latency[j]/1000.0);
 		total += latency_vector[i].total_latency;
-		if(latency_vector[i].total_latency > max_latency) {
+		if(latency_vector[i].total_latency > max_latency){
 			max_latency = latency_vector[i].total_latency;
 			max_ts = (latency_vector[i].item_sink_timestamp - execution_init_clock);
 		}
@@ -1105,7 +1106,7 @@ void write_latency(data_metrics metrics){
 	FILE *latency_file;
 	latency_file = fopen(file_name.c_str(), "w");
 
-	//write the head of the file
+	//write the header of the file
 	if(SPBench::get_operator_name_list().size() != metrics.latency_vector_ns[0].local_latency.size()){
 		printf("Warning: the list of operator names does not match up the number of analyzed operators.\n");
 		printf("The names will be changed to default names.\n\n");

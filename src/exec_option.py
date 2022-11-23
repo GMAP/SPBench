@@ -133,6 +133,8 @@ def execute_func(spbench_path, args):
                 if range_start < 1 or range_end < 1:
                     raise ArgumentTypeError("Argument error! Values in the range must be integer numbers higher than or equal to one: " + args.nthreads)
 
+                if range_start == 1 and range_step > 1:
+                    range_start = 0
                 if range_start <= range_end:
                     nthreads = range((range_start), (range_end)+1, (range_step))
                 if range_start > range_end:
@@ -369,14 +371,31 @@ def execute_func(spbench_path, args):
                     print("       -> " + input_key)
         #print('\n')
 
+        if not args.debug:
+            print("\n TIP: If you added execution logs to this benchmark\n      (prints) and want it to print the logs on-the-fly,\n      you should add \'-debug\' to the exec command.")
+            print("      Run: \'./spbench exec -h\' for more details!\n")
+
         latencies = []
         throughputs = []
         exec_times = []
 
         # prepare the performance log
         log_dir = spbench_path + "/log"
+
+        if(not dirExists(log_dir)):
+            try: 
+                os.mkdir(log_dir) 
+            except OSError as error: 
+                print(error)
+
         if is_range and (int(args.repetitions) > 1):
-            range_log_file = log_dir + "/" + bench_id + "_" + str(range_start) + "-" + str(range_step) + "-" + str(range_end) + ".dat"
+
+            # if range start is zero, change it to 1 in the file name
+            real_range_start = str(range_start)
+            if range_start < 1:
+                real_range_start = "1"
+                
+            range_log_file = log_dir + "/" + bench_id + "_" + real_range_start + "-" + str(range_step) + "-" + str(range_end) + ".dat"
             nth_log_header = ("Thread Average_latency Std_dev_latency Average_throughput Std_dev_throughput Average_exec_time Std_dev_exec_time\n")
 
             #if(not fileExists(range_log_file)):
@@ -386,12 +405,6 @@ def execute_func(spbench_path, args):
         # prepare the general execution log
         log_header = ("Time;Benchmark;Latency;Throughput;Exec. time;Max lat.;Min lat.;Input;N threads;Batch size;Batch int.;Frequency;Freq. patt.\n")
         log_file = log_dir + "/general_log.csv"
-
-        if(not dirExists(log_dir)):
-            try: 
-                os.mkdir(log_dir) 
-            except OSError as error: 
-                print(error)
         
         if(not fileExists(log_file)):
             with open(log_file, 'w') as general_log_file:
@@ -399,6 +412,9 @@ def execute_func(spbench_path, args):
 
         # run the benchmark for n threads
         for nthread in nthreads:
+
+            if nthread == 0:
+                nthread = 1
 
             # add nthread parameter to the execution line
             if app_id == 'bzip2':
@@ -421,87 +437,91 @@ def execute_func(spbench_path, args):
                 if(int(args.repetitions) > 1):
                     print("\n ~~~~~~> Execution " + str(n+1) + " from " + args.repetitions)
 
-                # run the command line
-                output = runShellWithReturn(exec_line)
+                if args.debug:
+                    runShellCmd(exec_line)
+                else:
+                    # run the command line
+                    output = runShellWithReturn(exec_line)
 
-                if not args.quiet:
-                    print(output)
+                    if not args.quiet:
+                        print(output)
 
-                end_latency = 0
-                max_latency = 0
-                min_latency = 0
-                exec_time = 0
-                throughput = 0
-                
-                latency_average = 0
-                thr_average = 0
-                exec_time_average = 0
-                exec_time_error = 0
-                latency_error = 0
-                thr_error = 0
-
-                output_lines = output.splitlines()
-                for line in output_lines:
+                    end_latency = 0
+                    max_latency = 0
+                    min_latency = 0
+                    exec_time = 0
+                    throughput = 0
                     
-                    if("End-to-end latency" in line):
-                        end_latency = line.split()[4]
-                        if(isPositiveFloat(end_latency)):
-                            latencies.append(float(end_latency))
+                    latency_average = 0
+                    thr_average = 0
+                    exec_time_average = 0
+                    exec_time_error = 0
+                    latency_error = 0
+                    thr_error = 0
 
-                    if("Maximum latency" in line):
-                        max_latency = line.split()[4]
+                    output_lines = output.splitlines()
+                    for line in output_lines:
+                        
+                        if("End-to-end latency" in line):
+                            end_latency = line.split()[4]
+                            if(isPositiveFloat(end_latency)):
+                                latencies.append(float(end_latency))
 
-                    if("Minimum latency" in line):
-                        min_latency = line.split()[4]
-                    
-                    if("Execution time" in line):
-                        exec_time = line.split()[4]
-                        if(isPositiveFloat(exec_time)):
-                            exec_times.append(float(exec_time))
-                    
-                    if("Items-per-second" in line):
-                        throughput = line.split()[2]
-                        if(isPositiveFloat(throughput)):
-                            throughputs.append(float(throughput))
+                        if("Maximum latency" in line):
+                            max_latency = line.split()[4]
 
-                if args.quiet:
-                    if args.exec_arguments and "-l" in args.exec_arguments:
-                        print(" Average latency (ms) = " + str((round(float(end_latency), 3))))
-                    if args.exec_arguments and "-x" in args.exec_arguments:
-                        print("     Items per second = " + str((round(float(throughput), 3))))
-                        print(" Execution time (sec) = " + str((round(float(exec_time), 3))))
-                ##
-                # Writing results to the general log file
-                ##
-                time_now = datetime.datetime.now()
-                print_time = time_now.strftime("%d/%m/%y %H:%M:%S")
-                log_line = []
-                log_line.append(str(print_time))
-                log_line.append(bench_id)
-                log_line.append(str((round(float(end_latency), 3))))
-                log_line.append(str(round(float(throughput), 3)))
-                log_line.append(str(round(float(exec_time), 3)))
-                log_line.append(str(round(float(max_latency), 3)))
-                log_line.append(str(round(float(min_latency), 3)))
-                log_line.append(','.join(inputs_ID_list))
-                log_line.append(str(nthread))
-                log_line.append(args.batch_size)
-                log_line.append(args.batch_interval)
-                log_line.append(args.items_frequency)
-                log_line.append(args.frequency_pattern + "\n")
+                        if("Minimum latency" in line):
+                            min_latency = line.split()[4]
+                        
+                        if("Execution time" in line):
+                            exec_time = line.split()[4]
+                            if(isPositiveFloat(exec_time)):
+                                exec_times.append(float(exec_time))
+                        
+                        if("Items-per-second" in line):
+                            throughput = line.split()[2]
+                            if(isPositiveFloat(throughput)):
+                                throughputs.append(float(throughput))
 
-                with open(log_file, 'r+') as general_log_file:
-                    general_log_file.seek(0)
-                    current_header = general_log_file.readline()
+                    if args.quiet:
+                        if args.exec_arguments and "-l" in args.exec_arguments:
+                            print(" Average latency (ms) = " + str((round(float(end_latency), 3))))
+                        if args.exec_arguments and "-x" in args.exec_arguments:
+                            print("     Items per second = " + str((round(float(throughput), 3))))
+                            print(" Execution time (sec) = " + str((round(float(exec_time), 3))))
+                    ##
+                    # Writing results to the general log file
+                    ##
+                    time_now = datetime.datetime.now()
+                    print_time = time_now.strftime("%d/%m/%y %H:%M:%S")
+                    log_line = []
+                    log_line.append(str(print_time))
+                    log_line.append(bench_id)
+                    log_line.append(str((round(float(end_latency), 3))))
+                    log_line.append(str(round(float(throughput), 3)))
+                    log_line.append(str(round(float(exec_time), 3)))
+                    log_line.append(str(round(float(max_latency), 3)))
+                    log_line.append(str(round(float(min_latency), 3)))
+                    log_line.append(','.join(inputs_ID_list))
+                    log_line.append(str(nthread))
+                    log_line.append(args.batch_size)
+                    log_line.append(args.batch_interval)
+                    log_line.append(args.items_frequency)
+                    log_line.append(args.frequency_pattern + "\n")
 
-                    if(log_header not in current_header):
+                    with open(log_file, 'r+') as general_log_file:
                         general_log_file.seek(0)
-                        general_log_file.write(log_header)
+                        current_header = general_log_file.readline()
 
-                    general_log_file.seek(0, 2)
-                    general_log_file.write(';'.join(log_line))
-                    general_log_file.truncate()
-                
+                        if(log_header not in current_header):
+                            general_log_file.seek(0)
+                            general_log_file.write(log_header)
+
+                        general_log_file.seek(0, 2)
+                        general_log_file.write(';'.join(log_line))
+                        general_log_file.truncate()
+                # end of debug if
+
                 ##
                 # result correctness checking
                 ##
@@ -570,64 +590,65 @@ def execute_func(spbench_path, args):
                     print("")
                 # end of the correcteness checking
 
-            ##
-            # Compute and print the metrics sumary
-            ##
-            if(int(args.repetitions) > 1):
+            if not args.debug:
+                ##
+                # Compute and print the metrics sumary
+                ##
+                if(int(args.repetitions) > 1):
 
-                if(latencies):
-                    latency_average = sum(latencies)/len(latencies)
-                    latency_error = stdev(latencies)
-
-                if(exec_times):
-                    exec_time_average = sum(exec_times)/len(exec_times)
-                    exec_time_error = stdev(exec_times)
-
-                if(throughputs):
-                    thr_average = sum(throughputs)/len(throughputs)
-                    thr_error = stdev(throughputs)
-
-                if (latencies or exec_times or throughputs) and not args.quiet:
-                    print("*************** RESULTS SUMARY ***************\n")
-                    print("             Benchmark:", bench_id)
-                    print("           Repetitions:", args.repetitions)
                     if(latencies):
-                        print("\n       Average latency:", latency_average)
-                        print("     Latency std. dev.:", latency_error)
-                    if(throughputs):
-                        print("\n    Average throughput:", thr_average)
-                        print("  Throughput std. dev.:", thr_error)
+                        latency_average = sum(latencies)/len(latencies)
+                        latency_error = stdev(latencies)
+
                     if(exec_times):
-                        print("\n    Average exec. time:", exec_time_average)
-                        print("  Exec. time std. dev.:", exec_time_error)
+                        exec_time_average = sum(exec_times)/len(exec_times)
+                        exec_time_error = stdev(exec_times)
 
-                    if nsources:
-                        print("\n CAUTION: This is a multi-source benchmark.")
-                        print("          This summary includes all different")
-                        print("          sources and may not be accurate.")
-                    print("\n********************************************")
-            
-                ##
-                # Generate a specific performance log if repetitions and nthreads range are enabled
-                ##
-                if is_range:
-                    with open(range_log_file, 'r+') as nth_log_file:
-                        nth_log_file.seek(0)
-                        current_header = nth_log_file.readline()
+                    if(throughputs):
+                        thr_average = sum(throughputs)/len(throughputs)
+                        thr_error = stdev(throughputs)
 
-                        if(nth_log_header not in current_header):
+                    if (latencies or exec_times or throughputs) and not args.quiet:
+                        print("*************** RESULTS SUMARY ***************\n")
+                        print("             Benchmark:", bench_id)
+                        print("           Repetitions:", args.repetitions)
+                        if(latencies):
+                            print("\n       Average latency:", latency_average)
+                            print("     Latency std. dev.:", latency_error)
+                        if(throughputs):
+                            print("\n    Average throughput:", thr_average)
+                            print("  Throughput std. dev.:", thr_error)
+                        if(exec_times):
+                            print("\n    Average exec. time:", exec_time_average)
+                            print("  Exec. time std. dev.:", exec_time_error)
+
+                        if nsources:
+                            print("\n CAUTION: This is a multi-source benchmark.")
+                            print("          This summary includes all different")
+                            print("          sources and may not be accurate.")
+                        print("\n********************************************")
+                
+                    ##
+                    # Generate a specific performance log if repetitions and nthreads range are enabled
+                    ##
+                    if is_range:
+                        with open(range_log_file, 'r+') as nth_log_file:
                             nth_log_file.seek(0)
-                            nth_log_file.write(nth_log_header)
+                            current_header = nth_log_file.readline()
 
-                        nth_log_file.seek(0, 2)
-                        nth_log_file.write(
-                            str(nthread) + " " + 
-                            str(latency_average) + " " + 
-                            str(latency_error) + " " + 
-                            str(thr_average) + " " + 
-                            str(thr_error) + " " + 
-                            str(exec_time_average) + " " + 
-                            str(exec_time_error) + "\n")
-                        nth_log_file.truncate()
+                            if(nth_log_header not in current_header):
+                                nth_log_file.seek(0)
+                                nth_log_file.write(nth_log_header)
+
+                            nth_log_file.seek(0, 2)
+                            nth_log_file.write(
+                                str(nthread) + " " + 
+                                str(latency_average) + " " + 
+                                str(latency_error) + " " + 
+                                str(thr_average) + " " + 
+                                str(thr_error) + " " + 
+                                str(exec_time_average) + " " + 
+                                str(exec_time_error) + "\n")
+                            nth_log_file.truncate()
 
     sys.exit()

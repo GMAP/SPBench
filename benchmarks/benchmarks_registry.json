@@ -29,7 +29,9 @@
             "lane_sequential": "simple"
         },
         "fastflow": {
-            "lane_ff_farm": "simple"
+            "lane_ff_farm": "simple",
+            "lane_ff_pipe-farm": "single",
+            "lane_ff_farm-pipe": "single"
         },
         "grppi": {
             "lane_grppi_farm": "simple"
@@ -53,7 +55,8 @@
             "ferret_ff_pipe-farm": "simple",
             "ferret_ff_farm": "simple",
             "ferret_ff_pipeline": "simple",
-            "ferret_ff_a2a_pipe-farm": "single"
+            "ferret_ff_a2a_pipe-farm": "single",
+            "ferret_ff_farm-pipe": "single"
         },
         "grppi": {
             "ferret_grppi_pipe-farm": "single",

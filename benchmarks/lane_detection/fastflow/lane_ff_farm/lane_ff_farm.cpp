@@ -44,11 +44,9 @@ int main (int argc, char* argv[]){
 	spb::Metrics::init();
 
 	std::vector<std::unique_ptr<ff::ff_node>> workers;
-
 	for(int i=0; i<spb::nthreads; i++){
 		workers.push_back(std::make_unique<Worker>());
 	}
-
 	ff::ff_OFarm<spb::Item> farm(move(workers));
 
 	Emitter E;
