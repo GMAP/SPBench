@@ -314,6 +314,7 @@ void Sink::op(Item &item){
 		unsigned int num_item = 0;
 		while(num_item < item.batch_size){ //batch loop
 			oVideoWriter.write(item.item_batch[num_item].image);
+			item.item_batch[num_item].image.release();
 			num_item++;
 			Metrics::items_at_sink_counter++;
 		}

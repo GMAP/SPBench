@@ -33,6 +33,10 @@ import json
 import subprocess
 import math
 
+from difflib import SequenceMatcher
+
+spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/.."
+
 from sys import version_info 
 python_3 = version_info[0]
 
@@ -127,11 +131,45 @@ def benchmarkExists(spbench_path, selected_bench):
                     return True
     return False
 
-def editorChecking(programm, err_msg):
+def programmExists(programm, err_msg):
     """check if a given programm exists in shell
     """
-    check_editor_cmd = "command -v " + programm + " >/dev/null 2>&1 || { echo >&2 \" " + err_msg + "\"; exit 1; }"
-    runShellCmd(check_editor_cmd)
+    check_programm_cmd = "command -v " + programm + " >/dev/null 2>&1 || { echo >&2 \" " + err_msg + "\"; exit 1; }"
+
+    if(python_3 == 3):
+        try:
+            retcode = subprocess.call(check_programm_cmd, shell=True)
+            if -retcode < 0:
+                return False
+        except OSError as e:
+            print(" Execution failed:", e, file=sys.stderr)
+            print()
+        except KeyboardInterrupt as e:
+            print(" KeyboardInterrupt")
+            print("\n Unsuccessful execution\n")
+            sys.exit()
+    return True
+
+def getTextEditor(user_editor):
+    text_editor = ''
+    # if no editor was provided by the user, try to find one
+    if not user_editor:
+        if programmExists("nano", ''):
+            text_editor = 'nano'
+        elif programmExists("vim", ''):
+            text_editor = 'vim'
+        elif programmExists("vi", ''):
+            text_editor = 'vi'
+        else:
+            print("\n No text editor found! Please provide one through the \'-editor\' argument.")
+            print(" Type ./spbench [command] -help for more info.\n")
+            sys.exit()
+    else:  
+        editor_err = "\\n Text editor \'" + user_editor + "\' not found. Please select a different one.\n"
+        if not programmExists(user_editor, editor_err):
+            sys.exit()
+        text_editor = user_editor
+    return text_editor
 
 def runShellCmd(shell_cmd_line):
     """Run a shell command line
@@ -216,8 +254,9 @@ def filterBenchRegByApp(registry_dic, selected_app):
             benchmark_found = True
     
     if not benchmark_found:
-        print("\n  No benchmark found! Double check the name of the benchmark.\n")
-        print(" You can run \'./spbench list\' to see all available benchmarks.")
+        print("\n  Application not found! " + doYouMeanPPI(selected_app))
+        print("\n  Double check the name of the application.")
+        print(" You can run \'./spbench list\' to see all available applications.")
         print(" You can also add new benchmarks using the command 'new'.")
         print(" Run \'./spbench new -help\' for more info.\n")
         sys.exit()
@@ -236,10 +275,11 @@ def filterBenchRegByPPI(registry_dic, selected_ppi):
                 benchmark_found = True
     
     if not benchmark_found:
-        print("\n  No benchmark found! Double check the name of the benchmark.\n")
-        print(" You can run \'./spbench list\' to see all available benchmarks.")
-        print(" You can also add new benchmarks using the command 'new'.")
-        print(" Run \'./spbench new -help\' for more info.\n")
+        print("\n  PPI not found! " + doYouMeanPPI(selected_ppi))
+        print("\n  Double check the name of the PPI.")
+        print("  You can run \'./spbench list\' to see all available PPIs.")
+        print("  You can also add new benchmarks using the command 'new'.")
+        print("  Run \'./spbench new -help\' for more info.\n")
         sys.exit()
 
     return filtered_registry
@@ -256,10 +296,11 @@ def filterBenchRegByBench(registry_dic, selected_bench):
                     benchmark_found = True
 
     if not benchmark_found:
-        print("\n  No benchmark found! Double check the name of the benchmark.\n")
-        print(" You can run \'./spbench list\' to see all available benchmarks.")
-        print(" You can also add new benchmarks using the command 'new'.")
-        print(" Run \'./spbench new -help\' for more info.\n")
+        print("\n  Benchmark not found! " + doYouMeanBench(selected_bench))
+        print("\n  Double check the name of the benchmark.")
+        print("  You can run \'./spbench list\' to see all available benchmarks.")
+        print("  You can also add new benchmarks using the command 'new'.")
+        print("  Run \'./spbench new -help\' for more info.\n")
         sys.exit()
 
     return filtered_registry
@@ -286,8 +327,8 @@ def filterRegistry(inputDictionary, args, copy_from = False):
         # if no filter was selected, try to run for all
         else:
             print("\n Error! You must select some benchmark(s).\n")
-            print(" To run this command for all benchmarks, use the argument: \'-bench all\'\n")
-            print(" Run \'./spbench [command] --help\' to see all available options.\n")
+            print("  To run this command for all benchmarks, use the argument: \'-bench all\'\n")
+            print("  Run \'./spbench [command] --help\' to see all available options.\n")
             
             sys.exit()
     else:
@@ -299,9 +340,9 @@ def filterRegistry(inputDictionary, args, copy_from = False):
     # check if dictionary is empty
     if not selected_benchmarks:
         print("\n  No benchmark found! Double check the name of the benchmark.\n")
-        print(" You can run \'./spbench list\' to see all available benchmarks.")
-        print(" You can also add new benchmarks using the command 'new'.")
-        print(" Run \'./spbench new -help\' for more info.\n")
+        print("  You can run \'./spbench list\' to see all available benchmarks.")
+        print("  You can also add new benchmarks using the command 'new'.")
+        print("  Run \'./spbench new -help\' for more info.\n")
         sys.exit()
 
     return selected_benchmarks
@@ -344,3 +385,59 @@ def stdev(data):
 	var = variance(data)
 	std_dev = math.sqrt(var)
 	return std_dev
+
+def doYouMeanBench(benchmark):
+    """check if there is a benchmark with similar name
+    """
+    registry_dic = getBenchRegistry(spbench_path_)
+
+    most_similar_score = 0.0
+    most_similar_key = ""
+    # Run through the registry dictionary elements
+    for app_key in registry_dic:
+        for ppi_key, value in registry_dic[app_key].items():
+            for bench_key, value in registry_dic[app_key][ppi_key].items():
+                similarity_score = SequenceMatcher(None, benchmark, bench_key).ratio()
+                if similarity_score > most_similar_score:
+                    most_similar_score = similarity_score
+                    most_similar_key = bench_key
+
+    if most_similar_score > 0.0:
+        return "Do you mean \"" + most_similar_key + "\"?"
+    return ''
+
+def doYouMeanApp(app_name):
+    """check if there is an application with similar name
+    """
+    registry_dic = getBenchRegistry(spbench_path_)
+
+    most_similar_score = 0.0
+    most_similar_key = ""
+    # Run through the registry dictionary elements
+    for app_key in registry_dic:
+        similarity_score = SequenceMatcher(None, app_name, app_key).ratio()
+        if similarity_score > most_similar_score:
+            most_similar_score = similarity_score
+            most_similar_key = app_key
+
+    if most_similar_score > 0.0:
+        return "Do you mean \"" + most_similar_key + "\"?"
+    return ''
+
+def doYouMeanPPI(ppi_name):
+    """check if there is a PPI with similar name
+    """
+    registry_dic = getBenchRegistry(spbench_path_)
+
+    most_similar_score = 0.0
+    most_similar_key = ""
+    for app_key in registry_dic:
+        for ppi_key, value in registry_dic[app_key].items():
+            similarity_score = SequenceMatcher(None, ppi_name, ppi_key).ratio()
+            if similarity_score > most_similar_score:
+                most_similar_score = similarity_score
+                most_similar_key = ppi_key
+
+    if most_similar_score > 0.25:
+        return "Do you mean \"" + most_similar_key + "\"?"
+    return ''

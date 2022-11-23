@@ -26,7 +26,7 @@ void run(grppi::dynamic_execution & ex) {
 			return item;
 		}),
 		[](spb::Item item) {
-			spb::Sink::op(item); 
+			spb::Sink::op(item);
 		}
 	);
 }

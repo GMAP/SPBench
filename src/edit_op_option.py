@@ -73,11 +73,11 @@ def edit_op_source_func(spbench_path, args):
         print(" But CAUTION!!! It will remove any new operator or\n any modifications added to the original operators.\n")
         sys.exit()
 
-    editor_err = "\\n Text editor \'" + args.user_editor + "\' not found. Please select a different one."
-    editorChecking(args.user_editor, editor_err)
+    # get a text editor if there is one
+    text_editor = getTextEditor(args.user_editor)
 
     # generate a command line to run
-    cmd_line = args.user_editor + " " + operator_source
+    cmd_line = text_editor + " " + operator_source
     print("---------------------------------------------")
     print(" Running -> " + cmd_line)
     print("---------------------------------------------")

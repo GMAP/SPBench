@@ -82,7 +82,6 @@ int main(int argc, char** argv) {
 
     spb::init_bench(argc, argv);
 
-   
     std::vector<ff::ff_node*> W_1a, W_1b, W_1c, W_1d, W_1e;
 
     ff::ff_a2a a2a_internal_1a, a2a_internal_1b;
@@ -100,8 +99,6 @@ int main(int argc, char** argv) {
     a2a_internal_1b.add_firstset(W_1c);
     a2a_internal_1b.add_secondset(W_1d);
     
-    //Sink col();
-
     W_1a.clear(),W_1b.clear(),W_1c.clear(),W_1d.clear(),W_1e.clear();
 
     Source *source = new Source();
