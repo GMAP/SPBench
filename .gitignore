@@ -59,6 +59,7 @@ sys/apps/ferret/parsec/
 /ppis/tbb/*
 /libs/*
 
+!/libs/spbench/
 !./inputs/*.json
 !setup_*.sh
 !./libs/*/*.sh

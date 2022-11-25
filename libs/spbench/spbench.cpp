@@ -719,6 +719,11 @@ void Metrics::init(){
 			}
 		}
 	#endif
+
+	std::cout << "\n The execution started on:"; 
+	print_date_time();
+	std::cout << std::endl;
+
 	if(throughput_is_enabled()){
 		metrics.start_throughput_clock = current_time_usecs();
 	}
@@ -766,7 +771,7 @@ data_metrics init_metrics(){
  */
 void Metrics::stop(){
 	
-	std::cout << " The execution ended on:"; 
+	std::cout << " The execution ended on:  "; 
 	print_date_time();
 	std::cout << std::endl;
 
