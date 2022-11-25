@@ -672,8 +672,6 @@ void Sink_d::op(Item& item) {
 		if (SPBench::memory_source_is_enabled()) {
 			if (optimized_memory) {
 				delete[] MemData[item_data.index].batch;
-				//MemData[item_data.index].batch = new char[item_data.buffSize];
-				//memcpy(MemData[item_data.index].batch, item_data.CompDecompData, item_data.buffSize);
 				MemData[item_data.index].batch = item_data.CompDecompData;
 				MemData[item_data.index].buffSize = item_data.buffSize;
 			}
@@ -716,7 +714,7 @@ void Sink_d::op(Item& item) {
 	}
 	Metrics::batches_at_sink_counter++;
 
-		if(Metrics::latency_is_enabled()){
+	if(Metrics::latency_is_enabled()){
 		double current_time_sink = current_time_usecs();
 		item.latency_op.push_back(current_time_sink - latency_op);
 

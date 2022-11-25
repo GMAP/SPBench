@@ -555,11 +555,9 @@ void Sink::op(Item &item){
 		latency_op = current_time_usecs();
 	}
 
-	unsigned int num_item = 0;
-	while(num_item < item.batch_size){ //batch loop
-		if(SPBench::memory_source_is_enabled()){
-			break;
-		} else {
+	if(!SPBench::memory_source_is_enabled()){
+		unsigned int num_item = 0;
+		while(num_item < item.batch_size){ //batch loop
 
 			struct item_data* ret;
 			ret = item.item_batch[num_item];
@@ -589,9 +587,12 @@ void Sink::op(Item &item){
 			cass_result_free(&ret->first.rank.result);
 			free(ret->first.rank.name);
 			//free(ret);
+		
+			num_item++;
+			Metrics::items_at_sink_counter++;
 		}
-		num_item++;
-		Metrics::items_at_sink_counter++;
+	} else { // If in-memory is enabled, just count the items on the batch and proceed to the next batch
+		Metrics::items_at_sink_counter += item.batch_size;
 	}
 
 	Metrics::batches_at_sink_counter++;

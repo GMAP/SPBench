@@ -299,6 +299,8 @@ void Sink::op(Item &item){
 			num_item++;
 			Metrics::items_at_sink_counter++;
 		}
+	} else { // If in-memory is enabled, just count the items on the batch and proceed to the next batch
+		Metrics::items_at_sink_counter += item.batch_size;
 	}
 	
 	Metrics::batches_at_sink_counter++;
