@@ -103,6 +103,7 @@ def execute_func(spbench_path, args):
             else: # generate a '-i input_id_list' argument
                 input_id += " -i " + os.path.abspath(input)
 
+
         # Check for errors in nthreads
         if args.nthreads:
             # check if it is a range or not
@@ -120,11 +121,13 @@ def execute_func(spbench_path, args):
                     if not value.isdigit():
                         raise ArgumentTypeError("Argument error! Values in the range must be integer numbers higher than or equal to one: " + args.nthreads)
 
+                there_is_step = False
                 range_start = int(range_arg[0])
                 if len(range_arg) == 2:
                     range_step = 1
                     range_end = int(range_arg[1])
                 elif len(range_arg) == 3:
+                    there_is_step = True
                     range_step = int(range_arg[1])
                     range_end = int(range_arg[2])
                 else:
@@ -394,8 +397,12 @@ def execute_func(spbench_path, args):
             real_range_start = str(range_start)
             if range_start < 1:
                 real_range_start = "1"
+
+            if there_is_step:
+                range_log_file = log_dir + "/" + bench_id + "_" + real_range_start + ":" + str(range_step) + ":" + str(range_end) + ".dat"
+            else:
+                range_log_file = log_dir + "/" + bench_id + "_" + real_range_start + ":" + str(range_end) + ".dat"
                 
-            range_log_file = log_dir + "/" + bench_id + "_" + real_range_start + "-" + str(range_step) + "-" + str(range_end) + ".dat"
             nth_log_header = ("Thread Average_latency Std_dev_latency Average_throughput Std_dev_throughput Average_exec_time Std_dev_exec_time\n")
 
             #if(not fileExists(range_log_file)):
