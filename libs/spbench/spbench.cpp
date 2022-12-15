@@ -343,8 +343,8 @@ void item_frequency_control(unsigned long last_source_item_timestamp, float item
 		usleep(actual_waiting_time); // 1000: milliseconds to microseconds
 }
 
-long spike_cycle_start_time = 0;
-bool max_state = false; // for binary freq. pattern
+long spike_cycle_start_time = 0; // global var for spike freq. pattern
+bool max_state = false; // global state for binary freq. pattern
 /**
  * Frequency pattern
  * 

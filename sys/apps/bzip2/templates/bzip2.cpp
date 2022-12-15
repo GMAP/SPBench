@@ -1,25 +1,25 @@
 #include <bzip2.hpp>
 
 void compress(){
-	spb::Metrics::init_metrics();
-	while (1){
+	spb::Metrics::init();
+	while(1){
 		spb::Item item;
 		if(!spb::Source::op(item)) break;
 		spb::Compress::op(item);
 		spb::Sink::op(item);
 	}
-	spb::Metrics::stop_metrics(metrics);
+	spb::Metrics::stop();
 }
 
 void decompress(){
-	spb::Metrics::init_metrics();
+	spb::Metrics::init();
 	while(1){
 		spb::Item item;
 		if(!spb::Source_d::op(item)) break;
 		spb::Decompress::op(item);
 		spb::Sink_d::op(item);
 	}
-	spb::Metrics::stop_metrics(metrics);
+	spb::Metrics::stop();
 }
 
 int main (int argc, char* argv[]){
