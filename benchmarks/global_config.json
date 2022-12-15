@@ -13,7 +13,8 @@
                 "myPKG": ""
         },
         "INCLUDES": {
-                "UPL": "-I $SPB_HOME/libs/upl/include/upl/"
+                "UPL": "-I $SPB_HOME/libs/upl/include/upl/",
+                "SHARED_QUEUE" : "-I $SPB_HOME/libs/spar-shared-queue-dev" 
         },
         "LIBS": {
                 "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
