@@ -1,110 +1,110 @@
 {
     "bzip2": {
         "spar": {
-            "bzip2_spar_farm": "simple"
+            "bzip2_spar_farm": "single"
         },
         "tbb": {
-            "bzip2_tbb_farm": "simple"
+            "bzip2_tbb_farm": "single"
         },
         "sequential": {
-            "bzip2_sequential": "simple",
+            "bzip2_sequential": "single",
             "bzip2_seq_ns": "multiple"
         },
         "fastflow": {
-            "bzip2_ff_farm": "simple"
+            "bzip2_ff_farm": "single"
         },
         "grppi": {
             "bzip2_grppi_farm": "single"
         },
         "threads": {
-            "bzip2_threads": "single"
+            "bzip2_threads_farm": "single"
         },
-        "omp": {
-            "bzip2_omp": "single"
+        "openmp": {
+            "bzip2_omp_farm": "single"
         }
     },
     "lane_detection": {
         "spar": {
-            "lane_spar_farm": "simple"
+            "lane_spar_farm": "single"
         },
         "tbb": {
-            "lane_tbb_farm": "simple"
+            "lane_tbb_farm": "single"
         },
         "sequential": {
             "lane_seq_ns": "multiple",
-            "lane_sequential": "simple"
+            "lane_sequential": "single"
         },
         "fastflow": {
-            "lane_ff_farm": "simple",
+            "lane_ff_farm": "single",
             "lane_ff_pipe-farm": "single",
             "lane_ff_farm-pipe": "single"
         },
         "grppi": {
-            "lane_grppi_farm": "simple"
+            "lane_grppi_farm": "single"
         },
         "threads": {
-            "lane_threads": "single"
+            "lane_threads_farm": "single"
         },
-        "omp": {
-            "lane_omp": "single"
+        "openmp": {
+            "lane_omp_farm": "single"
         }
     },
     "ferret": {
         "spar": {
-            "ferret_spar_pipeline": "simple",
-            "ferret_spar_farm": "simple"
+            "ferret_spar_pipeline": "single",
+            "ferret_spar_farm": "single"
         },
         "tbb": {
-            "ferret_tbb_pipeline": "simple",
-            "ferret_tbb_farm": "simple",
-            "ferret_tbb_pipe-farm": "simple"
+            "ferret_tbb_pipeline": "single",
+            "ferret_tbb_farm": "single",
+            "ferret_tbb_pipe-farm": "single"
         },
         "sequential": {
             "ferret_seq_ns": "multiple",
-            "ferret_sequential": "simple"
+            "ferret_sequential": "single"
         },
         "fastflow": {
-            "ferret_ff_pipe-farm": "simple",
-            "ferret_ff_farm": "simple",
-            "ferret_ff_pipeline": "simple",
+            "ferret_ff_pipe-farm": "single",
+            "ferret_ff_farm": "single",
+            "ferret_ff_pipeline": "single",
             "ferret_ff_a2a_pipe-farm": "single",
             "ferret_ff_farm-pipe": "single"
         },
         "grppi": {
             "ferret_grppi_pipe-farm": "single",
             "ferret_grppi_pipeline": "single",
-            "ferret_grppi_farm": "simple",
+            "ferret_grppi_farm": "single",
             "ferret_grppi_farm-pipe": "single"
         },
         "threads": {
-            "ferret_threads": "single"
+            "ferret_threads_farm": "single"
         },
-        "omp": {
-            "ferret_omp": "single"
+        "openmp": {
+            "ferret_omp_farm": "single"
         }
     },
     "person_recognition": {
         "spar": {
-            "person_spar_farm": "simple"
+            "person_spar_farm": "single"
         },
         "tbb": {
-            "person_tbb_farm": "simple"
+            "person_tbb_farm": "single"
         },
         "sequential": {
-            "person_sequential": "simple",
+            "person_sequential": "single",
             "person_seq_ns": "multiple"
         },
         "fastflow": {
-            "person_ff_farm": "simple"
+            "person_ff_farm": "single"
         },
         "grppi": {
             "person_grppi_farm": "single"
         },
         "threads": {
-            "person_threads": "single"
+            "person_threads_farm": "single"
         },
-        "omp": {
-            "person_omp": "single"
+        "openmp": {
+            "person_omp_farm": "single"
         }
     }
 }

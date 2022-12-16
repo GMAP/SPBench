@@ -10,13 +10,14 @@
                 "myPKG_1": "",
                 "myPKG_2": "",
                 "myPKG_N": "",
-                "gsl": "pkg-config --cflags --libs gsl",
-                "jpeg": "pkg-config --cflags --libs libjpeg"
+                "opencv": "pkg-config --cflags --libs opencv"
             },
         "INCLUDES": {
                 "myINC_1": "",
                 "myINC_2": "",
                 "myINC_N": "",
+                "SHARED_QUEUE" : "-I $SPB_HOME/libs/spar-shared-queue-dev",
+                "opencv": "-I $SPB_HOME/libs/opencv/opencv-2.4.13.6/include/",
                 "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
         },
         "LIBS": {
@@ -25,5 +26,5 @@
                 "myLIB_N": "",
                 "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
         },
-        "LDFLAGS": "-ljpeg -lgsl -lgslcblas -lpthread -fopenmp"
+        "LDFLAGS": ""
     }

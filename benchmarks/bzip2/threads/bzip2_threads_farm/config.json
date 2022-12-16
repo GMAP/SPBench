@@ -16,6 +16,7 @@
             "myINC_2": "",
             "myINC_N": "",
             "bzlib": "-I $SPB_HOME/libs/bzlib/include/",
+            "SHARED_QUEUE" : "-I $SPB_HOME/libs/spar-shared-queue-dev",
             "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
     },
     "LIBS": {

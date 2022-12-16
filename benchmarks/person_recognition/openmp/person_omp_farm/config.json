@@ -16,6 +16,7 @@
                 "myINC_1": "",
                 "myINC_2": "",
                 "myINC_N": "",
+                "SHARED_QUEUE" : "-I $SPB_HOME/libs/spar-shared-queue-dev",
                 "opencv": "-I $SPB_HOME/libs/opencv/opencv-2.4.13.6/include/",
                 "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
         },
@@ -25,5 +26,5 @@
                 "myLIB_N": "",
                 "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
         },
-        "LDFLAGS": ""
+        "LDFLAGS": "-fopenmp"
     }
