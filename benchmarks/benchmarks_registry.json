@@ -15,6 +15,12 @@
         },
         "grppi": {
             "bzip2_grppi_farm": "single"
+        },
+        "threads": {
+            "bzip2_threads": "single"
+        },
+        "omp": {
+            "bzip2_omp": "single"
         }
     },
     "lane_detection": {
@@ -35,6 +41,12 @@
         },
         "grppi": {
             "lane_grppi_farm": "simple"
+        },
+        "threads": {
+            "lane_threads": "single"
+        },
+        "omp": {
+            "lane_omp": "single"
         }
     },
     "ferret": {
@@ -63,6 +75,12 @@
             "ferret_grppi_pipeline": "single",
             "ferret_grppi_farm": "simple",
             "ferret_grppi_farm-pipe": "single"
+        },
+        "threads": {
+            "ferret_threads": "single"
+        },
+        "omp": {
+            "ferret_omp": "single"
         }
     },
     "person_recognition": {
@@ -81,6 +99,12 @@
         },
         "grppi": {
             "person_grppi_farm": "single"
+        },
+        "threads": {
+            "person_threads": "single"
+        },
+        "omp": {
+            "person_omp": "single"
         }
     }
 }
