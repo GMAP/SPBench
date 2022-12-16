@@ -1,3 +1,12 @@
+/*
+Author: Renato Hoffmann
+Email: <renato.hoffmann@edu.pucrs.br>
+December 2022
+
+Although validated, there are no guarantees that this code will work. 
+In case of questions, please contact via email.
+*/
+
 #include <ferret.hpp>
 #include "SPar_Shared_Queue.hpp"
 
