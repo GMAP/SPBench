@@ -40,6 +40,7 @@
 #include <sstream>
 #include <atomic>
 #include <stdexcept>
+#include <getopt.h>
 
 #include <errno.h>
 #include <sys/stat.h>
@@ -80,6 +81,7 @@ data_metrics init_metrics();
 void print_throughput(data_metrics);
 void print_average_latency(data_metrics);
 void write_latency(data_metrics);
+void printGeneralUsage();
 
 float instantLatency(float time_window_in_seconds, long sourceId);
 float instantThroughput(float time_window_in_seconds, long sourceId);
@@ -105,6 +107,27 @@ T remove_extension(T const & filename)
 	typename T::size_type const p(filename.find_last_of('.'));
 	return p > 0 && p != T::npos ? filename.substr(0, p) : filename;
 }
+
+typedef enum { NONE, REQUIRED } opt_arg;    // an option can require one argument or none
+
+const struct option long_opts[] = {
+        {"help", NONE, 0, 'h'},
+        {"input", REQUIRED, 0, 'i'},
+        {"batch", REQUIRED, 0, 'b'},
+        {"batch-interval", REQUIRED, 0, 'B'},
+        {"frequency", REQUIRED, 0, 'f'},
+		{"freq-patt", REQUIRED, 0, 'F'},
+        {"nthreads", REQUIRED, 0, 't'}, 
+        {"in-memory", NONE, 0, 'I'},
+		{"latency", NONE, 0, 'l'},
+		{"throughput", NONE, 0, 'T'},
+		{"latency-monitor", NONE, 0, 'L'},
+		{"monitor", REQUIRED, 0, 'm'},
+		{"monitor-thread", REQUIRED, 0, 'M'},
+		{"resource-usage", NONE, 0, 'r'},
+		{"user-arg", REQUIRED, 0, 'u'},	
+        {0, 0, 0, 0}
+};
 
 struct item_metrics_data {
 	std::vector<double> local_latency;

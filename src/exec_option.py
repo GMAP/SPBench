@@ -244,10 +244,10 @@ def execute_func(spbench_path, args):
 
             items_frequency = ''
             if args.items_frequency:
-                items_frequency = " -F" + args.items_frequency
+                items_frequency = " -f" + args.items_frequency
 
             if frequency_pattern:
-                frequency_pattern = " -p" + frequency_pattern
+                frequency_pattern = " -F" + frequency_pattern
 
             if(args.user_args):
                 for sub_list in args.user_args:
@@ -276,10 +276,10 @@ def execute_func(spbench_path, args):
 
             items_frequency = ''
             if args.items_frequency:
-                items_frequency = " -F " + args.items_frequency
+                items_frequency = " -f " + args.items_frequency
 
             if frequency_pattern:
-                frequency_pattern = " -p " + frequency_pattern
+                frequency_pattern = " -F " + frequency_pattern
 
             if(args.user_args):
                 for sub_list in args.user_args:
@@ -321,7 +321,7 @@ def execute_func(spbench_path, args):
                 print("        Batch size: " + args.batch_size + " items per batch")
             if batch_interval:
                 print("    Batch interval: " + args.batch_interval + " milliseconds")
-            if args.exec_arguments and "-k" in args.exec_arguments:
+            if args.exec_arguments and "-I" in args.exec_arguments:
                 print("    In-memory mode: enabled")
             else:
                 print("    In-memory mode: not enabled")
@@ -493,7 +493,7 @@ def execute_func(spbench_path, args):
                     if args.quiet:
                         if args.exec_arguments and "-l" in args.exec_arguments:
                             print(" Average latency (ms) = " + str((round(float(end_latency), 3))))
-                        if args.exec_arguments and "-x" in args.exec_arguments:
+                        if args.exec_arguments and "-T" in args.exec_arguments:
                             print("     Items per second = " + str((round(float(throughput), 3))))
                             print(" Execution time (sec) = " + str((round(float(exec_time), 3))))
                     ##
