@@ -106,5 +106,10 @@
         "openmp": {
             "person_omp_farm": "single"
         }
+    },
+    "fraud_detection": {
+        "sequential": {
+            "fraud_sequential": "single"
+        }
     }
 }

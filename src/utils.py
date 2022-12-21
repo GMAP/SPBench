@@ -53,10 +53,10 @@ class color:
     END = '\033[0m'
 
 # list of SPBench reserved words
-reserved_words = {'all', 'bzip2', 'ferret', 'lane_detection', 'person_recognition', 'source', 'sink', 'spbench'}
+reserved_words = {'all', 'bzip2', 'ferret', 'lane_detection', 'person_recognition', 'fraud_detection', 'source', 'sink', 'spbench'}
 
 # list of supported apps
-apps_list = ['bzip2', 'ferret', 'lane_detection', 'person_recognition']
+apps_list = ['bzip2', 'ferret', 'lane_detection', 'person_recognition', 'fraud_detection']
 apps_list_all = list(apps_list)
 apps_list_all.insert(0, 'all')
 

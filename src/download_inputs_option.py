@@ -61,6 +61,10 @@ def download_inputs_func(spbench_path, args, skip = False):
     if args.app_id == "person_recognition" or args.app_id == "all":
         get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "person_recognition " + "all " + overwrite_files
         runShellCmd("bash " + get_input_cmd)
+
+    if args.app_id == "fraud_detection" or args.app_id == "all":
+        get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "fraud_detection " + "all " + overwrite_files
+        runShellCmd("bash " + get_input_cmd)
     
     if args.app_id == "ferret" or args.app_id == "all":
         get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "ferret " + args.class_id + " " + overwrite_files

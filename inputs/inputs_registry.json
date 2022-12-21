@@ -105,6 +105,28 @@
             "md5_test": ""
         }
     },
+    "fraud_detection": {
+        "huge": {
+            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 100",
+            "md5_test": ""
+        },
+        "large": {
+            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 50",
+            "md5_test": ""
+        },
+        "medium": {
+            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 10",
+            "md5_test": ""
+        },
+        "small": {
+            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 1",
+            "md5_test": ""
+        },
+        "test": {
+            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 0.5",
+            "md5_test": ""
+        }
+    },
     "person_recognition": {
         "test": {
             "input": "$SPB_HOME/inputs/person_recognition/input_vid/Obama0.3s.mp4 $SPB_HOME/inputs/person_recognition/obama_faces/list $SPB_HOME/inputs/person_recognition/cascades/haarcascade_frontalface_default.xml",

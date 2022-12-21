@@ -199,6 +199,9 @@ def new_func(spbench_path, args):
         print('\n Error while creating your new benchmark\n')
         sys.exit()
 
+    if given_app_id not in registry_dic:
+        registry_dic.update({given_app_id:{}})
+
     if args.ppi_id not in registry_dic[given_app_id]:
         registry_dic[given_app_id].update({args.ppi_id:{}}) #update the dictionary with the new ppi
 

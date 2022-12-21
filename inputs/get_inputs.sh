@@ -122,6 +122,36 @@ if [[ $APP == "lane_detection" || $APP == "all" ]]; then
 	cd ..
 fi
 
+if [[ $APP == "fraud_detection" || $APP == "all" ]]
+then
+	THIS_APP="fraud_detection"
+
+	if [ ! -d "fraud_detection" ]; then
+		mkdir $THIS_APP
+	fi
+
+	cd $THIS_APP
+	
+	echo " Building Fraud Detection input classes..."
+	
+	FILE=fraud_detection.tar.gz
+
+	if [[ $3 == "force" ]]; then
+		rm $FILE
+	fi
+	
+	if [ ! -f "$FILE" ]; then
+		echo " Downloading $FILE..."
+		wget $PUB_DATA_URL/$THIS_APP/$FILE
+	fi
+
+	tar -xf $FILE
+	echo " Done!"
+	echo "---------------------------------------------------------------"
+
+	cd ..
+fi
+
 if [[ $APP == "person_recognition" || $APP == "all" ]]
 then
 	THIS_APP="person_recognition"
