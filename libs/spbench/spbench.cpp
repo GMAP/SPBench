@@ -275,7 +275,7 @@ void SPBench::setFrequencyPattern(std::string freq_pattern, float freq_period, f
 				if((freq_spike < 0) || (freq_spike > 100)){
 					throw std::invalid_argument("\n ERROR in setFrequencyPattern() --> Spike size must be a value between 0 and 100 (percentage of the period). Given value: " + std::to_string(freq_spike) + "!\n");
 				}
-				freq_patt.spikeInterval = freq_patt.period * (freq_spike / 100.0);
+				freq_patt.spikeInterval = freq_period * (freq_spike / 100.0);
 			}
 			freq_patt.pattern = freq_pattern;
 			freq_patt.period = freq_period;
