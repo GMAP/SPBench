@@ -1,6 +1,8 @@
 #include <fraud_detection.hpp>
 
-Markov_Model_Predictor predictor; // Predictor state
+// Predictor state
+// It is modified at each iteraction by the predictor operator
+Markov_Model_Predictor predictor;
 
 int main (int argc, char* argv[]){
 	spb::init_bench(argc, argv); // Initializations

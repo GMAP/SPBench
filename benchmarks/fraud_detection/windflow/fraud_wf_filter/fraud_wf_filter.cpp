@@ -6,10 +6,6 @@
 #include <sstream>
 #include <iostream>
 
-//using namespace wf;
-//using namespace ff;
-//using namespace std;
-
 // Source_Functor class
 class Source_Functor{
 public:
