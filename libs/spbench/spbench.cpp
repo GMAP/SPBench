@@ -267,16 +267,16 @@ void SPBench::setFrequencyPattern(std::string freq_pattern, float freq_period, f
 	if(freq_pattern == "none") return;
 		
 	try{
-		if(freq_period < 0) throw std::invalid_argument("\n ERROR in setFrequencyPattern() --> Period must be higher than zero. Given value: " + std::to_string(freq_period) + "!\n");
-		if(freq_low < 0) throw std::invalid_argument("\n ERROR in setFrequencyPattern() --> Minimum frequency must be higher than zero. Given value: " + std::to_string(freq_low) + "!\n");
-		if(freq_high < 0) throw std::invalid_argument("\n ERROR in setFrequencyPattern() --> maxiumum frequency must be higher than zero. Given value: " + std::to_string(freq_high) + "!\n");
+		if(freq_period <= 0.0) throw std::invalid_argument("\n ERROR in setFrequencyPattern() --> Period must be higher than zero. Given value: " + std::to_string(freq_period) + "!\n");
+		if(freq_low <= 0.0) throw std::invalid_argument("\n ERROR in setFrequencyPattern() --> Minimum frequency must be higher than zero. Given value: " + std::to_string(freq_low) + "!\n");
+		if(freq_high <= 0.0) throw std::invalid_argument("\n ERROR in setFrequencyPattern() --> maxiumum frequency must be higher than zero. Given value: " + std::to_string(freq_high) + "!\n");
 		if(freq_low > freq_high) throw std::invalid_argument("\n ERROR in setFrequencyPattern() --> Minimum frequency must be lower than maximum. Given values:  min = " + std::to_string(freq_low) + ", max = " + std::to_string(freq_high) + "!\n");
 		if(freq_pattern == "wave" || freq_pattern == "binary" || freq_pattern == "spike" || freq_pattern == "increasing" || freq_pattern == "decreasing"){
 			if(freq_pattern == "spike"){
-				if((freq_spike < 0) || (freq_spike > 100)){
+				if((freq_spike <= 0.0) || (freq_spike > 100)){
 					throw std::invalid_argument("\n ERROR in setFrequencyPattern() --> Spike size must be a value between 0 and 100 (percentage of the period). Given value: " + std::to_string(freq_spike) + "!\n");
 				}
-				freq_patt.spikeInterval = freq_patt.period * (freq_spike / 100.0);
+				freq_patt.spikeInterval = freq_period * (freq_spike / 100.0);
 			}
 			freq_patt.pattern = freq_pattern;
 			freq_patt.period = freq_period;
@@ -522,7 +522,7 @@ float instantThroughput(float time_window_in_seconds, long sourceId){
 		// Compute the elapsed time from the last item to the item at index
 		window_computed_time_sec = (metrics_vec[sourceId].latency_vector_ns[last_element_index].item_sink_timestamp - metrics_vec[sourceId].latency_vector_ns[index].item_sink_timestamp) / 1000000.0;
 
-		//if the elapsed time between if the pair of items above is hihger than the time window, then break
+		//if the elapsed time between the pair of items above is hihger than the time window, then break
 		if(window_computed_time_sec >= time_window_in_seconds) break;
 
 		total_items += metrics_vec[sourceId].latency_vector_ns[index].batch_size; // count the number of items in the remaining batches
@@ -556,14 +556,14 @@ float Metrics::getInstantLatency(float time_window_in_seconds){
 	// if a single item was processed, than return its latency
 	if (latency_vector.size() < 2) return inst_latency / 1000.0;
 	
-	// Sum latencies while computing window is not closed and there is elements to compute
+	// Sum latencies while computing window is not closed and there is still elements to compute
 	while(1) {
 		index--;
 		
 		// Compute the elapsed time from the last item to the item at index
 		window_computed_time_sec = (latency_vector[last_element_index].item_sink_timestamp - latency_vector[index].item_sink_timestamp) / 1000000.0;
 
-		//if the elapsed time between if the pair of items above is hihger than the time window, then break
+		//if the elapsed time between the pair of items above is hihger than the time window, then break
 		if(window_computed_time_sec >= time_window_in_seconds){
 			index++; // return index to the last valid position
 			break;
@@ -600,14 +600,14 @@ float instantLatency(float time_window_in_seconds, long sourceId){
 	// if a single item was processed, than return its latency
 	if (metrics_vec[sourceId].latency_vector_ns.size() < 2) return inst_latency / 1000.0;
 	
-	// Sum latencies while computing window is not closed and there is elements to compute
+	// Sum latencies while computing window is not closed and there is still elements to compute
 	while(1) {
 		index--;
 		
 		// Compute the elapsed time from the last item to the item at index
 		window_computed_time_sec = (metrics_vec[sourceId].latency_vector_ns[last_element_index].item_sink_timestamp - metrics_vec[sourceId].latency_vector_ns[index].item_sink_timestamp) / 1000000.0;
 
-		//if the elapsed time between if the pair of items above is hihger than the time window, then break
+		//if the elapsed time between the pair of items above is hihger than the time window, then break
 		if(window_computed_time_sec >= time_window_in_seconds){
 			index++; // return index to the last valid position
 			break;

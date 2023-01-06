@@ -43,6 +43,7 @@ The main goal of SPBench is to enable users to easily create custom benchmarks f
  - Lane Detection
  - Bzip2
  - Person Recognition (Face Recognizer)
+ - Fraud Detection
 
 ### For each of them, there are parallel versions implemented using the following parallel programming interfaces, and will be more in the future:
  - Intel TBB
@@ -51,6 +52,7 @@ The main goal of SPBench is to enable users to easily create custom benchmarks f
  - OpenMP
  - C++ Threads
  - GrPPI (backends: Intel TBB, FastFlow, OpenMP, and C++11 threads)
+ - WindFlow (Fraud Detection only) 
 
 # SPBench Framework
 

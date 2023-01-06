@@ -17,4 +17,3 @@ int main (int argc, char* argv[]){
 	spb::end_bench();
 	return 0;
 }
-
