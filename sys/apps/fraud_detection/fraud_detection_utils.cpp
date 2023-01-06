@@ -15,7 +15,7 @@
 
 namespace spb{
 
-Markov_Model_Predictor predictor;
+//Markov_Model_Predictor predictor;
 
 //Globals:
 
@@ -32,10 +32,12 @@ float iteractions;
 
 std::string input_file, input_id;
 
-std::ofstream outputFile;
+std::vector<spb::Item> InMemData; //vector to store data in-memory
 
-std::vector<spb::item_data> InMemData; //vector to store data in-memory
-std::vector<spb::item_data> OutMemData; //vector to store data in-memory
+#if !defined NO_OUTPUT_FILE
+	std::ofstream outputFile;
+	std::vector<spb::Item> OutMemData; //vector to store data in-memory
+#endif
 
 bool stream_end = false;
 
@@ -182,9 +184,10 @@ void init_bench(int argc, char* argv[]){
 
 	map_and_parse_dataset(); //chama as funções para a computação
 
-	std::string output_file_name = (prepareOutFileAt("outputs") + "_" + input_id + ".txt");
-
-	outputFile.open(output_file_name);
+	#if !defined NO_OUTPUT_FILE
+		std::string output_file_name = (prepareOutFileAt("outputs") + "_" + input_id + ".txt");
+		outputFile.open(output_file_name);
+	#endif
 
 	/*capture.open(input_data.input_vid);
 
@@ -222,7 +225,7 @@ void init_bench(int argc, char* argv[]){
 		for (int next_tuple_idx = 0; next_tuple_idx < parsed_file.size(); next_tuple_idx++) {
 			// create tuple
 			auto tuple_content = parsed_file.at(next_tuple_idx);
-			item_data item;
+			Item item;
 			item.record = tuple_content.second;
 			//if (num_keys == 0) {
 			item.key = (entity_key_map.find(tuple_content.first)->second).first;
@@ -262,16 +265,16 @@ bool Source::op(Item &item){
 	SPBench::item_frequency_control(source_item_timestamp);
 
 	item.timestamp = source_item_timestamp = current_time_usecs();
-	unsigned long batch_elapsed_time = source_item_timestamp;
+	//unsigned long batch_elapsed_time = source_item_timestamp;
 	
 	unsigned long latency_op;
 	if(Metrics::latency_is_enabled()){
 		latency_op = source_item_timestamp;
 	}
 
-	while(1) { //main source loop
+	//while(1) { //main source loop
 		// batching management routines
-		if(SPBench::getBatchInterval()){
+		/*if(SPBench::getBatchInterval()){
 			// Check if the interval of this batch is higher than the batch interval defined by the user
 			if(((current_time_usecs() - batch_elapsed_time) / 1000.0) >= SPBench::getBatchInterval()) break;
 		} else {
@@ -281,49 +284,52 @@ bool Source::op(Item &item){
 		// This couples with batching interval to close the batch by size if a size higher than one is defined
 		if(SPBench::getBatchSize() > 1){
 			if(item.batch_size >= SPBench::getBatchSize()) break;
-		}
-
-		item_data item_data;
+		}*/
 
 		if(Metrics::items_counter >= parsed_file.size() * iteractions){
 			stream_end = true;
-			break;
+			return false;
+			//break;
 		}
 
 		if(SPBench::memory_source_is_enabled()){
-			item_data = InMemData.at(next_tuple_idx);
+			item.record = InMemData.at(next_tuple_idx).record;
+			item.key = InMemData.at(next_tuple_idx).key;
 		} else {
 			// create tuple		
 			auto tuple_content = parsed_file.at(next_tuple_idx);
-			item_data.record = tuple_content.second;
-			item_data.key = (entity_key_map.find(tuple_content.first)->second).first;
+			item.record = tuple_content.second;
+			item.key = (entity_key_map.find(tuple_content.first)->second).first;
 		}
 		next_tuple_idx = (next_tuple_idx + 1) % parsed_file.size();	
 
-		item_data.index = Metrics::items_counter;
-		item.item_batch.resize(item.batch_size+1);
-		item.item_batch[item.batch_size] = item_data;
-		item.batch_size++;
+		item.index = Metrics::items_counter;
+		//item.item_batch.resize(item.batch_size+1);
+		//item.item_batch[item.batch_size] = item_data;
+		//item.batch_size++;
 		Metrics::items_counter++;
-	}
+	//}
 
 	//if this batch has size 0, ends computation
-	if(item.batch_size == 0){
-		return false;
-	}
+	//if(item.batch_size == 0){
+	//	return false;
+	//}
 
 	if(Metrics::latency_is_enabled()){
 		//item.latency_op.push_back(current_time_usecs() - latency_op);
 		item.latency_op.push_back(current_time_usecs() - latency_op);
 	}
 
-	item.batch_index = Metrics::batch_counter;
-	Metrics::batch_counter++;	// sent batches
+	//item.batch_index = Metrics::batch_counter;
+	//Metrics::batch_counter++;	// sent batches
+	Metrics::items_at_source_counter++;
 	return true;
 }
 
 void Sink::op(Item &item){
 	
+	if(item.record.empty()) return;
+
 	unsigned long latency_op;
 	if(Metrics::latency_is_enabled()){
 		latency_op = current_time_usecs();
@@ -331,36 +337,40 @@ void Sink::op(Item &item){
 
 	//when 'in-memory', do nothing here, the result is already ready on the output vector
 	//if not in-memory, then retrieve the data from itens and write it on the disk
-	unsigned int num_item = 0;
-	while(num_item < item.batch_size){ //batch loop
-		if(item.item_batch.at(num_item).score > _threshold){
-			if(!SPBench::memory_source_is_enabled()){
-				outputFile << item.item_batch.at(num_item).record << " " << item.item_batch.at(num_item).key << " " << item.item_batch.at(num_item).score << std::endl;
-			} else {
-				OutMemData.push_back(item.item_batch.at(num_item));
-			}
+	//unsigned int num_item = 0;
+	//while(num_item < item.batch_size){ //batch loop
+	#if !defined NO_OUTPUT_FILE
+		if(!SPBench::memory_source_is_enabled()){
+			outputFile << item.record << " " << item.key << " " << item.score << std::endl;
+		} else {
+			OutMemData.push_back(item);
 		}
-		num_item++;
+	#endif
+		
+	//	num_item++;
 		Metrics::items_at_sink_counter++;
-	} 
+	//} 
 	
 	Metrics::batches_at_sink_counter++;
 
 	if(Metrics::latency_is_enabled()){
-		double current_time_sink = current_time_usecs();
+		unsigned long current_time_sink = current_time_usecs();
 		item.latency_op.push_back(current_time_sink - latency_op);
 
 		unsigned long total_item_latency = (current_time_sink - item.timestamp);
-		Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
 
-		auto latency = Metrics::Latency_t();
-		latency.local_latency = item.latency_op;
-		latency.total_latency = total_item_latency;
-		latency.item_timestamp = item.timestamp;
-		latency.item_sink_timestamp = current_time_sink;
-		latency.batch_size = item.batch_size;
-		Metrics::latency_vector.push_back(latency);
-		item.latency_op.clear();
+		if(total_item_latency > 0){
+			Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
+
+			auto latency = Metrics::Latency_t();
+			latency.local_latency = item.latency_op;
+			latency.total_latency = total_item_latency;
+			latency.item_timestamp = item.timestamp;
+			latency.item_sink_timestamp = current_time_sink;
+			latency.batch_size = item.batch_size;
+			Metrics::latency_vector.push_back(latency);
+			item.latency_op.clear();
+		}
 	}
 	if(Metrics::monitoring_is_enabled()){
 		Metrics::monitor_metrics();
@@ -368,22 +378,33 @@ void Sink::op(Item &item){
 }
 
 void end_bench(){
+
 	if(SPBench::memory_source_is_enabled()){
 		// make sure InMemData will be clean
 		if(!InMemData.empty())
 			InMemData.erase(InMemData.begin(), InMemData.end());
 
-		// Write results and clean output vector
-		while(!OutMemData.empty()){
-			if(OutMemData.at(0).score > _threshold){
+		#if !defined NO_OUTPUT_FILE
+			std::cout << " Writing result to the output file... ";
+			fflush(stdout);
+
+			// Write results and clean output vector
+			while(!OutMemData.empty()){
+				
 				outputFile << OutMemData.at(0).record << " " << OutMemData.at(0).key << " " << OutMemData.at(0).score << std::endl;
+				OutMemData.erase(OutMemData.begin());
 			}
-			OutMemData.erase(OutMemData.begin());
-		}
-		if(!OutMemData.empty())
-			OutMemData.erase(InMemData.begin(), OutMemData.end());
+			if(!OutMemData.empty())
+				OutMemData.erase(InMemData.begin(), OutMemData.end());
+
+			std::cout << "done!" << std::endl;
+			fflush(stdout);
+		#endif
 	}
-	outputFile.close();
+	#if !defined NO_OUTPUT_FILE	
+		outputFile.close();
+	#endif
+	
 }
 
 } //end of namespace spb

@@ -179,6 +179,7 @@ struct data_metrics {
 		// for real time metrics
 		long batches_at_sink_counter;
 		long items_at_sink_counter;
+		long items_at_source_counter;
 		long global_latency_acc; // latency accumulator
 		
 		/* monitoring variables */
@@ -311,6 +312,7 @@ public:
 	static long batch_counter; // batches processed at source
 	static long items_counter; // items processed at source
 	static long items_at_sink_counter;
+	static long items_at_source_counter;
 	static long batches_at_sink_counter;
 	static long global_latency_acc;
 	static long execution_init_clock;
@@ -566,7 +568,7 @@ class NsItem {
 class Batch {
 	public:
 		std::vector<double> latency_op;
-		volatile unsigned long timestamp;
+		unsigned long timestamp;
 		int batch_size;
 		int batch_index;
 

@@ -110,6 +110,9 @@
     "fraud_detection": {
         "sequential": {
             "fraud_sequential": "single"
+        },
+        "windflow": {
+            "fraud_wf_filter": "single"
         }
     }
 }

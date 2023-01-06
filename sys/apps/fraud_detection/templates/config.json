@@ -5,7 +5,7 @@
         "PPI_CXX_FLAGS":"",
         "PRE_SRC_CMD": "",
         "POST_SRC_CMD": "",
-        "MACROS": "",
+        "MACROS": "-DNO_OUTPUT_FILE",
         "PKG-CONFIG": {
                 "myPKG_1": "",
                 "myPKG_2": "",

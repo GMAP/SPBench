@@ -1,5 +1,5 @@
 {
-        "CXX": "g++ -std=c++1y",
+        "CXX": "",
         "CXX_FLAGS":"",
         "EXTRA_CXX_FLAGS":"-O3",
         "PPI_CXX": "",

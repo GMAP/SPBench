@@ -64,6 +64,7 @@ Metrics::data_metrics Metrics::metrics;
 long Metrics::batch_counter = 0; // batches processed
 long Metrics::items_counter = 0;
 long Metrics::items_at_sink_counter = 0;
+long Metrics::items_at_source_counter = 0;
 long Metrics::batches_at_sink_counter = 0;
 long Metrics::global_latency_acc = 0;
 long Metrics::execution_init_clock = 0;
@@ -840,6 +841,7 @@ void Metrics::stop(){
 	if(print_latency_is_enabled()){
 		print_average_latency();
 	}
+
 	if(throughput_is_enabled()){
 		print_throughput(metrics);
 	}
@@ -940,47 +942,6 @@ void compute_metrics(){
 			fclose(monitor_file);
 		}
 	}
-}
-
-/**
- * Print global average throughput
- * 
- * It prints throughput metrics at the end of the execution.
- * 
- * @return nothing.
- */
-void Metrics::print_throughput(data_metrics metrics){
-	unsigned long clock = metrics.stop_throughput_clock - metrics.start_throughput_clock;
-	printf("------------------ THROUGHPUT -----------------\n\n");
-	printf("\tExecution time (sec) = %f\n\n", clock / 1000000.0);
-	printf("\tItems processed = %lu\n", items_at_sink_counter);
-	printf("\tItems-per-second = %f\n\n", items_at_sink_counter/(clock / 1000000.0));
-	if(items_at_sink_counter != batches_at_sink_counter){
-		printf("\tBatches processed = %lu\n", batches_at_sink_counter);
-		printf("\tBatches-per-second = %f\n", batches_at_sink_counter/(clock / 1000000.0));
-	}
-	printf("\n-----------------------------------------------\n");
-}
-
-/**
- * Print global average throughput for n-sources benchmarks
- * 
- * It prints throughput metrics at the end of the execution.
- * 
- * @param metrics data metrics of a specific source
- * @return nothing.
- */
-void print_throughput(data_metrics metrics){
-	unsigned long clock = metrics.stop_throughput_clock - metrics.start_throughput_clock;
-	printf("------------------ THROUGHPUT -----------------\n\n");
-	printf("\tExecution time (sec) = %f\n\n", (clock / 1000000.0));
-	printf("\tItems processed = %lu\n", metrics.items_at_sink_counter);
-	printf("\tItems-per-second = %f\n", metrics.items_at_sink_counter/(clock / 1000000.0));
-	if(metrics.items_at_sink_counter != metrics.batches_at_sink_counter){
-		printf("\n\tBatches processed = %lu\n", metrics.batches_at_sink_counter);
-		printf("\tBatches-per-second = %f\n", metrics.batches_at_sink_counter/(clock / 1000000.0));
-	}
-	printf("\n");
 }
 
 /**
@@ -1089,6 +1050,74 @@ void print_average_latency(data_metrics metrics){
 	printf("     Minimum latency (ms) = %.3f\n", min_latency/1000.0);
 	printf("\n-----------------------------------------------\n");
 	return;
+}
+
+/**
+ * Print global average throughput
+ * 
+ * It prints throughput metrics at the end of the execution.
+ * 
+ * @return nothing.
+ */
+void Metrics::print_throughput(data_metrics metrics){
+	unsigned long clock = metrics.stop_throughput_clock - metrics.start_throughput_clock;
+	printf("------------------ THROUGHPUT -----------------\n\n");
+/*	printf("         Execution time (sec) = %f\n\n", clock / 1000000.0);
+	if(items_at_source_counter != items_at_sink_counter){
+		printf("     Items sent by the source = %lu\n", items_at_source_counter);
+		printf("   Items received by the sink = %lu\n", items_at_sink_counter);
+	} else {
+		printf("              Items processed = %lu\n", items_at_source_counter);
+	}
+	printf("   Items processed per second = %f\n", items_at_source_counter/(clock / 1000000.0));
+
+	if(items_at_sink_counter != batches_at_sink_counter){
+		printf("\n            Batches processed = %lu\n", batches_at_sink_counter);
+		printf(" Batches processed per second = %f\n", batches_at_sink_counter/(clock / 1000000.0));
+	}
+	*/
+	printf("\tExecution time (sec) = %f\n\n", clock / 1000000.0);
+	printf("\tItems processed = %lu\n", items_at_source_counter);
+	printf("\tItems-per-second = %f\n\n", items_at_source_counter/(clock / 1000000.0));
+	if(items_at_sink_counter != batches_at_sink_counter){
+		printf("\tBatches processed = %lu\n", batches_at_sink_counter);
+		printf("\tBatches-per-second = %f\n", batches_at_sink_counter/(clock / 1000000.0));
+	}
+	printf("\n-----------------------------------------------\n");
+}
+
+/**
+ * Print global average throughput for n-sources benchmarks
+ * 
+ * It prints throughput metrics at the end of the execution.
+ * 
+ * @param metrics data metrics of a specific source
+ * @return nothing.
+ */
+void print_throughput(data_metrics metrics){
+	unsigned long clock = metrics.stop_throughput_clock - metrics.start_throughput_clock;
+	printf("------------------ THROUGHPUT -----------------\n\n");
+	/*printf("\tExecution time (sec) = %f\n\n", (clock / 1000000.0));
+	if(metrics.items_at_source_counter != metrics.items_at_sink_counter){
+		printf("     Items sent by the source = %lu\n", metrics.items_at_source_counter);
+		printf("   Items received by the sink = %lu\n", metrics.items_at_sink_counter);
+	} else {
+		printf("              Items processed = %lu\n", metrics.items_at_source_counter);
+	}
+	printf("   Items processed per second = %f\n", metrics.items_at_source_counter/(clock / 1000000.0));
+
+	if(metrics.items_at_sink_counter != metrics.batches_at_sink_counter){
+		printf("\n            Batches processed = %lu\n", metrics.batches_at_sink_counter);
+		printf(" Batches processed per second = %f\n", metrics.batches_at_sink_counter/(clock / 1000000.0));
+	}*/
+	printf("\tExecution time (sec) = %f\n\n", (clock / 1000000.0));
+	printf("\tItems processed = %lu\n", metrics.items_at_source_counter);
+	printf("\tItems-per-second = %f\n", metrics.items_at_source_counter/(clock / 1000000.0));
+	if(metrics.items_at_sink_counter != metrics.batches_at_sink_counter){
+		printf("\n\tBatches processed = %lu\n", metrics.batches_at_sink_counter);
+		printf("\tBatches-per-second = %f\n", metrics.batches_at_sink_counter/(clock / 1000000.0));
+	}
+	printf("\n");
 }
 
 /**
