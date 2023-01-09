@@ -29,7 +29,7 @@ The main goal of SPBench is to enable users to easily create custom benchmarks f
 
 ### Other papers using SPBench
 
- - A. M. Garcia, D. Griebler, C. Schepke and L. G. L. Fernandes, Evaluating Micro-batch and Data Frequency for Stream Processing Applications on Multi-cores. In: 2022 30th Euromicro International Conference on Parallel, Distributed and NetworkBased Processing (PDP), 2022, Valladolid. 2022 30th Euromicro International Conference on Parallel, Distributed and Network-based Processing (PDP), 2022. p. 10-17, doi: 10.1109/PDP55904.2022.00011. \[[link](https://doi.org/10.1109/PDP55904.2022.00011)\] 
+ - A. M. Garcia, D. Griebler, C. Schepke and L. G. L. Fernandes, Micro-batch and data frequency for stream processing on multi-cores. The Journal of Supercomputing (2023), p. 1-39, doi: 10.1007/s11227-022-05024-y. \[[link](https://doi.org/10.1007/s11227-022-05024-y)\] 
 
  - A. M. Garcia, D. Griebler, L. G. L. Fernandes and C. Schepke, "Introducing a Stream Processing Framework for Assessing Parallel Programming Interfaces", 2021 29th Euromicro International Conference on Parallel, Distributed and Network-Based Processing (PDP), 2021, pp. 84-88, doi: 10.1109/PDP52278.2021.00021. \[[link](https://doi.org/10.1109/PDP52278.2021.00021)\] 
 
