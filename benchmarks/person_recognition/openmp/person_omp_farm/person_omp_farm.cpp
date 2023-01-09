@@ -13,10 +13,11 @@ In case of questions, please contact via email.
 #include <omp.h>
 
 #ifdef ONDEMAND
-    #define QUEUESIZE 512
-#else
     #define QUEUESIZE 1
+#else
+    #define QUEUESIZE 512
 #endif
+
 
 struct data{
 	spb::Item item;
