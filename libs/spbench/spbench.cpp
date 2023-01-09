@@ -136,23 +136,31 @@ std::string prepareOutFileAt(std::string out_path){
 /**
  * Print current date and time.
  *
- * It prints the current date and time as: YYYY-MM-DD HH-MM-SS
+ * It prints the current date and time as: YYYY-MM-DD HH:MM:SS.MS
  *
  * @return nothing
  */
-void print_date_time(){
+void print_date_time() {
 
-	auto current_clock = std::chrono::system_clock::now();
+    auto current_clock = std::chrono::system_clock::now();
 
-	std::time_t end_time = std::chrono::system_clock::to_time_t(current_clock);
+    std::time_t end_time = std::chrono::system_clock::to_time_t(current_clock);
 
-	std::tm* calendar_formatted = std::gmtime(&end_time);
+    std::tm* calendar_formatted = std::gmtime(&end_time);
 
-	std::cout << " " << calendar_formatted->tm_year+1900 << "-" << calendar_formatted->tm_mon+1 << "-" 
-				<< calendar_formatted->tm_mday << " " <<  calendar_formatted->tm_hour << ":" 
-				<< calendar_formatted->tm_min << ":" <<  calendar_formatted->tm_sec << std::endl;
+    if (calendar_formatted->tm_sec < 10) {
+        std::cout << " " << calendar_formatted->tm_year+1900 << "-" << calendar_formatted->tm_mon+1 << "-"
+                  << calendar_formatted->tm_mday << " " <<  calendar_formatted->tm_hour << ":"
+                  << calendar_formatted->tm_min << ":" << std::to_string(0) << calendar_formatted->tm_sec
+                  << "." << (std::chrono::duration_cast<std::chrono::milliseconds>(current_clock.time_since_epoch())%1000).count() << std::endl;
+    } else {
+        std::cout << " " << calendar_formatted->tm_year+1900 << "-" << calendar_formatted->tm_mon+1 << "-"
+                  << calendar_formatted->tm_mday << " " <<  calendar_formatted->tm_hour << ":"
+                  << calendar_formatted->tm_min << ":" <<  calendar_formatted->tm_sec
+                  << "." << (std::chrono::duration_cast<std::chrono::milliseconds>(current_clock.time_since_epoch())%1000).count() << std::endl;
+    }
+
 }
-
 /**
  * Get user argument.
  *
