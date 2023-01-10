@@ -1,0 +1,30 @@
+{
+        "CXX": "g++ -std=c++1y",
+        "CXX_FLAGS":"",
+        "PPI_CXX": "g++ -std=c++1y",
+        "PPI_CXX_FLAGS":"",
+        "PRE_SRC_CMD": "",
+        "POST_SRC_CMD": "",
+        "MACROS": "-DONDEMAND",
+        "PKG-CONFIG": {
+                "myPKG_1": "",
+                "myPKG_2": "",
+                "myPKG_N": "",
+                "gsl": "pkg-config --cflags --libs gsl",
+                "jpeg": "pkg-config --cflags --libs libjpeg"
+            },
+        "INCLUDES": {
+                "myINC_1": "",
+                "myINC_2": "",
+                "myINC_N": "",
+                "SHARED_QUEUE" : "-I $SPB_HOME/libs/spar-shared-queue-dev",
+                "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
+        },
+        "LIBS": {
+                "myLIB_1": "",
+                "myLIB_2": "",
+                "myLIB_N": "",
+                "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
+        },
+        "LDFLAGS": "-ljpeg -lgsl -lgslcblas -lpthread"
+    }
