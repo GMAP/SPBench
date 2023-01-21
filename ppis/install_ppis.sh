@@ -34,3 +34,11 @@ cd grppi
 bash setup_grppi.sh
 cd ..
 echo "DONE!"
+
+echo "---------------------------------------"
+echo " Installing WindFlow..."
+echo "---------------------------------------"
+cd WindFlow
+bash setup_windflow.sh
+cd ..
+echo "DONE!"

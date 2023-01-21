@@ -404,6 +404,8 @@ void end_bench(){
 	#if !defined NO_OUTPUT_FILE	
 		outputFile.close();
 	#endif
+
+	std::cout << " --> Potential frauds (temp.): " << Metrics::items_at_sink_counter << std::endl;
 	
 }
 

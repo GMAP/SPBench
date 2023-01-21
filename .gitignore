@@ -57,6 +57,7 @@ sys/apps/ferret/parsec/
 /ppis/SPar/*
 /ppis/fastflow/*
 /ppis/tbb/*
+/ppis/WindFlow/*
 /libs/*
 
 !/libs/spbench/

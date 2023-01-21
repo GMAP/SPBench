@@ -53,7 +53,7 @@ int main (int argc, char* argv[]){
 
 	Source_Functor source_functor;
 	wf::Source source = wf::Source_Builder(source_functor)
-						.withParallelism(1)
+						.withParallelism(stoi(spb::SPBench::getArg(0)))
 						.withName("Source")
 						.withOutputBatchSize(1)
 						.build();
