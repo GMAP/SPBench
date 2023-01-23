@@ -313,6 +313,7 @@ public:
 	static long items_counter; // items processed at source
 	static long items_at_sink_counter;
 	static long items_at_source_counter;
+	static std::atomic<long> my_items_at_source_counter;
 	static long batches_at_sink_counter;
 	static long global_latency_acc;
 	static long execution_init_clock;

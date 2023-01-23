@@ -65,6 +65,7 @@ long Metrics::batch_counter = 0; // batches processed
 long Metrics::items_counter = 0;
 long Metrics::items_at_sink_counter = 0;
 long Metrics::items_at_source_counter = 0;
+std::atomic<long> Metrics::my_items_at_source_counter(0);
 long Metrics::batches_at_sink_counter = 0;
 long Metrics::global_latency_acc = 0;
 long Metrics::execution_init_clock = 0;
@@ -1085,8 +1086,13 @@ void Metrics::print_throughput(data_metrics metrics){
 	}
 	*/
 	printf("\tExecution time (sec) = %f\n\n", clock / 1000000.0);
-	printf("\tItems processed = %lu\n", items_at_source_counter);
-	printf("\tItems-per-second = %f\n\n", items_at_source_counter/(clock / 1000000.0));
+	if(my_items_at_source_counter > 0){
+		printf("\tItems processed = %lu\n", (long) my_items_at_source_counter);
+		printf("\tItems-per-second = %f\n\n", (long) my_items_at_source_counter/(clock / 1000000.0));
+	} else {
+		printf("\tItems processed = %lu\n", items_at_source_counter);
+		printf("\tItems-per-second = %f\n\n", items_at_source_counter/(clock / 1000000.0));
+	}
 	if(items_at_sink_counter != batches_at_sink_counter){
 		printf("\tBatches processed = %lu\n", batches_at_sink_counter);
 		printf("\tBatches-per-second = %f\n", batches_at_sink_counter/(clock / 1000000.0));

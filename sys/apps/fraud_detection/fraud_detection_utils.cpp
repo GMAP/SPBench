@@ -239,7 +239,7 @@ void init_bench(int argc, char* argv[]){
 	}
 
 	set_operators_name();
-	Metrics::enable_latency();
+	//Metrics::enable_latency();
 
 	if(Metrics::monitoring_thread_is_enabled()){
 		Metrics::start_monitoring();
@@ -257,9 +257,9 @@ long Source::source_item_timestamp = current_time_usecs();
 bool Source::op(Item &item){
 
 	//if last batch included the last item, ends computation
-	if(stream_end == true){
-		return false;
-	}
+	//if(stream_end == true){
+	//	return false;
+	//}
 
 	// frequency control mechanism
 	SPBench::item_frequency_control(source_item_timestamp);
@@ -286,10 +286,14 @@ bool Source::op(Item &item){
 			if(item.batch_size >= SPBench::getBatchSize()) break;
 		}*/
 
-		if(Metrics::items_counter >= parsed_file.size() * iteractions){
-			stream_end = true;
-			return false;
+		//if(Metrics::items_counter >= parsed_file.size() * iteractions){
+		//	stream_end = true;
+		//	return false;
 			//break;
+		//}
+
+		if((current_time_usecs() - Metrics::metrics.start_throughput_clock) / 1000000.0 >= iteractions){
+			return false;
 		}
 
 		if(SPBench::memory_source_is_enabled()){
@@ -303,7 +307,7 @@ bool Source::op(Item &item){
 		}
 		next_tuple_idx = (next_tuple_idx + 1) % parsed_file.size();	
 
-		item.index = Metrics::items_counter;
+	//	item.index = Metrics::items_counter;
 		//item.item_batch.resize(item.batch_size+1);
 		//item.item_batch[item.batch_size] = item_data;
 		//item.batch_size++;

@@ -8,14 +8,20 @@
 
 // Source_Functor class
 class Source_Functor{
+private:
+    long generated_tuples;
 public:
-    Source_Functor() {}
+    Source_Functor() {
+		generated_tuples = 0;
+	}
     void operator()(wf::Source_Shipper<spb::Item> &shipper){
         while (1){ // generation loop
 			spb::Item item;
 			if(!spb::Source::op(item)) break;
             shipper.push(std::move(item));
+			generated_tuples++;
         }
+		spb::Metrics::my_items_at_source_counter.fetch_add(generated_tuples);
     }
     ~Source_Functor(){}
 };

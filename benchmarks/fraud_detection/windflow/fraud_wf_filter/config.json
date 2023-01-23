@@ -1,11 +1,11 @@
 {
-        "CXX": "g++ -std=c++17 -g",
-        "CXX_FLAGS":"",
-        "PPI_CXX": "g++ -std=c++17 -g",
-        "PPI_CXX_FLAGS":"",
+        "CXX": "g++ -std=c++17",
+        "CXX_FLAGS":"-g -O3 -finline-functions",
+        "PPI_CXX": "g++ -std=c++17",
+        "PPI_CXX_FLAGS":"-g -O3 -finline-functions",
         "PRE_SRC_CMD": "",
         "POST_SRC_CMD": "",
-        "MACROS": "-DNO_OUTPUT_FILE",
+        "MACROS": "-DNO_OUTPUT_FILE -DFF_BOUNDED_BUFFER -DDEFAULT_BUFFER_CAPACITY=32786 -DNDEBUG",
         "PKG-CONFIG": {
                 "myPKG_1": "",
                 "myPKG_2": "",

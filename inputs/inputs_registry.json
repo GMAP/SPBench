@@ -107,11 +107,11 @@
     },
     "fraud_detection": {
         "huge": {
-            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 100",
+            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 60",
             "md5_test": ""
         },
         "large": {
-            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 50",
+            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 30",
             "md5_test": ""
         },
         "medium": {
@@ -119,11 +119,11 @@
             "md5_test": ""
         },
         "small": {
-            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 1",
+            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 5",
             "md5_test": ""
         },
         "test": {
-            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 0.5",
+            "input": "$SPB_HOME/inputs/fraud_detection/credit-card.dat 1",
             "md5_test": ""
         }
     },
