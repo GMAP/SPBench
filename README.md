@@ -63,6 +63,7 @@ It allows users to entirely focus on writing and tuning the parallelism rather t
 
 ![SPBench_framework](https://gmap.pucrs.br/public_data/spbench/img/spbench_framework.png)
 
+
 ## How to install
 
 The following packages are required to install SPBench:
