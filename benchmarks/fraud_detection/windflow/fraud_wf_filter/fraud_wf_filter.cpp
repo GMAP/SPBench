@@ -72,7 +72,7 @@ int main (int argc, char* argv[]){
 							.build();
 	Sink_Functor sink_functor;
 	wf::Sink sink = wf::Sink_Builder(sink_functor)
-					.withParallelism(1)
+					.withParallelism(stoi(spb::SPBench::getArg(1)))
 					.withName("Sink")
 					.build();
 

@@ -24,16 +24,17 @@
 
 namespace spb{
 
-//extern Markov_Model_Predictor predictor;
+extern Markov_Model_Predictor predictor;
 
 struct item_data;
 class Item;
 class Source;
 class Sink;
 
+
 void init_bench(int argc, char* argv[]);
 void end_bench();
-/*
+
 struct item_data {
 
 	size_t key;
@@ -51,36 +52,17 @@ struct item_data {
 
 	~item_data(){}
 };
-*/
+
 /* This class implements an Item */
 class Item : public Batch{
 public:
 	size_t key;
-	std::string record;
-	double score;
-	unsigned int index;
-	bool isOutlier;
 
-	//std::vector<item_data> item_batch;
+	std::vector<item_data> item_batch;
 
-	Item():
-		Batch(NUMBER_OF_OPERATORS),
-		key(0),
-		index(0),
-		score(0),
-		isOutlier(false)
-	{};
+	Item():Batch(NUMBER_OF_OPERATORS){};
 
 	~Item(){}
-
-	explicit operator bool() const
-    { return isOutlier; }
-
-	// Safe aproach to convert the class to kind of bool
-	//void some_function () {}
-	//typedef void (Item:: * safe_bool_type) ();
-  	//operator safe_bool_type () const
-  	//{ return isOutlier ? &Item::some_function : 0;}
 };
 
 class Source{
