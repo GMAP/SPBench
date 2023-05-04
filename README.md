@@ -76,9 +76,6 @@ You can run the command below to install these packages or ask a system admin.
 
 `sudo apt-get install -y build-essential pkg-config cmake python3`
 
-We tested it using GCC-9.4 and Ubuntu~20.04. 
-Some libraries may not work in newer systems.
-
 To install SPBench, you can run:
 
 `./spbench install`
@@ -91,6 +88,11 @@ For installing dependencies for a single application, you can run:
 Run `./spbench install -h` for more info.
 
 For custom and manual installations, see libs/README.md or ppis/README.md.
+
+**>> Attention <<**
+
+It was tested with **GCC-9.4** compiler.
+Some applications' dependency libraries, such as OpenCV, may not work with different versions or compilers.
 
 ## How to run:
 
