@@ -44,9 +44,11 @@ benchmarks/**/Makefile
 # Log files
 *.log
 
+# Other
 .vscode
+*.gpg
 
-# Directories
+# SPBench directories
 /outputs
 /bin
 /log
