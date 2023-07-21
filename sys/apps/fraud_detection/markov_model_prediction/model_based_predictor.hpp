@@ -39,7 +39,10 @@ static detection_algorithm _alg = MISS_PROBABILITY;
 static size_t _records_win_size = 5;
 static size_t _state_position = 1;
 static double _threshold = 0.96;
-static const std::string _model_file = "/home/adriano/spbench/sys/apps/fraud_detection/markov_model_prediction/model/model.txt";
+
+// Set the path to the model file
+static std::string this_hpp_path = __FILE__;
+static const std::string _model_file = this_hpp_path.substr(0, this_hpp_path.find_last_of("/\\")) + "/../../../../inputs/fraud_detection/model.txt";
 
 // Model_Based_Predictor class
 class Model_Based_Predictor

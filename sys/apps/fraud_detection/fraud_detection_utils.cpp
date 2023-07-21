@@ -188,34 +188,6 @@ void init_bench(int argc, char* argv[]){
 		std::string output_file_name = (prepareOutFileAt("outputs") + "_" + input_id + ".txt");
 		outputFile.open(output_file_name);
 	#endif
-
-	/*capture.open(input_data.input_vid);
-
-	cv::Size frame_size(static_cast<int>(capture.get(CV_CAP_PROP_FRAME_WIDTH)), static_cast<int>(capture.get(CV_CAP_PROP_FRAME_HEIGHT)));
-	//fw.open(strcat(argv[0], "_result.avi"), OUT_FOURCC, OUT_FPS, frame_size, true);
-	
-	std::string output_file_name = (prepareOutFileAt("outputs") + "_" + input_data.id + ".avi");
-
-	fw.open(output_file_name.c_str(), OUT_FOURCC, OUT_FPS, frame_size, true);
-
-	//fw.open((out_file_path("outputs") + ".avi").c_str(), OUT_FOURCC, OUT_FPS, frame_size, true);
-	/** Initializations: **/
-	//std::vector<cv::Mat> training_set;
-	//frameId = 0;
-	
-	//read_training_set(std::string(input_data.training_list), training_set);
-	//PersonRecognizer pr(training_set, LBPH_RADIUS, LBPH_NEIGHBORS, LBPH_GRID_X, LBPH_GRID_Y, LBPH_THRESHOLD);
-
-	//all images are faces of the same person, so initialize the same label for all.
-	//std::vector<int> labels(training_set.size());
-	//for (std::vector<int>::iterator it = labels.begin(); it != labels.end(); *(it++) = 10);
-	//_faceSize = cv::Size(training_set[0].size().width, training_set[0].size().height);
-
-	//build recognizer model:
-	//model = cv::createLBPHFaceRecognizer(LBPH_RADIUS, LBPH_NEIGHBORS, LBPH_GRID_X, LBPH_GRID_Y, LBPH_THRESHOLD);
-	//model->train(training_set, labels);
-	
-	
 	
 	//load the input to the memory before the stream region for in-memory execution
 	if(SPBench::memory_source_is_enabled()){
@@ -292,26 +264,27 @@ bool Source::op(Item &item){
 			//break;
 		//}
 
-		if((current_time_usecs() - Metrics::metrics.start_throughput_clock) / 1000000.0 >= iteractions){
-			return false;
-		}
+	if((current_time_usecs() - Metrics::metrics.start_throughput_clock) / 1000000.0 >= iteractions){
+		return false;
+	}
 
-		if(SPBench::memory_source_is_enabled()){
-			item.record = InMemData.at(next_tuple_idx).record;
-			item.key = InMemData.at(next_tuple_idx).key;
-		} else {
-			// create tuple		
-			auto tuple_content = parsed_file.at(next_tuple_idx);
-			item.record = tuple_content.second;
-			item.key = (entity_key_map.find(tuple_content.first)->second).first;
-		}
-		next_tuple_idx = (next_tuple_idx + 1) % parsed_file.size();	
+	if(SPBench::memory_source_is_enabled()){
+		item.record = InMemData.at(next_tuple_idx).record;
+		item.key = InMemData.at(next_tuple_idx).key;
+	} else {
+		// create tuple		
+		auto tuple_content = parsed_file.at(next_tuple_idx);
+		item.record = tuple_content.second;
+		item.key = (entity_key_map.find(tuple_content.first)->second).first;
+	}
+	next_tuple_idx = (next_tuple_idx + 1) % parsed_file.size();	
 
-	//	item.index = Metrics::items_counter;
-		//item.item_batch.resize(item.batch_size+1);
-		//item.item_batch[item.batch_size] = item_data;
-		//item.batch_size++;
-		Metrics::items_counter++;
+//	item.index = Metrics::items_counter;
+	//item.item_batch.resize(item.batch_size+1);
+	//item.item_batch[item.batch_size] = item_data;
+	//item.batch_size++;
+	Metrics::items_counter++;
+
 	//}
 
 	//if this batch has size 0, ends computation
