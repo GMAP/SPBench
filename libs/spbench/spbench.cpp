@@ -763,9 +763,9 @@ void Metrics::init(){
 	print_date_time();
 	std::cout << std::endl;
 
-	if(throughput_is_enabled()){
-		metrics.start_throughput_clock = current_time_usecs();
-	}
+//	if(throughput_is_enabled()){
+	metrics.start_throughput_clock = current_time_usecs();
+//	}
 	
 	SPBench::pattern_cycle_start_time = item_old_time = execution_init_clock = current_time_usecs();
 }
@@ -821,13 +821,13 @@ void Metrics::stop(){
 	}
 	
 	if(Metrics::items_counter < 1){
-		std::cout << "Error: your application processed zero items." << std::endl;
+		std::cout << "Warning: your application processed zero items." << Metrics::items_counter << std::endl;
 		return;
 	}
 
-	if(throughput_is_enabled()){
-		metrics.stop_throughput_clock = current_time_usecs();
-	}
+	//if(throughput_is_enabled()){
+	metrics.stop_throughput_clock = current_time_usecs();
+	//}
 
 	#if !defined(NO_UPL)
 		if(upl_is_enabled()){
@@ -891,7 +891,7 @@ void compute_metrics(){
 
 	for (auto & element : metrics_vec){
 		if(element.global_item_counter < 1){
-			std::cout << " Error: your application processed zero items." << std::endl;
+			std::cout << " Warning: your application processed zero items." << std::endl;
 			return;
 		}
 		
@@ -963,7 +963,7 @@ void compute_metrics(){
 void Metrics::print_average_latency(){
 
 	if(latency_vector.size() < 1){
-		std::cerr << " Error: your application processed zero items." << std::endl;
+		std::cerr << " Warning: your application processed zero items." << std::endl;
 		return;
 	}
 
@@ -1017,7 +1017,7 @@ void Metrics::print_average_latency(){
 void print_average_latency(data_metrics metrics){
 
 	if(metrics.latency_vector_ns.size() < 1){
-		std::cerr << " Error: your application processed zero items." << std::endl;
+		std::cerr << " Warning: your application processed zero items." << std::endl;
 		return;
 	}
 
