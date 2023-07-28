@@ -62,7 +62,7 @@ grppi::dynamic_execution execution_mode(){
 		ex.set_queue_attributes(1, grppi::queue_mode::blocking);
 		return ex;
 	} else {
-		cout << "No backend selected" << endl;
+		cout << " No backend selected. Usage: \'./spbench ... -user-arg <backend>\'. Backends available: tbb, thr, omp, ff." << endl;
 		exit(1);
 	}
 }
