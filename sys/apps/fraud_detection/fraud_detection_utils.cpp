@@ -258,7 +258,7 @@ bool Source::op(Item &item){
 			if(item.batch_size >= SPBench::getBatchSize()) break;
 		}*/
 
-		//if(Metrics::items_counter >= parsed_file.size() * iteractions){
+		//if(Metrics::items_at_source_counter >= parsed_file.size() * iteractions){
 		//	stream_end = true;
 		//	return false;
 			//break;
@@ -279,11 +279,11 @@ bool Source::op(Item &item){
 	}
 	next_tuple_idx = (next_tuple_idx + 1) % parsed_file.size();	
 
-//	item.index = Metrics::items_counter;
+//	item.index = Metrics::items_at_source_counter;
 	//item.item_batch.resize(item.batch_size+1);
 	//item.item_batch[item.batch_size] = item_data;
 	//item.batch_size++;
-	Metrics::items_counter++;
+	//Metrics::items_at_source_counter++;
 
 	//}
 

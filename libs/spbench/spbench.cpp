@@ -62,9 +62,8 @@ bool Metrics::monitoring = false;
 bool Metrics::monitoring_thread = false;
 Metrics::data_metrics Metrics::metrics;
 long Metrics::batch_counter = 0; // batches processed
-long Metrics::items_counter = 0;
-long Metrics::items_at_sink_counter = 0;
 long Metrics::items_at_source_counter = 0;
+long Metrics::items_at_sink_counter = 0;
 std::atomic<long> Metrics::my_items_at_source_counter(0);
 long Metrics::batches_at_sink_counter = 0;
 long Metrics::global_latency_acc = 0;
@@ -173,8 +172,8 @@ void print_date_time() {
  */
 std::string SPBench::getArg(int id){
 	if(id >= userArgs.size()){
-		std::cout << "Missing argument in position: " << id << std::endl;
-		exit(0);
+		return "Missing argument in position: " + id;
+	//	exit(0);
 	}
 	return userArgs[id];
 }
@@ -820,8 +819,8 @@ void Metrics::stop(){
 		monitor_thread.join();
 	}
 	
-	if(Metrics::items_counter < 1){
-		std::cout << "Warning: your application processed zero items." << Metrics::items_counter << std::endl;
+	if(Metrics::items_at_source_counter < 1){
+		std::cout << "Warning: zero items were processed." << std::endl;
 		return;
 	}
 
@@ -891,7 +890,7 @@ void compute_metrics(){
 
 	for (auto & element : metrics_vec){
 		if(element.global_item_counter < 1){
-			std::cout << " Warning: your application processed zero items." << std::endl;
+			std::cout << " Warning: zero items were processed." << std::endl;
 			return;
 		}
 		
@@ -963,7 +962,7 @@ void compute_metrics(){
 void Metrics::print_average_latency(){
 
 	if(latency_vector.size() < 1){
-		std::cerr << " Warning: your application processed zero items." << std::endl;
+		std::cerr << " Warning: zero items were processed." << std::endl;
 		return;
 	}
 
@@ -1017,7 +1016,7 @@ void Metrics::print_average_latency(){
 void print_average_latency(data_metrics metrics){
 
 	if(metrics.latency_vector_ns.size() < 1){
-		std::cerr << " Warning: your application processed zero items." << std::endl;
+		std::cerr << " Warning: zero items were processed." << std::endl;
 		return;
 	}
 

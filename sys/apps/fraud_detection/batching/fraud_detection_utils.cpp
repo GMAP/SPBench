@@ -285,7 +285,7 @@ bool Source::op(Item &item){
 
 		item_data item_data;
 
-		if(Metrics::items_counter >= parsed_file.size() * iteractions){
+		if(Metrics::items_at_source_counter >= parsed_file.size() * iteractions){
 			stream_end = true;
 			break;
 		}
@@ -300,11 +300,11 @@ bool Source::op(Item &item){
 		}
 		next_tuple_idx = (next_tuple_idx + 1) % parsed_file.size();	
 
-		item_data.index = Metrics::items_counter;
+		item_data.index = Metrics::items_at_source_counter;
 		item.item_batch.resize(item.batch_size+1);
 		item.item_batch[item.batch_size] = item_data;
 		item.batch_size++;
-		Metrics::items_counter++;
+		Metrics::items_at_source_counter++;
 	}
 
 	//if this batch has size 0, ends computation

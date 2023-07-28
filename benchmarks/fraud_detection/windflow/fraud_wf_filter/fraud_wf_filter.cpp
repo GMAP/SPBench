@@ -57,9 +57,20 @@ int main (int argc, char* argv[]){
 
     wf::PipeGraph topology(topology_name, wf::Execution_Mode_t::DEFAULT, wf::Time_Policy_t::INGRESS_TIME);
 
+	// get the parallelism degree from the command line
+	int source_par = 1, sink_par = 1;
+	try{
+		source_par = stoi(spb::SPBench::getArg(0));
+		sink_par = stoi(spb::SPBench::getArg(1));
+	}
+	catch(...){
+		std::cout << "> Running with 1 source and 1 sink!" << std::endl;
+		std::cout << "  Add custom args to change it: ./spbench exec ... -user-arg <source_parallelism> <sink_parallelism>\n" << std::endl;
+	}
+
 	Source_Functor source_functor;
 	wf::Source source = wf::Source_Builder(source_functor)
-						.withParallelism(stoi(spb::SPBench::getArg(0)))
+						.withParallelism(source_par)
 						.withName("Source")
 						.withOutputBatchSize(1)
 						.build();
@@ -72,7 +83,7 @@ int main (int argc, char* argv[]){
 							.build();
 	Sink_Functor sink_functor;
 	wf::Sink sink = wf::Sink_Builder(sink_functor)
-					.withParallelism(stoi(spb::SPBench::getArg(1)))
+					.withParallelism(sink_par)
 					.withName("Sink")
 					.build();
 

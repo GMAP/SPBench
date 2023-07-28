@@ -451,11 +451,11 @@ bool Source::op(Item &item){
 		}
 		
 		if(SPBench::memory_source_is_enabled()){
-			if(Metrics::items_counter < ret_in_memory_vector.size()){
+			if(Metrics::items_at_source_counter < ret_in_memory_vector.size()){
 
 				struct item_data *ret;
 				item.item_batch.resize(item.batch_size+1);
-				item.item_batch[item.batch_size] = ret_in_memory_vector[Metrics::items_counter];
+				item.item_batch[item.batch_size] = ret_in_memory_vector[Metrics::items_at_source_counter];
 			} else {
 				stream_end = true;
 				break;
@@ -522,9 +522,9 @@ bool Source::op(Item &item){
 			}
 			item.item_batch.push_back(ret);
 		}
-		item.item_batch[item.batch_size]->index = Metrics::items_counter;
+		item.item_batch[item.batch_size]->index = Metrics::items_at_source_counter;
 		item.batch_size++;
-		Metrics::items_counter++;
+		Metrics::items_at_source_counter++;
 	}
 
 	//if this batch has size 0, ends computation

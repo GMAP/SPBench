@@ -310,10 +310,9 @@ public:
 	static bool latency;
 
 	static long batch_counter; // batches processed at source
-	static long items_counter; // items processed at source
-	static long items_at_sink_counter;
-	static long items_at_source_counter;
-	static std::atomic<long> my_items_at_source_counter;
+	static long items_at_sink_counter; // items processed at sink
+	static long items_at_source_counter; // items processed at source
+	static std::atomic<long> my_items_at_source_counter; // custom counter for items processed at source
 	static long batches_at_sink_counter;
 	static long global_latency_acc;
 	static long execution_init_clock;

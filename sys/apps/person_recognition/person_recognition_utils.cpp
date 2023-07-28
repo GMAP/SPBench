@@ -240,8 +240,8 @@ bool Source::op(Item &item){
 		item_data item_data;
 
 		if(SPBench::memory_source_is_enabled()){
-			if(Metrics::items_counter < MemData.size()){
-				item_data.image_p = &MemData[Metrics::items_counter];
+			if(Metrics::items_at_source_counter < MemData.size()){
+				item_data.image_p = &MemData[Metrics::items_at_source_counter];
 			} else {
 				stream_end = true;
 				break;
@@ -254,11 +254,11 @@ bool Source::op(Item &item){
 			}
 		}
 
-		item_data.index = Metrics::items_counter;
+		item_data.index = Metrics::items_at_source_counter;
 		item.item_batch.resize(item.batch_size+1);
 		item.item_batch[item.batch_size] = item_data;
 		item.batch_size++;
-		Metrics::items_counter++;
+		Metrics::items_at_source_counter++;
 	}
 
 	//if this batch has size 0, ends computation

@@ -239,8 +239,8 @@ bool Source::op(Item &item){
 
 		if (SPBench::memory_source_is_enabled() || optimized_memory) {
 			if (optimized_memory) {
-				item_data.FileData = MemData[Metrics::items_counter].batch;
-				item_data.index = Metrics::items_counter;
+				item_data.FileData = MemData[Metrics::items_at_source_counter].batch;
+				item_data.index = Metrics::items_at_source_counter;
 			}
 			else {
 				item_data.FileData = MemReadData + (fileSize - bytesLeft);
@@ -277,10 +277,10 @@ bool Source::op(Item &item){
 		}
 		if (stream_end) break;
 		item.item_batch.resize(item.batch_size + 1);
-		//item_data.index = Metrics::items_counter;
+		//item_data.index = Metrics::items_at_source_counter;
 		item.item_batch[item.batch_size] = item_data;
 		item.batch_size++;
-		Metrics::items_counter++;
+		Metrics::items_at_source_counter++;
 	}
 	
 	//if this batch has size 0, ends computation
@@ -555,19 +555,19 @@ bool Source_d::op(Item &item){
 
 		// go to start of block position in file
 #ifndef WIN32
-		int ret = lseek(hInfile, bz2BlockList[Metrics::items_counter].dataStart, SEEK_SET);
+		int ret = lseek(hInfile, bz2BlockList[Metrics::items_at_source_counter].dataStart, SEEK_SET);
 #else
-		int ret = bz2BlockList[Metrics::items_counter].dataStart;
+		int ret = bz2BlockList[Metrics::items_at_source_counter].dataStart;
 		LOW_DWORD(ret) = SetFilePointer((HANDLE)_get_osfhandle(hInfile), LOW_DWORD(ret), &HIGH_DWORD(ret), FILE_BEGIN);
 #endif
-		if (ret != bz2BlockList[Metrics::items_counter].dataStart)
+		if (ret != bz2BlockList[Metrics::items_at_source_counter].dataStart)
 		{
 			fprintf(stderr, "Bzip2: *ERROR: Could not seek to beginning of file [%" "llu" "]!  Skipping...\n", (unsigned long long)ret);
 			exit(-1);
 		}
 
 		// set buffer size
-		item_data.buffSize = bz2BlockList[Metrics::items_counter].dataSize;
+		item_data.buffSize = bz2BlockList[Metrics::items_at_source_counter].dataSize;
 
 #ifdef PBZIP_DEBUG
 		fprintf(stderr, " -> Bytes To Read: %" "llu" " bytes...\n", item_data.buffSize);
@@ -587,8 +587,8 @@ bool Source_d::op(Item &item){
 
 		if (SPBench::memory_source_is_enabled()) {
 			if (optimized_memory) {
-				item_data.FileData = MemData[Metrics::items_counter].batch;
-				item_data.index = Metrics::items_counter;
+				item_data.FileData = MemData[Metrics::items_at_source_counter].batch;
+				item_data.index = Metrics::items_at_source_counter;
 			}
 			else {
 				item_data.FileData = MemReadData + (fileSize - bytesLeft);
@@ -643,10 +643,10 @@ bool Source_d::op(Item &item){
 			}
 		}
 		item.item_batch.resize(item.batch_size + 1);
-		//item_data.index = Metrics::items_counter;
+		//item_data.index = Metrics::items_at_source_counter;
 		item.item_batch[item.batch_size] = item_data;
 		item.batch_size++;
-		Metrics::items_counter++;
+		Metrics::items_at_source_counter++;
 	}
 	//if this batch has size 0, ends computation
 	if (item.batch_size == 0) {
