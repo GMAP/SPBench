@@ -93,13 +93,11 @@ void init_bench(int argc, char* argv[]){
 	int opt;
 	int opt_index = 0;
 
-	//std::string pattern;
-
 	if(argc < 2) usage(argv[0]);
 
 	try {
 		//while ((opt = getopt(argc,argv,"i:t:b:B:m:M:F:u:p:klfxrh")) != EOF){
-		while ((opt = getopt_long(argc, argv, "i:t:b:B:m:M:f:F:IlLTru:h", long_opts, &opt_index)) != -1) {
+		while((opt = getopt_long(argc, argv, "i:t:b:B:m:M:f:F:Il:L:Tru:h", long_opts, &opt_index)) != -1) {
 			switch(opt){
 				case 'i':
 					if(split_string(optarg, ' ').size() < 2) 
@@ -107,65 +105,28 @@ void init_bench(int argc, char* argv[]){
 					input_parser(optarg);
 					break;
 				case 't':
-					nthreads = atoi(optarg);
-					break;
 				case 'b':
-					if (atoi(optarg) <= 0)
-						throw std::invalid_argument("\n ARGUMENT ERROR (-b <batch_size>) --> Batch size must be an integer positive value higher than zero!\n");
-					SPBench::setBatchSize(atoi(optarg));
-					break;
 				case 'B':
-					if (atof(optarg) <= 0.0)
-						throw std::invalid_argument("\n ARGUMENT ERROR (-B <batch_interval>) --> Batch interval must be a value higher than zero!\n");
-					SPBench::setBatchInterval(atof(optarg));
 				case 'm':
-					if (Metrics::monitoring_thread_is_enabled())
-						throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
-					Metrics::set_monitoring_time_interval(atoi(optarg));
-					Metrics::enable_monitoring();
-					break;
 				case 'M':
-					if (Metrics::monitoring_is_enabled())
-						throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
-					Metrics::set_monitoring_time_interval(atoi(optarg));
-					Metrics::enable_monitoring_thread();
-					break;
 				case 'f':
-					if (atof(optarg) <= 0.0)
-						throw std::invalid_argument("\n ARGUMENT ERROR (-f <frequency>) --> Frequency value must be a positive value higher than zero!\n");
-					SPBench::setFrequency(atof(optarg));
-					break;
 				case 'F':
-					//pattern = optarg;
-					input_freq_pattern_parser(optarg);
-					break;
 				case 'I':
-					SPBench::enable_memory_source();
-					break;
 				case 'l':
-					Metrics::enable_print_latency();
-					break;
 				case 'L':
-					Metrics::enable_latency_to_file();
-					break;
 				case 'T':
-					Metrics::enable_throughput();
-					break;
 				case 'r':
-					Metrics::enable_upl();
-					break;
 				case 'u':
-					SPBench::setArg(optarg);
+					SPBench::parseCMDLine(opt, optarg);
 					break;
 				case 'h':
-					usage(argv[0]);
-					break;
-				case '?': 
-					usage(argv[0]);
-					break;
-				default: 
 					std::cout << std::endl; 
-					exit(1);
+					usage(argv[0]);
+					break;
+				default: /* '?' */
+					std::cout << std::endl; 
+					usage(argv[0]);
+					exit(EXIT_FAILURE);
 			}
 		}
 	} catch(const std::invalid_argument& e) {
@@ -177,6 +138,7 @@ void init_bench(int argc, char* argv[]){
 		printf("You can use -h to see more options.\n");
 		exit(1);
 	} catch(...) {
+		std::cout << std::endl; 
 		exit(1);
 	}
 

@@ -74,6 +74,7 @@ struct frequencyPattern_t;
 
 std::string prepareOutFileAt(std::string);
 bool file_exists (const std::string&);
+bool isNumber(std::string);
 volatile unsigned long current_time_usecs();
 std::vector<std::string> split_string(const std::string &s, char delim);
 void input_freq_pattern_parser(std::string);
@@ -94,13 +95,20 @@ void compute_metrics();
 
 extern std::vector<data_metrics> metrics_vec;
 
-//parser to retrieve the executable name from the full path
+/**
+ * parser to retrieve the executable name from the full path
+ * @param path
+ */
 template<class T>
 T base_name(T const & path, T const & delims = "//")
 {
 	return path.substr(path.find_last_of(delims) + 1);
 }
 
+/**
+ * parser to retrieve the file name without extension
+ * @param filename
+ */
 template<class T>
 T remove_extension(T const & filename)
 {
@@ -108,8 +116,10 @@ T remove_extension(T const & filename)
 	return p > 0 && p != T::npos ? filename.substr(0, p) : filename;
 }
 
-typedef enum { NONE, REQUIRED } opt_arg;    // an option can require one argument or none
-
+/**
+ * Struct to support both short and long options from command line
+ */
+typedef enum { NONE, REQUIRED, OPTIONAL } opt_arg; // an option can require one argument, or none, or optional
 const struct option long_opts[] = {
         {"help", NONE, 0, 'h'},
         {"input", REQUIRED, 0, 'i'},
@@ -119,9 +129,9 @@ const struct option long_opts[] = {
 		{"freq-patt", REQUIRED, 0, 'F'},
         {"nthreads", REQUIRED, 0, 't'}, 
         {"in-memory", NONE, 0, 'I'},
-		{"latency", NONE, 0, 'l'},
+		{"latency", REQUIRED, 0, 'l'},
 		{"throughput", NONE, 0, 'T'},
-		{"latency-monitor", NONE, 0, 'L'},
+		{"latency-monitor", REQUIRED, 0, 'L'},
 		{"monitor", REQUIRED, 0, 'm'},
 		{"monitor-thread", REQUIRED, 0, 'M'},
 		{"resource-usage", NONE, 0, 'r'},
@@ -232,6 +242,9 @@ struct frequencyPattern_t{
 	{}
 };
 
+/**
+ * Class to manage the benchmarks execution and parameters
+*/
 class SPBench{
 private:
 
@@ -265,6 +278,8 @@ public:
 
 	static std::string getArg(int);
 
+	static void parseCMDLine(int, const char *);
+
 	static std::string bench_path; //stores executable name from arg[0] in init_bench()
 
 	SPBench(){}
@@ -294,6 +309,9 @@ public:
 
 };
 
+/**
+ * Class to manage the metrics
+*/
 class Metrics {
 public:
 
@@ -317,7 +335,9 @@ public:
 	static long global_latency_acc;
 	static long execution_init_clock;
 	static long item_old_time;
-	static long monitoring_time_interval;
+	static long monitoring_sample_interval;
+	static long latency_sample_interval;
+	static long latency_elapsed_time;
 
 	static std::thread monitor_thread;
 
@@ -414,35 +434,34 @@ public:
 
 	static void enable_monitoring_thread(){monitoring_thread = true;}
 	static bool monitoring_thread_is_enabled(){return monitoring_thread;}
+	static void start_monitoring(){monitor_thread = std::thread(monitor_metrics_thread);}
 
-	static void start_monitoring(){
-		monitor_thread = std::thread(monitor_metrics_thread);
-	}
-
-	static void enable_latency(){latency = true;}
+	static void enable_latency(long sample_interval){latency = true; latency_sample_interval = sample_interval;}
 	static bool latency_is_enabled(){return latency;}
+	static long get_latency_sample_interval(){return latency_sample_interval;}
 
-	static void set_monitoring_time_interval(long _monitoring_time_interval){monitoring_time_interval = _monitoring_time_interval;}
-	static unsigned long get_monitoring_time_interval(){return monitoring_time_interval;}
+	static void set_monitoring_sample_interval(long _monitoring_sample_interval){monitoring_sample_interval = _monitoring_sample_interval;}
+	static unsigned long get_monitoring_sample_interval(){return monitoring_sample_interval;}
 
-	static void enable_print_latency(){
+	static void enable_print_latency(long sample_interval){
 		print_latency = true;
-		enable_latency();
+		enable_latency(sample_interval);
 	}
 	static bool print_latency_is_enabled(){return print_latency;}
 
-	static void enable_latency_to_file(){
+	static void enable_latency_to_file(long sample_interval){
 		latency_to_file = true;
-		enable_latency();
+		enable_latency(sample_interval);
 	}
 	static bool latency_to_file_is_enabled(){return latency_to_file;}
 
 }; // end of SPBench class
 
-
+/**
+ * @brief This class implements a blocking queue.
+*/
 namespace concurrent {
 namespace queue {
-
 template<typename T>
 class blocking_queue {
     private:
