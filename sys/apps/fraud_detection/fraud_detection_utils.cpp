@@ -1,12 +1,15 @@
 /**
  * ************************************************************************  
- *  File  : fraud_detection_utils.cpp
+ *        File : fraud_detection_utils.cpp
  *
- *  Title : SPBench version of the Fraud Detection
+ *       Title : SPBench version of the Fraud Detection
+ * 
+ * Description : This file contains the main functions of the 
+ *               Fraud Detection application
  *
- *  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
+ *      Author : Adriano Marques Garcia <adriano1mg@gmail.com> 
  *
- *  Date  : December 20, 2022
+ *        Date : December 20, 2022
  *
  * ************************************************************************
 **/
@@ -19,8 +22,8 @@ namespace spb{
 
 //Globals:
 
-using count_key_t = std::pair<size_t, uint64_t>;
-using key_map_t = std::unordered_map<std::string, count_key_t>;
+using count_key_t = std::pair<size_t, uint64_t>; // contains a pair of entity_id and a counter for each entity_id
+using key_map_t = std::unordered_map<std::string, count_key_t>; // contains a mapping between string keys and integer keys for each entity_id
 
 key_map_t entity_key_map; // contains a mapping between string keys and integer keys for each entity_id
 size_t entity_unique_key = 0; // unique integer key
@@ -46,6 +49,12 @@ inline void usage(std::string);
 void map_and_parse_dataset();
 void input_parser(char *);
 
+/**
+ * Usage of this specific application
+ * 
+ * @param name name of the application
+ * @return void
+ */
 void usage(std::string name){
 	fprintf(stderr, "Usage: %s\n", name.c_str());
 	fprintf(stderr, "  -i, --input            \"<dataset> <dataset_iteractions> <input_id (optional)>\" (mandatory)\n");
@@ -53,6 +62,12 @@ void usage(std::string name){
 	exit(-1);
 }
 
+/**
+ * Function to parse the input string
+ * 
+ * @param input input string
+ * @return void
+ */
 void input_parser(char * input){
 
 	input_file = split_string(input, ' ')[0];
@@ -67,6 +82,11 @@ void input_parser(char * input){
 	if(!iteractions > 0) throw std::invalid_argument("\n ERROR --> Dataset iteractions value must be higher than zero: " + split_string(input, ' ')[0] + "\n");
 }
 
+/**
+ * Mapping of the dataset
+ * 
+ * @return void
+ */
 void map_and_parse_dataset(){
 	std::string split_regex = ",";
     std::ifstream file(input_file);
@@ -88,6 +108,13 @@ void map_and_parse_dataset(){
     }
 }
 
+/**
+ * Function to initialize the benchmark
+ *
+ * @param argc number of arguments
+ * @param argv arguments
+ * @return void
+ */
 void init_bench(int argc, char* argv[]){
 
 	int opt;
@@ -180,6 +207,11 @@ void init_bench(int argc, char* argv[]){
 	}
 }
 
+/**
+ * Function to set the name of the operators
+ * 
+ * @return void
+ */
 void set_operators_name(){
 	SPBench::addOperatorName("Source   ");
 	SPBench::addOperatorName("Predictor");
@@ -188,6 +220,12 @@ void set_operators_name(){
 
 long Source::source_item_timestamp = current_time_usecs();
 
+/**
+ * Function to execute the source operator
+ * 
+ * @param item item to be processed
+ * @return bool
+ */
 bool Source::op(Item &item){
 
 	//if last batch included the last item, ends computation
@@ -265,6 +303,12 @@ bool Source::op(Item &item){
 	return true;
 }
 
+/**
+ * Function to execute the sink operator
+ * 
+ * @param item item to be processed
+ * @return void
+ */
 void Sink::op(Item &item){
 	
 	if(item.record.empty()) return;
@@ -294,21 +338,31 @@ void Sink::op(Item &item){
 
 	if(Metrics::latency_is_enabled()){
 		unsigned long current_time_sink = current_time_usecs();
-		item.latency_op.push_back(current_time_sink - latency_op);
+		
+		//std::cout << item.timestamp << " - " << Metrics::latency_last_sample_time << " = " << item.timestamp - Metrics::latency_last_sample_time << " sample:" << Metrics::latency_sample_interval << std::endl;
 
-		unsigned long total_item_latency = (current_time_sink - item.timestamp);
+		//if(Metrics::items_at_sink_counter > 30) exit(0);
 
-		if(total_item_latency > 0){
-			Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
+		if(item.timestamp - Metrics::latency_last_sample_time >= Metrics::latency_sample_interval){
 
-			auto latency = Metrics::Latency_t();
-			latency.local_latency = item.latency_op;
-			latency.total_latency = total_item_latency;
-			latency.item_timestamp = item.timestamp;
-			latency.item_sink_timestamp = current_time_sink;
-			latency.batch_size = item.batch_size;
-			Metrics::latency_vector.push_back(latency);
-			item.latency_op.clear();
+			Metrics::latency_last_sample_time = current_time_sink;
+
+			item.latency_op.push_back(current_time_sink - latency_op);
+
+			unsigned long total_item_latency = (current_time_sink - item.timestamp);
+
+			if(total_item_latency > 0){
+				Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
+
+				auto latency = Metrics::Latency_t();
+				latency.local_latency = item.latency_op;
+				latency.total_latency = total_item_latency;
+				latency.item_timestamp = item.timestamp;
+				latency.item_sink_timestamp = current_time_sink;
+				latency.batch_size = item.batch_size;
+				Metrics::latency_vector.push_back(latency);
+				item.latency_op.clear();
+			}
 		}
 	}
 	if(Metrics::monitoring_is_enabled()){
@@ -316,6 +370,11 @@ void Sink::op(Item &item){
 	}
 }
 
+/**
+ * Function to finalize the execution of the benchmark
+ * 
+ * @return void
+ */
 void end_bench(){
 
 	if(SPBench::memory_source_is_enabled()){
