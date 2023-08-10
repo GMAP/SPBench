@@ -1334,8 +1334,8 @@ void usage(char* progname, const char* reason)
 #endif
 	fprintf(stderr, " -b#      : where # is the number of itens per batch (default 1)\n");
 	fprintf(stderr, " -B#      : where # is the time size of the batch (default 0)\n");
-	fprintf(stderr, " -m#	  : where # is the time interval in milliseconds. It monitors latency, throughput, and CPU and memory usage.\n");
-	fprintf(stderr, " -M#      : where # is the time interval in milliseconds. It monitors latency, throughput, and CPU and memory usage, running it on an individual thread.\n");
+	fprintf(stderr, " -m#	  : where # is the sample interval in milliseconds. It monitors latency, throughput, and CPU and memory usage.\n");
+	fprintf(stderr, " -M#      : where # is the sample interval in milliseconds. It monitors latency, throughput, and CPU and memory usage, running it on an individual thread.\n");
 	fprintf(stderr, " -Q#      : where # is the file block size in 100k (default 9 = 900k)\n");
 	fprintf(stderr, " -t#      : where # is the number of threads (default\n");
 	fprintf(stderr, " -f#      : where # is the maximum frequency defined as number of items per second.\n");
@@ -1740,7 +1740,7 @@ int bzip2_main(int argc, char* argv[])
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse -m argument");
 					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					Metrics::set_monitoring_time_interval(atoi(argv[i] + j + 1));
+					Metrics::set_monitoring_sample_interval(atoi(argv[i] + j + 1));
 					if (Metrics::monitoring_thread_is_enabled())
 					{
 						fprintf(stderr, " *ERROR: You can not use both -m and -M parameters. You must select only one at once. Aborting...\n");
@@ -1749,7 +1749,7 @@ int bzip2_main(int argc, char* argv[])
 					Metrics::enable_monitoring();
 					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
-					fprintf(stderr, "-t%d\n", monitoring_time_interval);
+					fprintf(stderr, "-t%d\n", monitoring_sample_interval);
 #endif
 					break;
 				case 'M': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
@@ -1764,7 +1764,7 @@ int bzip2_main(int argc, char* argv[])
 					if (cmdLineTempCount == 0)
 						usage(argv[0], "Cannot parse -M argument");
 					//strncpy(cmdLineTemp, argv[i] + j + 1, cmdLineTempCount);
-					Metrics::set_monitoring_time_interval(atoi(argv[i] + j + 1));
+					Metrics::set_monitoring_sample_interval(atoi(argv[i] + j + 1));
 					if (Metrics::monitoring_is_enabled())
 					{
 						fprintf(stderr, " *ERROR: You can not use both -m and -M parameters. You must select only one at once. Aborting...\n");
@@ -1773,7 +1773,7 @@ int bzip2_main(int argc, char* argv[])
 					Metrics::enable_monitoring_thread();
 					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
-					fprintf(stderr, "-t%d\n", monitoring_time_interval);
+					fprintf(stderr, "-t%d\n", monitoring_sample_interval);
 #endif
 					break;
 				case 'u': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
@@ -1790,7 +1790,7 @@ int bzip2_main(int argc, char* argv[])
 				case 'h': usage(argv[0], "HELP"); break;
 				case 'd': decompress = 1; break;
 				case 'I': optimized_memory = true; SPBench::enable_memory_source(); break;
-					//case 'm': monitoring_time_interval = atoi(optarg); enable_monitoring = true; break;
+					//case 'm': monitoring_sample_interval = atoi(optarg); enable_monitoring = true; break;
 					//case 'o': optimized_memory = true; memory_source = true; break;
 				case 'l': Metrics::enable_print_latency(); break;
 				case 'L': Metrics::enable_latency_to_file(); break;

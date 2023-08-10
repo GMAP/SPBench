@@ -116,13 +116,13 @@ void init_bench(int argc, char* argv[]){
 				case 'm':
 					if (Metrics::monitoring_thread_is_enabled())
 						throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
-					Metrics::set_monitoring_time_interval(atoi(optarg));
+					Metrics::set_monitoring_sample_interval(atoi(optarg));
 					Metrics::enable_monitoring();
 					break;
 				case 'M':
 					if (Metrics::monitoring_is_enabled())
 						throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
-					Metrics::set_monitoring_time_interval(atoi(optarg));
+					Metrics::set_monitoring_sample_interval(atoi(optarg));
 					Metrics::enable_monitoring_thread();
 					break;
 				case 'f':

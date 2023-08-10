@@ -1667,16 +1667,16 @@ int bzip2_main(int argc, char* argv[])
 						  if (cmdLineTempCount == 0)
 							  usage(argv[0], "Cannot parse -m argument");
 						  strncpy(cmdLineTemp, argv[i]+j+1, cmdLineTempCount);
-						  Metrics::set_monitoring_time_interval(atoi(cmdLineTemp));
+						  Metrics::set_monitoring_sample_interval(atoi(cmdLineTemp));
 						  Metrics::enable_monitoring();
-						  if (Metrics::get_monitoring_time_interval() > 100000)
+						  if (Metrics::get_monitoring_sample_interval() > 100000)
 						  {
 							  fprintf(stderr,"Bzip2: *ERROR: Maximal interval time is 100000 (100 seconds)!  Aborting...\n");
 							  return 1;
 						  }
 						  j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
-						  fprintf(stderr, "-t%d\n", monitoring_time_interval);
+						  fprintf(stderr, "-t%d\n", monitoring_sample_interval);
 #endif
 						  break;
 					case 'u': k = j+1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
@@ -1695,7 +1695,7 @@ int bzip2_main(int argc, char* argv[])
 					case 'h': usage(argv[0], "HELP"); break;
 					case 'd': decompress = 1; break;
 					case 'I': SPBench::enable_memory_source(); break; // optimized_memory = true;
-					//case 'm': monitoring_time_interval = atoi(optarg); enable_monitoring = true; break;
+					//case 'm': monitoring_sample_interval = atoi(optarg); enable_monitoring = true; break;
 					//case 'o': optimized_memory = true; memory_source = true; break;
 					case 'l': Metrics::enable_print_latency(); break;
 					case 'L': Metrics::enable_latency_to_file(); break;

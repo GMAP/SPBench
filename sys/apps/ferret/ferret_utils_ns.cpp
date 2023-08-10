@@ -175,7 +175,7 @@ void init_bench(int argc, char *argv[]){
 					throw std::invalid_argument("\n ARGUMENT ERROR (-B <batch_interval>) --> Batch interval must be a value higher than zero!\n");
 				SPBench::setBatchInterval(atof(optarg));
 			case 'm':
-				Metrics::set_monitoring_time_interval(atoi(optarg));
+				Metrics::set_monitoring_sample_interval(atoi(optarg));
 				Metrics::enable_monitoring();
 				break;
 			case 'f':
