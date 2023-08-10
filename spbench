@@ -601,18 +601,18 @@ parser_exec.add_argument('-batch-interval',
 parser_exec.add_argument('-monitor', 
     action='store',
     type=str,
-    dest='time_interval',
+    dest='sample_interval',
     required=False,
     default='',
-    help='Monitor latency, throughput, CPU and memory usage. You must indicate the monitoring time interval in milliseconds (e.g. 250. Optional).')
+    help='Monitor latency, throughput, CPU and memory usage. You must indicate the monitoring sample interval in milliseconds (e.g. 250. Optional).')
 
 parser_exec.add_argument('-monitor-thread', 
     action='store',
     type=str,
-    dest='time_interval_thr',
+    dest='sample_interval_thr',
     required=False,
     default='',
-    help='It does the same as \'-monitor\', but here the monitoring computation runs as an individual thread. You must indicate the monitoring time interval in milliseconds (e.g. 250. Optional).')
+    help='It does the same as \'-monitor\', but here the monitoring computation runs as an individual thread. You must indicate the monitoring sample interval in milliseconds (e.g. 250. Optional).')
 
 parser_exec.add_argument('-frequency',
     action='store',
@@ -628,7 +628,7 @@ parser_exec.add_argument('-freq-pattern',
     dest='frequency_pattern',
     required=False,
     default='',
-    help='(Optional) Usage example: [-freq-pattern wave,10,5,80] (pattern,period,min,max). This argument overwrites the -frequency command and sets a varying frequency for the input stream. You can select and set a frequency variation pattern. For this argument you need to supply a tuple string: <pattern,period,max,min>, where pattern can be "wave", "spike", "binary", "increasing" or "decreasing". Period is the duration in seconds of one cycle of the pattern. And min is the minimum frequency and max the maximum frequency, defined in items per second. For the spike pattern you can also set the duration of the spikes as percentage of the period (0-100) (e.g. <pattern,period,max,min,spike>). The default spike duration is 10 percent of the period.')
+    help='This OPTIONAL argument overwrites the -frequency command and sets a varying frequency for the input stream. You can select and set a frequency variation pattern. For this argument you need to supply a tuple string: <pattern,period,max,min>, where pattern can be "wave", "spike", "binary", "increasing", or "decreasing". Period is the duration in seconds of one cycle of the pattern. And min is the minimum frequency and max the maximum frequency, defined in items per second. Usage example: [-freq-pattern wave,10,5,80] (pattern,period,min,max). For the spike pattern you can also set the duration of the spikes as percentage of the period (0-100) (e.g. <pattern,period,max,min,spike>). The default spike duration is 10 percent of the period.')
 
 parser_exec.add_argument('-in-memory',
     action='append_const',
@@ -638,11 +638,11 @@ parser_exec.add_argument('-in-memory',
     help='Run the application in-memory (Optional)')
 
 parser_exec.add_argument('-latency',
-    action='append_const',
-    const="-l",
-    dest='exec_arguments',
+    action='store',
+    type=str,
+    dest='latency_sample_interval',
     required=False,
-    help='Print average latency and throughput results (Optional)')
+    help='Print average latency results (Optional). Usage: [-latency <sample_interval_in_ms>]. Example: \'-latency 100\' takes a latency sample every 100 milliseconds (or as soon as an data item is processed after every 100 ms). Default sample interval: 10')
 
 parser_exec.add_argument('-throughput', 
     action='append_const',

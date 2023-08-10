@@ -196,22 +196,27 @@ def execute_func(spbench_path, args):
         if args.batch_interval:
             if not isPositiveFloat(args.batch_interval):
                 raise ArgumentTypeError("Argument error! Batch interval window must be a number higher than or equal to zero: " + args.batch_interval)
+
+        # Check for errors in latency sample interval
+        if args.latency_sample_interval:
+            if not args.latency_sample_interval.isdigit():
+                raise ArgumentTypeError("Argument error! Latency sample interval must be an integer number higher than or equal to zero: " + args.latency_sample_interval)
         
-        if nsources and args.time_interval_thr:
+        if nsources and args.sample_interval_thr:
             raise ArgumentTypeError("Argument error! -monitor-thread feature is not available for multi-source benchmarks. You can use the -monitor instead!")
 
-        if args.time_interval and args.time_interval_thr:
+        if args.sample_interval and args.sample_interval_thr:
             raise ArgumentTypeError("Argument error! You can not use both -monitor and -monitor-thread arguments at once!")
         else:
             # Check for errors in monitoring interval
-            if args.time_interval:
-                if not args.time_interval.isdigit():
-                    raise ArgumentTypeError("Argument error! Time interval for monitoring must be an integer number higher than or equal to one: " + args.time_interval)
+            if args.sample_interval:
+                if not args.sample_interval.isdigit():
+                    raise ArgumentTypeError("Argument error! Sample interval for monitoring must be an integer number higher than or equal to one: " + args.sample_interval)
             
             # Check for errors in monitoring interval
-            if args.time_interval_thr:
-                if not args.time_interval_thr.isdigit():
-                    raise ArgumentTypeError("Argument error! Time interval for monitoring must be an integer number higher than or equal to one: " + args.time_interval_thr)
+            if args.sample_interval_thr:
+                if not args.sample_interval_thr.isdigit():
+                    raise ArgumentTypeError("Argument error! Sample interval for monitoring must be an integer number higher than or equal to one: " + args.sample_interval_thr)
         
 
         # Check for errors in frequency
@@ -235,12 +240,16 @@ def execute_func(spbench_path, args):
             if args.batch_interval:
                 batch_interval = " -B" + args.batch_interval
 
-            time_interval = ''
-            if args.time_interval_thr:
-                time_interval = " -M" + args.time_interval_thr
+            sample_interval = ''
+            if args.sample_interval_thr:
+                sample_interval = " -M" + args.sample_interval_thr
+
+            latency_sample_interval = ''
+            if args.latency_sample_interval:
+                latency_sample_interval = " -l" + args.latency_sample_interval
                 
-            if args.time_interval:
-                time_interval = " -m" + args.time_interval
+            if args.sample_interval:
+                sample_interval = " -m" + args.sample_interval
 
             items_frequency = ''
             if args.items_frequency:
@@ -268,11 +277,15 @@ def execute_func(spbench_path, args):
             if args.batch_interval:
                 batch_interval = " -B " + args.batch_interval
 
-            time_interval = ''
-            if args.time_interval_thr:
-                time_interval = " -M " + args.time_interval_thr
-            if args.time_interval:
-                time_interval = " -m " + args.time_interval
+            sample_interval = ''
+            if args.sample_interval_thr:
+                sample_interval = " -M " + args.sample_interval_thr
+            if args.sample_interval:
+                sample_interval = " -m " + args.sample_interval
+
+            latency_sample_interval = ''
+            if args.latency_sample_interval:
+                latency_sample_interval = " -l " + args.latency_sample_interval
 
             items_frequency = ''
             if args.items_frequency:
@@ -290,7 +303,7 @@ def execute_func(spbench_path, args):
         if args.exec_arguments:
             exec_arguments = exec_arguments.join(args.exec_arguments) # join the input argument with the remaining arguments
 
-        exec_arguments = input_id + batch_size + batch_interval + time_interval + items_frequency + frequency_pattern + " " + exec_arguments + other_args
+        exec_arguments = input_id + batch_size + batch_interval + sample_interval + items_frequency + frequency_pattern + latency_sample_interval + " " + exec_arguments + other_args
 
         # build the execution command line and run it
         cmd_line = spbench_path + "/bin/" + app_id + "/" + ppi_id + "/" + bench_id + exec_arguments + user_args
@@ -303,12 +316,18 @@ def execute_func(spbench_path, args):
                 if is_range:
                     num_threads = " -t" + str(range_end)
                 else:
-                    num_threads = " -t" + args.nthreads
+                    if(args.nthreads):
+                        num_threads = " -t" + args.nthreads
+                    else:
+                        num_threads = " -t1"
             else:
                 if is_range:
                     num_threads = " -t " + str(range_end)
                 else:
-                    num_threads = " -t " + args.nthreads
+                    if(args.nthreads):
+                        num_threads = " -t " + args.nthreads
+                    else:
+                        num_threads = " -t 1"
 
             print(cmd_line + num_threads)
             continue
