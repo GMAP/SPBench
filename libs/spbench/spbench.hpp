@@ -76,6 +76,7 @@ std::string prepareOutFileAt(std::string);
 bool file_exists (const std::string&);
 bool isNumber(std::string);
 volatile unsigned long current_time_usecs();
+//uint64_t current_time_usecs();
 std::vector<std::string> split_string(const std::string &s, char delim);
 void input_freq_pattern_parser(std::string);
 data_metrics init_metrics();
@@ -311,7 +312,7 @@ public:
 
 /**
  * Class to manage the metrics
-*/
+ */
 class Metrics {
 public:
 
@@ -337,7 +338,7 @@ public:
 	static long item_old_time;
 	static long monitoring_sample_interval;
 	static long latency_sample_interval;
-	static long latency_elapsed_time;
+	static long latency_last_sample_time;
 
 	static std::thread monitor_thread;
 
@@ -423,43 +424,46 @@ public:
 	static float getCPUUsage();
 	static float getMemoryUsage();
 
-	static void enable_upl(){upl = true;}
-	static bool upl_is_enabled(){return upl;}
+	static void enable_upl(){ upl = true; }
+	static bool upl_is_enabled(){ return upl; }
 
-	static void enable_throughput(){throughput = true;}
-	static bool throughput_is_enabled(){return throughput;}
+	static void enable_throughput(){ throughput = true; }
+	static bool throughput_is_enabled(){ return throughput; }
 
-	static void enable_monitoring(){monitoring = true;}
-	static bool monitoring_is_enabled(){return monitoring;}
+	static void enable_monitoring(){ monitoring = true; }
+	static bool monitoring_is_enabled(){ return monitoring; }
 
-	static void enable_monitoring_thread(){monitoring_thread = true;}
-	static bool monitoring_thread_is_enabled(){return monitoring_thread;}
-	static void start_monitoring(){monitor_thread = std::thread(monitor_metrics_thread);}
+	static void enable_monitoring_thread(){ monitoring_thread = true; }
+	static bool monitoring_thread_is_enabled(){ return monitoring_thread; }
+	static void start_monitoring(){ monitor_thread = std::thread(monitor_metrics_thread); }
 
-	static void enable_latency(long sample_interval){latency = true; latency_sample_interval = sample_interval;}
-	static bool latency_is_enabled(){return latency;}
-	static long get_latency_sample_interval(){return latency_sample_interval;}
+	static void enable_latency(long sample_interval){
+		latency = true; 
+		latency_sample_interval = sample_interval * 1000; // convert milliseconds to microseconds, which is the unit used by the timer
+	}
+	static bool latency_is_enabled(){ return latency; }
+	static long get_latency_sample_interval(){ return latency_sample_interval / 1000; } // convert microseconds to milliseconds
 
 	static void set_monitoring_sample_interval(long _monitoring_sample_interval){monitoring_sample_interval = _monitoring_sample_interval;}
-	static unsigned long get_monitoring_sample_interval(){return monitoring_sample_interval;}
+	static unsigned long get_monitoring_sample_interval(){ return monitoring_sample_interval; }
 
 	static void enable_print_latency(long sample_interval){
 		print_latency = true;
 		enable_latency(sample_interval);
 	}
-	static bool print_latency_is_enabled(){return print_latency;}
+	static bool print_latency_is_enabled(){ return print_latency; }
 
 	static void enable_latency_to_file(long sample_interval){
 		latency_to_file = true;
 		enable_latency(sample_interval);
 	}
-	static bool latency_to_file_is_enabled(){return latency_to_file;}
+	static bool latency_to_file_is_enabled(){ return latency_to_file; }
 
 }; // end of SPBench class
 
 /**
  * @brief This class implements a blocking queue.
-*/
+ */
 namespace concurrent {
 namespace queue {
 template<typename T>

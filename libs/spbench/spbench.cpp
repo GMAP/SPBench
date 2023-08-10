@@ -53,6 +53,7 @@ int SPBench::number_of_operators = 0;
 void frequency_pattern(double elapsed_time);
 
 long Metrics::monitoring_sample_interval = 250;
+long Metrics::latency_last_sample_time = 0;
 bool Metrics::latency = false;
 bool Metrics::print_latency = false;
 bool Metrics::latency_to_file = false;
@@ -70,7 +71,6 @@ long Metrics::global_latency_acc = 0;
 long Metrics::execution_init_clock = 0;
 long Metrics::item_old_time = 0;
 long Metrics::latency_sample_interval = 0;
-long Metrics::latency_elapsed_time = 0;
 
 std::thread Metrics::monitor_thread;
 
@@ -190,6 +190,20 @@ volatile unsigned long current_time_usecs() {
 	gettimeofday(&time, NULL);
 	return time.tv_sec * 1000000 + time.tv_usec;
 }
+
+/** 
+ *  \brief Function to return the number of microseconds from the epoch
+ *  
+ *  This function returns the number of microseconds from the epoch using
+ *  the clock_gettime() call.
+ */ 
+//inline uint64_t current_time_usecs() __attribute__((always_inline));
+/*inline uint64_t current_time_usecs()
+{
+    struct timespec t;
+    clock_gettime(CLOCK_REALTIME, &t);
+    return (t.tv_sec)*1000000L + (t.tv_nsec / 1000);
+}*/
 
 /**
  * Check if a given file exists in the file system
@@ -852,7 +866,7 @@ void Metrics::init(){
 	std::cout << std::endl;
 
 //	if(throughput_is_enabled()){
-	metrics.start_throughput_clock = current_time_usecs();
+	latency_last_sample_time = metrics.start_throughput_clock = current_time_usecs();
 //	}
 	
 	SPBench::pattern_cycle_start_time = item_old_time = execution_init_clock = current_time_usecs();
@@ -1092,6 +1106,7 @@ void Metrics::print_average_latency(){
 	printf("\n  End-to-end latency (ms) = %.3f\n", (total/latency_vector.size())/1000.0);
 	printf("\n     Maximum latency (ms) = %.3f (at %.1f sec)\n", max_latency/1000.0, max_ts/1000000.0);
 	printf("     Minimum latency (ms) = %.3f (at %.1f sec)\n", min_latency/1000.0, min_ts/1000000.0);
+	printf("\n  Total number of samples = %ld\n", latency_vector.size());
 	printf("\n-----------------------------------------------\n");
 }
 
@@ -1146,6 +1161,7 @@ void print_average_latency(data_metrics metrics){
 	printf("\n  End-to-end latency (ms) = %f \n", (total/metrics.latency_vector_ns.size())/1000.0);
 	printf("\n     Maximum latency (ms) = %.3f\n", max_latency/1000.0);
 	printf("     Minimum latency (ms) = %.3f\n", min_latency/1000.0);
+	printf("\n  Total number of samples = %ld\n", metrics.latency_vector_ns.size());
 	printf("\n-----------------------------------------------\n");
 	return;
 }
