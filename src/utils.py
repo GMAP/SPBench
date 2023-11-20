@@ -56,7 +56,7 @@ class color:
 reserved_words = {'all', 'bzip2', 'ferret', 'lane_detection', 'person_recognition', 'source', 'sink', 'spbench'}
 
 # list of supported apps
-apps_list = ['bzip2', 'ferret', 'lane_detection', 'person_recognition']
+apps_list = ['bzip2', 'ferret', 'lane_detection', 'person_recognition', 'new_app']
 apps_list_all = list(apps_list)
 apps_list_all.insert(0, 'all')
 
@@ -118,6 +118,19 @@ def outputExists(output_file):
 def isNotBlank (my_string):
     return bool(my_string and my_string.strip())
 
+# check if a given app exists
+def appExists(spbench_path, selected_app):
+    """check if a given app exists
+    """
+    registry_dic = getBenchRegistry(spbench_path)
+
+    # Run through the registry dictionary elements
+    for app_key in registry_dic:
+        if selected_app == app_key:
+            return True
+    return False
+
+# check if a given benchmark exists
 def benchmarkExists(spbench_path, selected_bench):
     """check if a given benchmark exists
     """
@@ -227,6 +240,13 @@ def askToProceed():
         return False
 
     return True
+
+def writeDicTo(registry_file, registry_dic):
+    """write dictionary to JSON registry file
+    """
+    with open(registry_file, 'w') as f:
+        json.dump(registry_dic, f, indent=4)
+    f.close()
 
 def writeDicToBenchRegistry(spbench_path, registry_dic):
     """write dictionary to JSON registry file

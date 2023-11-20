@@ -39,6 +39,7 @@ python_3 = version_info[0]
 
 from src.new_bench_option import new_func
 from src.new_op_option import new_op_func
+from src.new_app_option import new_app_func
 from src.delete_option import delete_reg_func
 from src.exec_option import execute_func
 from src.compile_option import compile_func
@@ -72,6 +73,8 @@ def new(args):
     new_func(spbench_path, args)
 def new_op(args):
     new_op_func(spbench_path, args)
+def new_app(args):
+    new_app_func(spbench_path, args)
 def delete_reg(args):
     delete_reg_func(spbench_path, args)
 def list_reg(args):
@@ -160,6 +163,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpForm
       new-input - Add a new input custom input for the benchmarks
    delete-input - Delete a given input
 download-inputs - Download all available inputs provided by SPBench
+        new-app - Add a new empty application to the SPBench suite
          
         version - Print the current SPBench version
 -------------------------------------------------------------
@@ -290,6 +294,12 @@ parser_rename_bench = subparsers.add_parser('rename',
     formatter_class=argparse.RawDescriptionHelpFormatter, 
     usage="""./spbench rename [subcommands]""", 
     description="""  Description: Rename a given benchmark.""")
+
+#subparser for adding a new application
+parser_new_app = subparsers.add_parser('new-app', 
+    formatter_class=argparse.RawDescriptionHelpFormatter, 
+    usage="""./spbench new-app [subcommands]""", 
+    description="""  Description: Create a simple application in SPBench. This toy application can be used as template to guide the additioning of new applications to SPBench.""")
 
 #subparser for 'version' option
 parser_version = subparsers.add_parser('version',
@@ -759,22 +769,22 @@ parser_list_op.set_defaults(func=list_operators)
 # Delete benchmark
 ##
 parser_del.add_argument('-benchmark', 
-     action='store',
-     type=str,
-     dest='benchmark_id',
-     required=True,
-     help='Insert the name of the benchmark to delete')
+    action='store',
+    type=str,
+    dest='benchmark_id',
+    required=True,
+    help='Insert the name of the benchmark to delete')
 parser_del.set_defaults(func=delete_reg)
 
 ##
 # Reset operators
 ##
 parser_reset_op.add_argument('-benchmark', 
-     action='store',
-     type=str,
-     dest='benchmark_id',
-     required=False,
-     help='Insert the name of a benchmark to reset its operators. Caution: It will remove any current modifications on the operators.')
+    action='store',
+    type=str,
+    dest='benchmark_id',
+    required=False,
+    help='Insert the name of a benchmark to reset its operators. Caution: It will remove any current modifications on the operators.')
 
 parser_reset_op.add_argument('-app',
     action='store',
@@ -911,6 +921,26 @@ parser_list_inputs.add_argument('-app',
     choices=apps_list_all,
     help="R|You can filter by application:\n" + str(apps_list) + " (optional)")
 parser_list_inputs.set_defaults(func=list_reg_inputs)
+
+##
+# New application
+##
+parser_new_app.add_argument('-app',
+    action='store',
+    type=str,
+    dest='app_id',
+    required=True,
+    help="R|The name of the new application (mandatory). The name should not contain empty spaces. Example of acceptable names are: \"bzip2\", \"lane_detection\", \"face-recognizer\", ...")
+
+parser_new_app.add_argument('-operators',               
+    nargs='+',
+    action='store',
+    type=str,
+    dest='operators_list',
+    required=True,
+    help='R|Add a list of middle operators to this new application (mandatory, at least one must be provided). Usage: [ -operators <op1_name> <op2_name> ... ]. Source and sink operators are already included.')
+
+parser_new_app.set_defaults(func=new_app)
 
 ##
 # Add operator for a given benchmark
