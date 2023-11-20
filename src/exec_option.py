@@ -74,10 +74,11 @@ def execute_func(spbench_path, args):
                     print(" You can run \'./spbench list-inputs\' to see the registered inputs.")
                     print(" You can also run \'./spbench new-input -h\' to register a new input.")
                     continue
-            if app_id == 'ferret' or app_id == 'person_recognition':
-                input_list.append(inputs_dic[key]['input'].replace('$SPB_HOME', spbench_path) + ' ' + key)
-            else:
+            if app_id == 'bzip2' or app_id == 'lane_detection':
                 input_list.append(inputs_dic[key]['input'].replace('$SPB_HOME', spbench_path))
+            else:
+                input_list.append(inputs_dic[key]['input'].replace('$SPB_HOME', spbench_path) + ' ' + key)
+                
 
             # if it is a single source benchmark, get only the first input
             if not nsources:
@@ -98,10 +99,11 @@ def execute_func(spbench_path, args):
         for input in input_list: # generate a list of input files
             if(app_id == 'bzip2'):
                 input_id += " " + os.path.abspath(input) # bzip2 does not require -i flag
-            elif(app_id == 'ferret' or app_id == 'person_recognition'):
-                input_id += " -i \"" + input + "\""   # ferret and person receive multiple files as workload
-            else: # generate a '-i input_id_list' argument
+            elif(app_id == 'lane_detection'): # lane requires only a single input argument
                 input_id += " -i " + os.path.abspath(input)
+            else:
+                input_id += " -i \"" + input + "\""   # general cases receive multiple arguments as input
+                
 
 
         # Check for errors in nthreads

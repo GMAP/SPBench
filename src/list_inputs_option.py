@@ -45,7 +45,7 @@ def list_inputs_func(spbench_path, args):
             print(color.BOLD+"            ID: " + key + color.END)
             if bool(inputs_registry[args.app_id][key].get('md5_test')):
                 print("   Testing md5: " + app_inputs[key]["md5_test"])
-            print("  Input string: " + app_inputs[key]["input"])
+            print("  Input string: " + '\"' + app_inputs[key]["input"].replace('$SPB_HOME', spbench_path) + '\"')
             print("")
 
     else: # print all inputs for all applications
@@ -58,7 +58,7 @@ def list_inputs_func(spbench_path, args):
                 print(color.BOLD+"            ID: " + key + color.END)
                 if bool(inputs_registry[app][key].get('md5_test')):
                     print("   Testing md5: " + app_inputs[key]["md5_test"])
-                print("  Input string: " + app_inputs[key]["input"])
+                print("  Input string: " + '\"' + app_inputs[key]["input"].replace('$SPB_HOME', spbench_path) + '\"')
                 print("")
     print("")
     sys.exit()
