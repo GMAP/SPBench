@@ -28,7 +28,8 @@
 
 import sys
 
-from src.utils import *
+from src.utils.utils import *
+from src.utils.dict import *
 
 #print all inputs
 def list_inputs_func(spbench_path, args):

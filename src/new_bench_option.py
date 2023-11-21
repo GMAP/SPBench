@@ -29,7 +29,10 @@
 import sys
 import os
 
-from src.utils import *
+from src.utils.utils import *
+from src.utils.dict import *
+from src.utils.shell import *
+from src.utils.usage import *
 
 from src.delete_option import delete_benchmark
 
@@ -198,6 +201,10 @@ def new_func(spbench_path, args):
     else:
         print('\n Error while creating your new benchmark\n')
         sys.exit()
+
+    # if given_app_id is not in the registry, add it
+    if given_app_id not in registry_dic:
+        registry_dic.update({given_app_id:{}})
 
     #update the dictionary with the new ppi
     if args.ppi_id not in registry_dic[given_app_id]:

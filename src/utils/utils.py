@@ -29,7 +29,9 @@
 import os
 import math
 
-spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/.."
+from src.utils.dict import *
+
+spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/../../"
 
 from sys import version_info 
 python_3 = version_info[0]
@@ -50,7 +52,7 @@ class color:
 reserved_words = {'all', 'bzip2', 'ferret', 'lane_detection', 'person_recognition', 'source', 'sink', 'spbench'}
 
 # list of supported apps
-apps_list = ['bzip2', 'ferret', 'lane_detection', 'person_recognition', 'new_app']
+apps_list = getAppsList(spbench_path_)
 apps_list_all = list(apps_list)
 apps_list_all.insert(0, 'all')
 

@@ -1,0 +1,7 @@
+{
+    "bzip2": "SPBench",
+    "lane_detection": "SPBench",
+    "person_recognition": "SPBench",
+    "ferret": "SPBench",
+    "test": "User-defined application"
+}

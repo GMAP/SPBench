@@ -28,7 +28,8 @@
 
 import sys
 
-from src.utils import *
+from src.utils.usage import *
+from src.utils.dict import *
 
 #add a new input to the suite
 def new_input_func(spbench_path, args):

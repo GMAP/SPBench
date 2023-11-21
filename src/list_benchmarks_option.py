@@ -28,11 +28,11 @@
 
 import sys
 
-from src.utils import *
-
 from sys import version_info
 
-from src.utils import getBenchRegistry 
+from src.utils.dict import *
+from src.utils.utils import *
+
 python_3 = version_info[0]
 
 #print all registry

@@ -28,7 +28,9 @@
 
 import sys
 
-from src.utils import *
+from src.utils.utils import *
+from src.utils.shell import *
+from src.utils.usage import *
 
 # download the inputs for the SPBench applications 
 def download_inputs_func(spbench_path, args, skip = False):

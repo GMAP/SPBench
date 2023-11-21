@@ -1,8 +1,6 @@
 ## 
  ##############################################################################
- #  File  : operatorCpp.py
- #
- #  Title : SPBench application hpp generator
+ #  File  : appUtilCpp.py
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -30,58 +28,68 @@ from src.utils.shell import *
 from src.utils.dict import *
 
 
-def writeOperatorHpp(file_path, operator_id, app_id):
-    """ !@brief Function for writing the header of a given operator
+def writeAppUtilsCpp(spbench_path, file_path, app_id, operators_list):
+    """ !@brief Function for writing the source code of the system-side code of the application
 
-    This function is used to write the header of a given operator.
+    This function is used to write the source code of the system-side code of the application.
 
+    @param spbench_path Path of the SPBench root.
     @param file_path Path of the file.
-    @param operator_id Name of the operator.
+    @param app_id Name of the application.
+    @param operators_list List of operators.
     """
 
     # ******************************************************************************************
-    # create and write the header of a given operator
+    # create and write the header of the system-side headers of the application
     # ******************************************************************************************
 
     # write the code for app_id.cpp
-    op_hpp_file = open(file_path, 'a')
+    app_util_cpp_file = open(file_path, 'a')
 
-    op_hpp_file.write("\n#ifndef " + operator_id.upper() + "_OP_HPP\n")
-    op_hpp_file.write("#define " + operator_id.upper() + "_OP_HPP\n")
-    op_hpp_file.write("\n#include <" + app_id + ".hpp>\n")
-    op_hpp_file.write("\nnamespace spb{\n")
-    op_hpp_file.write("\n")
+    app_util_cpp_file.write("\n#include <" + app_id + "_utils.hpp>\n")
 
-    op_hpp_file.write("/**\n")
-    op_hpp_file.write(" * @brief This method implements the encapsulation of the " + operator_id + " operator.\n")
-    op_hpp_file.write(" * \n")
-    op_hpp_file.write(" * @param item (&item) \n")
-    op_hpp_file.write(" */\n")
+    # Instead of writing manually the code, we can use a template to get specific lines of code and copy it to the new app
+    template_cpp_util = spbench_path + "/sys/templates/simple_app_template.cpp"
 
-    op_hpp_file.write("void " + operator_id + "::op(Item &item){\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("\tMetrics metrics;\n")
-    op_hpp_file.write("\tvolatile unsigned long latency_op;\n")
-    op_hpp_file.write("\tif(metrics.latency_is_enabled()){\n")
-    op_hpp_file.write("\t\tlatency_op = current_time_usecs();\n")
-    op_hpp_file.write("\t}\n")
-    op_hpp_file.write("\tunsigned int num_item = 0;\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("\twhile(num_item < item.batch_size){ //batch loop\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("\t\t" + operator_id + "_op(item.item_batch[num_item]);\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("\t\tnum_item++;\n")
-    op_hpp_file.write("\t}\n")
-    op_hpp_file.write("\t\n")
-    op_hpp_file.write("\tif(metrics.latency_is_enabled()){\n")
-    op_hpp_file.write("\t\titem.latency_op.push_back(current_time_usecs() - latency_op);\n")
-    op_hpp_file.write("\t}\n")
-    op_hpp_file.write("}\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("} // end of namespace spb\n")
+    # check if template_cpp_util exists
+    if not os.path.isfile(template_cpp_util):
+        print("\n Error!! Missing template file \'" + template_cpp_util + "\'\n")
+        sys.exit()
 
-    op_hpp_file.close()
+    # open the template file
+    template_cpp_util_file = open(template_cpp_util, 'r')
+
+    # copy template lines strating from line 2 and stoping when it found the string "Starting to set the operators name"
+    lines = template_cpp_util_file.readlines()[1:]
+    while "Starting to set the operators name" not in lines[0]:
+        # write the lines in the new app
+        app_util_cpp_file.writelines(lines[0])
+        lines = lines[1:]
+
+    # add source in the begining of the operators list and sink at the end
+    operators_list.insert(0, "Source")
+    operators_list.append("Sink")
+
+    # add two spaces at the end of the longest operator name and fill the rest with spaces until they have the same size
+    max_size = len(max(operators_list, key=len))
+    for i in range(len(operators_list)):
+        operators_list[i] = operators_list[i] + " " * (max_size - len(operators_list[i]) + 2)
+
+    # write the set_operators_name() function
+    app_util_cpp_file.write("void set_operators_name(){\n")
+    for operator in operators_list:
+        app_util_cpp_file.write("\tSPBench::addOperatorName(\"" + operator + "\");\n")
+    app_util_cpp_file.write("}\n")
+
+    # copy the remaining lines from the template, from the line containing "End of setting the operators name" until the end of the file
+    while "End of setting the operators name" not in lines[0]:
+        lines = lines[1:]
+    lines = lines[1:]
+    app_util_cpp_file.writelines(lines)
+
+    # close the files
+    template_cpp_util_file.close()
+    app_util_cpp_file.close()
     # ******************************************************************************************
 
 

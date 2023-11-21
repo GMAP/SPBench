@@ -28,7 +28,8 @@
 
 import sys
 
-from src.utils import *
+from src.utils.dict import *
+from src.utils.usage import *
 
 # delete a input from the registry
 def del_input_func(spbench_path, args):

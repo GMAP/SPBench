@@ -2,8 +2,6 @@
  ##############################################################################
  #  File  : appCpp.py
  #
- #  Title : SPBench main function generator
- #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
  #  Date  : November 20, 2023

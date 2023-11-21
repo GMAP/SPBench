@@ -1,8 +1,6 @@
 ## 
  ##############################################################################
- #  File  : operatorCpp.py
- #
- #  Title : SPBench application hpp generator
+ #  File  : operatorHpp.py
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -37,6 +35,7 @@ def writeOperatorHpp(file_path, operator_id, app_id):
 
     @param file_path Path of the file.
     @param operator_id Name of the operator.
+    @param app_id Name of the application.
     """
 
     # ******************************************************************************************
@@ -80,6 +79,8 @@ def writeOperatorHpp(file_path, operator_id, app_id):
     op_hpp_file.write("}\n")
     op_hpp_file.write("\n")
     op_hpp_file.write("} // end of namespace spb\n")
+    op_hpp_file.write("\n")
+    op_hpp_file.write("#endif /* " + operator_id.upper() + "_OP_HPP */\n")
 
     op_hpp_file.close()
     # ******************************************************************************************

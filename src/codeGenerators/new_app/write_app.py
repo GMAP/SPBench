@@ -26,17 +26,13 @@
  ##############################################################################
 ##
 
-from datetime import date
-
 from src.utils.shell import *
 from src.utils.dict import *
 import src.codeGenerators.new_app.writers.generalHeader as generalHeader
 import src.codeGenerators.new_app.writers.appCpp as appCpp
 import src.codeGenerators.new_app.writers.appHpp as appHpp
 
-from subprocess import call
-
-def writeOperators(spbench_path, app_id, operators_list):
+def writeApp(spbench_path, app_id, operators_list):
     """ !@brief Function for writing the application code (user-side)
 
     This function is used to write the application code (user-side).

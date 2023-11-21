@@ -29,7 +29,9 @@
 import sys
 import os
 
-from src.utils import *
+from src.utils.dict import *
+from src.utils.usage import *
+from src.utils.shell import *
 
 #delete a single registry entry
 def delete_reg_func(spbench_path, args):
@@ -86,7 +88,7 @@ def delete_benchmark(spbench_path, args):
     # if there is no other benchmark related to this PPI, remove also the PPI directory
     ppi_dir = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id
     if dirExists(ppi_dir):
-        directory = os.listdir(ppi_dir) 
+        directory = os.listdir(ppi_dir) # content of the directory
         if len(directory) == 0: 
             runShellCmd("rm -r " + ppi_dir)
             # remove also the PPI key from registry

@@ -27,13 +27,9 @@
 ##
 
 import sys
-import os
 
-from src.utils import *
+from src.utils.shell import *
 from src.download_inputs_option import *
-
-from sys import version_info 
-python_3 = version_info[0]
 
 def install_func(spbench_path, args):
 

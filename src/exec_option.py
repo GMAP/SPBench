@@ -31,7 +31,8 @@ import os
 import datetime
 
 from src.errors import *
-from src.utils import *
+from src.utils.shell import *
+from src.utils.dict import *
 
 from sys import version_info 
 python_3 = version_info[0]

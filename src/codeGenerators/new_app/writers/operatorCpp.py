@@ -2,8 +2,6 @@
  ##############################################################################
  #  File  : operatorCpp.py
  #
- #  Title : SPBench application hpp generator
- #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
  #  Date  : November 20, 2023

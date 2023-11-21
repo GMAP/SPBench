@@ -26,16 +26,13 @@
  ##############################################################################
 ##
 
-from datetime import date
-
 from src.utils.shell import *
 from src.utils.dict import *
 import src.codeGenerators.new_app.writers.appUtilCpp as appUtilCpp
 import src.codeGenerators.new_app.writers.appUtilHpp as appUtilHpp
+import src.codeGenerators.new_app.writers.generalHeader as generalHeader
 
-from subprocess import call
-
-def writeOperators(spbench_path, app_id, operators_list):
+def writeAppUtils(spbench_path, app_id, operators_list):
     """ !@brief Function for writing the app utils code
 
     This function is used to write the app utils code.
@@ -46,63 +43,34 @@ def writeOperators(spbench_path, app_id, operators_list):
     """
 
     # set directories
-    templates_path = spbench_path + "/sys/apps/" +  app_id + "/templates"
-    operators_path = templates_path + "/operators"
-    source_path = operators_path + "/src"
-    include_path = operators_path + "/include"
+    app_path = spbench_path + "/sys/apps/" +  app_id
 
-    # create a json file inside the operators folder with the operators list as keys
-    operators_list_file = operators_path + "/operators.json"
-    operators_dict = {}
-    for operator in operators_list:
-        operators_dict.update({operator:""})
-    writeDicTo(operators_list_file, operators_dict)
+    prog_name = app_id + "_utils"
+
 
     # ******************************************************************************************
-    # create and write the code for app_id.cpp
+    # create and write the code for app_id_utils.cpp
     # ******************************************************************************************
 
-    app_cpp = operators_path + "/" + app_id + ".cpp"
+    app_cpp = app_path + "/" + prog_name + ".cpp"
 
     # write a general header
-    generalHeader.writeGeneralHeader(app_cpp, app_id + ".cpp", "This file contains the main function of the " + app_id + " application.")
+    generalHeader.writeGeneralHeader(app_cpp, prog_name + ".cpp", "This file contains the hidden functions of the " + app_id + " application.")
 
-    # write the code for app_id.cpp
-    appCpp.writeAppCpp(app_cpp, app_id, operators_list)
+    # write the code for app_id_utils.cpp
+    appUtilCpp.writeAppUtilsCpp(spbench_path, app_cpp, app_id, operators_list)
 
     # ******************************************************************************************
-    # create and write the code for the app_id.hpp
+    # create and write the code for the app_id_utils.hpp
     # ******************************************************************************************
 
-    app_hpp = operators_path + "/" + app_id + ".hpp"
+    app_hpp = app_path + "/" + prog_name + ".hpp"
 
     # write a general header
-    generalHeader.writeGeneralHeader(app_hpp, app_id + ".hpp", "This file contains the header of the " + app_id + " application.")
+    generalHeader.writeGeneralHeader(app_hpp, prog_name + ".hpp", "This file contains the header for the hidden elements of the " + app_id + " application.")
 
-    # write the code for app_id.hpp
-    appHpp.writeAppHpp(app_hpp, app_id, operators_list)
-
-    # ******************************************************************************************
-    # create and write the code for the operators
-    # ******************************************************************************************
-
-    for operator in operators_list:
-        operator_hpp = include_path + "/" + operator + "_op.hpp"
-        operator_cpp = source_path + "/" + operator + "_op.cpp"
-
-        # write a general header for operator_hpp
-        generalHeader.writeGeneralHeader(operator_hpp, operator + "_op.hpp", "This file contains the header of the " + operator + " operator.")
-
-        # write the code for operator_hpp
-        operatorHpp.writeOperatorHpp(operator_hpp, operator, app_id)
-
-        # write a general header for operator_cpp
-        generalHeader.writeGeneralHeader(operator_cpp, operator + "_op.cpp", "This file contains the code of the " + operator + " operator.")
-
-        # write the code for operator_cpp
-        operatorCpp.writeOperatorCpp(operator_cpp, operator)
-
-    # ******************************************************************************************
+    # write the code for app_id_utils.hpp
+    appUtilHpp.writeAppUtilsHpp(app_hpp, prog_name, operators_list)
 
 
 

@@ -53,6 +53,25 @@ def getInputsRegistry(spbench_path):
         sys.exit()
     return getRegistry(registry_file)
 
+def getAppsRegistry(spbench_path):
+    """return a dictionay with the apps registered data
+    """
+    registry_file = spbench_path + "/sys/apps/apps_registry.json"
+    #check if the registry exists
+    if os.path.exists(registry_file) == False:
+        print("\n There is no apps registered.\n Registry file not found at " + registry_file + "\n")
+        sys.exit()
+    return getRegistry(registry_file)
+
+def getAppsList(spbench_path):
+    """return a list with the apps registered data
+    """
+    registry_dic = getAppsRegistry(spbench_path)
+    apps_list = []
+    for app_key in registry_dic:
+        apps_list.append(app_key)
+    return apps_list
+
 def getRegistry(registry_file):
     """read the content of the json registry and store into a dictionary
     """

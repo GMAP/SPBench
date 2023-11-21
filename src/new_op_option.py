@@ -29,7 +29,10 @@
 import sys
 import os
 
-from src.utils import *
+from src.utils.utils import *
+from src.utils.dict import *
+from src.utils.shell import *
+
 
 from src.delete_option import delete_benchmark
 
