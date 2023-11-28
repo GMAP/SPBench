@@ -69,6 +69,11 @@ def del_input_func(spbench_path, args):
     # delete input key from the dictionary
     del inputs_registry[args.app_id][args.input_id]
 
+    # check if the application still has inputs
+    if not bool(inputs_registry[args.app_id]):
+        # delete the application key from the dictionary
+        del inputs_registry[args.app_id]
+
     # write the dictionary to the json registry file      
     writeDicToInputRegistry(spbench_path, inputs_registry)
 

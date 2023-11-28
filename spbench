@@ -859,8 +859,7 @@ parser_del_input.add_argument('-app',
     type=str,
     dest='app_id',
     required=True,
-    choices=apps_list,
-    help="You must choose from the applications list (mandatory).")
+    help="Name of the linked application (mandatory).")
 parser_del_input.set_defaults(func=delete_input)
 
 ##

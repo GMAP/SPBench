@@ -29,7 +29,9 @@
 import sys
 import os
 
-from src.utils import *
+from src.utils.utils import *
+from src.utils.shell import *
+from src.utils.dict import *
 
 #from delete_option import *
 

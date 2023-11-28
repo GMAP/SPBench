@@ -108,5 +108,8 @@
         "openmp": {
             "person_omp_farm": "single"
         }
-    }
+    },
+    "new_app": {},
+    "test": {},
+    "test_app": {}
 }

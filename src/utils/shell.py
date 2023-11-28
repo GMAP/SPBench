@@ -33,6 +33,9 @@ import subprocess
 
 from src.utils.utils import *
 
+spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/../../"
+
+
 def programmExists(programm, err_msg):
     """check if a given programm exists in shell
     """

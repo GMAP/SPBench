@@ -38,27 +38,36 @@ def list_inputs_func(spbench_path, args):
 
     # print all inputs for the selected application
     if(args.app_id):
-        print("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        print("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         print("-> " + args.app_id)
-        print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         app_inputs = inputs_registry[args.app_id]
         for key in app_inputs:
             print(color.BOLD+"            ID: " + key + color.END)
             if bool(inputs_registry[args.app_id][key].get('md5_test')):
-                print("   Testing md5: " + app_inputs[key]["md5_test"])
+                print("  Expected md5: " + app_inputs[key]["md5_test"])
             print("  Input string: " + '\"' + app_inputs[key]["input"].replace('$SPB_HOME', spbench_path) + '\"')
             print("")
 
-    else: # print all inputs for all applications
-        for app in apps_list:
-            print("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-            print("-> " + app)
-            print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+    else: 
+        # print all inputs for all applications
+
+        # get a list of the main keys (applications)
+        apps_inputs_list = list(inputs_registry.keys())
+
+        for app in apps_inputs_list:
+            print("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+            # check if the app is in the apps registry
+            if not app in apps_list:
+                print("-> " + app + (color.RED + " (Application not included in the database)" + color.END))
+            else:
+                print("-> " + app)
+            print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
             app_inputs = inputs_registry[app]
             for key in app_inputs:
                 print(color.BOLD+"            ID: " + key + color.END)
                 if bool(inputs_registry[app][key].get('md5_test')):
-                    print("   Testing md5: " + app_inputs[key]["md5_test"])
+                    print("  Expected md5: " + app_inputs[key]["md5_test"])
                 print("  Input string: " + '\"' + app_inputs[key]["input"].replace('$SPB_HOME', spbench_path) + '\"')
                 print("")
     print("")

@@ -33,6 +33,8 @@ import json
 from src.utils.utils import *
 from difflib import SequenceMatcher
 
+spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/../../"
+
 def getBenchRegistry(spbench_path):
     """return a dictionay with the benchmarks registered data
     """
@@ -64,7 +66,7 @@ def getAppsRegistry(spbench_path):
     return getRegistry(registry_file)
 
 def getAppsList(spbench_path):
-    """return a list with the apps registered data
+    """return a list with the apps in the json registry
     """
     registry_dic = getAppsRegistry(spbench_path)
     apps_list = []

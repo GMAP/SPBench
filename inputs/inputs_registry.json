@@ -126,11 +126,5 @@
             "input": "$SPB_HOME/inputs/person_recognition/input_vid/Obama3s.mp4 $SPB_HOME/inputs/person_recognition/obama_faces/list $SPB_HOME/inputs/person_recognition/cascades/haarcascade_frontalface_default.xml",
             "md5_test": "f2016dd37677432e4c4f723ae0665f9e"
         }
-    },
-    "new_app": {
-        "small": {
-            "input": "$SPB_HOME/inputs/new_app/small.txt 5",
-            "md5_test": ""
-        }
     }
 }

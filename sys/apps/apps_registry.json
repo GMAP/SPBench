@@ -3,5 +3,5 @@
     "lane_detection": "SPBench",
     "person_recognition": "SPBench",
     "ferret": "SPBench",
-    "test": "User-defined application"
+    "test_app": "User-defined application"
 }
