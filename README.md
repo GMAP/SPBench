@@ -93,8 +93,8 @@ For custom and manual installations, see libs/README.md or ppis/README.md.
 
 **>> Attention <<**
 
-It was tested with **GCC-9.4** compiler.
-Some applications' dependency libraries, such as OpenCV, may not work with different versions or compilers.
+It was tested on different Linux systems using with **GCC-9.4** compiler.
+We do not ensure that all libraries, such as OpenCV, will work with different versions or compilers.
 
 ## How to run:
 
