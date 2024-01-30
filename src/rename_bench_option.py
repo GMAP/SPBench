@@ -33,6 +33,8 @@ from src.utils.utils import *
 from src.utils.shell import *
 from src.utils.dict import *
 
+from .update_option import *
+
 #from delete_option import *
 
 # rename a benchmark from the suite
@@ -99,6 +101,17 @@ def rename_bench_func(spbench_path, args):
         writeDicToBenchRegistry(spbench_path, registry_dic)
 
         print('\n  ' + old_bench_id + " -> " + new_bench_id + '\n')
+
+        # update the makefiles
+
+        #create an custom args object to call the update function
+        class Custom_update_args:
+            def __init__(self, bench_id):
+                self.app_id = ''
+                self.ppi_id = ''
+                self.benchmark_id = bench_id
+
+        update_func(spbench_path, Custom_update_args(new_bench_id))
 
         sys.exit()
     
