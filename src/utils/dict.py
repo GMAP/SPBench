@@ -30,10 +30,11 @@ import sys
 import os
 import json
 
-from src.utils.utils import *
+from . import utils
+from .shell import *
 from difflib import SequenceMatcher
 
-spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/../../"
+spbench_path_ = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
 
 def getBenchRegistry(spbench_path):
     """return a dictionay with the benchmarks registered data
@@ -73,6 +74,23 @@ def getAppsList(spbench_path):
     for app_key in registry_dic:
         apps_list.append(app_key)
     return apps_list
+
+def getAppsListAll(spbench_path):
+    # list of supported apps
+    apps_list = getAppsList(spbench_path)
+    apps_list_all = list(apps_list)
+    apps_list_all.insert(0, 'all')
+    return apps_list_all
+
+def deleteAppFromRegistry(spbench_path, app_id):
+    """delete a app from the registry and sys/apps/ folder
+    """
+    # delete app key from the app registry
+    apps_registry = getAppsRegistry(spbench_path)
+    del apps_registry[app_id]
+    writeDicTo(spbench_path + "/sys/apps/apps_registry.json", apps_registry)
+
+    return
 
 def getRegistry(registry_file):
     """read the content of the json registry and store into a dictionary
@@ -132,7 +150,7 @@ def writeDicToInputRegistry(spbench_path, registry_dic):
         json.dump(registry_dic, f, indent=4)
     f.close()
 
-def filterBenchRegByApp(registry_dic, selected_app):
+def filterBenchRegByApp(registry_dic, selected_app, runDoYouMean = True):
     """Filter from a dictionary all keys that do not contain the given app
     """
     filtered_registry = {}
@@ -143,7 +161,7 @@ def filterBenchRegByApp(registry_dic, selected_app):
             filtered_registry.update({app_key:registry_dic[app_key]})
             benchmark_found = True
     
-    if not benchmark_found:
+    if not benchmark_found and runDoYouMean:
         print("\n  Application not found! " + doYouMeanPPI(selected_app))
         print("\n  Double check the name of the application.")
         print(" You can run \'./spbench list\' to see all available applications.")
@@ -153,7 +171,7 @@ def filterBenchRegByApp(registry_dic, selected_app):
         
     return filtered_registry
 
-def filterBenchRegByPPI(registry_dic, selected_ppi):
+def filterBenchRegByPPI(registry_dic, selected_ppi, runDoYouMean = True):
     """Filter from a dictionary all keys that do not contain the given PPI
     """
     filtered_registry = {}
@@ -164,7 +182,7 @@ def filterBenchRegByPPI(registry_dic, selected_ppi):
                 filtered_registry.update({app_key:{ppi_key:registry_dic[app_key][ppi_key]}})
                 benchmark_found = True
     
-    if not benchmark_found:
+    if not benchmark_found and runDoYouMean:
         print("\n  PPI not found! " + doYouMeanPPI(selected_ppi))
         print("\n  Double check the name of the PPI.")
         print("  You can run \'./spbench list\' to see all available PPIs.")
@@ -174,7 +192,7 @@ def filterBenchRegByPPI(registry_dic, selected_ppi):
 
     return filtered_registry
 
-def filterBenchRegByBench(registry_dic, selected_bench):
+def filterBenchRegByBench(registry_dic, selected_bench, runDoYouMean = True):
 
     filtered_registry = {}
     benchmark_found = False
@@ -185,7 +203,7 @@ def filterBenchRegByBench(registry_dic, selected_bench):
                     filtered_registry.update({app_key:{ppi_key:{bench_key:registry_dic[app_key][ppi_key][bench_key]}}})
                     benchmark_found = True
 
-    if not benchmark_found:
+    if not benchmark_found and runDoYouMean:
         print("\n  Benchmark not found! " + doYouMeanBench(selected_bench))
         print("\n  Double check the name of the benchmark.")
         print("  You can run \'./spbench list\' to see all available benchmarks.")

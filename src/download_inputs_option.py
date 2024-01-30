@@ -37,7 +37,7 @@ def download_inputs_func(spbench_path, args, skip = False):
 
     # Check if the chosen app exists
     if args.app_id:
-        if (args.app_id not in apps_list) and (args.app_id != "all"):
+        if (args.app_id not in getAppsList(spbench_path)) and (args.app_id != "all"):
             print("\n Application \'" + args.app_id + "\' not found!\n")
             sys.exit()
     else:

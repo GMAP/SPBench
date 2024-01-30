@@ -58,7 +58,7 @@ def list_inputs_func(spbench_path, args):
         for app in apps_inputs_list:
             print("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
             # check if the app is in the apps registry
-            if not app in apps_list:
+            if not app in getAppsList(spbench_path):
                 print("-> " + app + (color.RED + " (Application not included in the database)" + color.END))
             else:
                 print("-> " + app)

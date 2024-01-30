@@ -36,7 +36,7 @@ from src.utils.utils import *
 python_3 = version_info[0]
 
 #print all registry
-def list_reg_func(spbench_path, args):
+def list_benchmarks_func(spbench_path, args, continue_execution = False):
 
     # retrieve the benchmarks registry
     registry_dic = getBenchRegistry(spbench_path)
@@ -75,4 +75,6 @@ def list_reg_func(spbench_path, args):
                     print(" " + app_key.ljust(20) + "| " + ppi_key.ljust(15) + "| " + registry_dic[app_key][ppi_key][bench_key].ljust(9) + "| " + color.BOLD + bench_key + color.END)
     
     print(" -------------------------------------------------------------------")
-    sys.exit()
+
+    if not continue_execution:
+        sys.exit()

@@ -1,5 +1,6 @@
 * v0.4.5-alpha
   - [New feature] Added a new command to the CLI: 'new-app'. This command allows users to create a new application from scratch. It will create a new folder inside the 'SPBench/sys/apps/' folder with the name provided by the user. Inside this folder, it will create a toy application with a basic structure which users can use as template.
+  - [New feature] Added a new command to the CLI: 'delete-app'. This command allows users to delete an application from the 'SPBench/sys/apps/' folder and from the registry, as well as all benchmarks associated with it and registered inputs. 
 
 * v0.4.4-alpha
   - [New benchmarks] Added Lane Detection implementations using a pipeline of farms and a farm of pipelines with FastFlow and Intel TBB

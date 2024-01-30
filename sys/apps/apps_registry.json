@@ -1,7 +1,30 @@
 {
-    "bzip2": "SPBench",
-    "lane_detection": "SPBench",
-    "person_recognition": "SPBench",
-    "ferret": "SPBench",
-    "test_app": "User-defined application"
+    "bzip2": {
+        "name": "Bzip2",
+        "type": "SPBench",
+        "num_operators": "3",
+        "description": "Bzip2 data compression application.",
+        "notes": ""
+    },
+    "lane_detection": {
+        "name": "Lane detection",
+        "type": "SPBench",
+        "num_operators": "9",
+        "description": "Lane detection application.",
+        "notes": ""
+    },
+    "person_recognition": {
+        "name": "Person recognition",
+        "type": "SPBench",
+        "num_operators": "4",
+        "description": "Face recognizer application.",
+        "notes": ""
+    },
+    "ferret": {
+        "name": "Ferret",
+        "type": "SPBench",
+        "num_operators": "6",
+        "description": "Content similarity application.",
+        "notes": "Benchmark from PARSEC"
+    }
 }

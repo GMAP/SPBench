@@ -31,17 +31,16 @@ import sys
 import os
 import subprocess
 
-from src.utils.utils import *
+from . import utils
 
-spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/../../"
-
+spbench_path_ = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
 
 def programmExists(programm, err_msg):
     """check if a given programm exists in shell
     """
     check_programm_cmd = "command -v " + programm + " >/dev/null 2>&1 || { echo >&2 \" " + err_msg + "\"; exit 1; }"
 
-    if(python_3 == 3):
+    if(utils.python_3 == 3):
         try:
             retcode = subprocess.call(check_programm_cmd, shell=True)
             if -retcode < 0:
@@ -79,7 +78,7 @@ def getTextEditor(user_editor):
 def runShellCmd(shell_cmd_line):
     """Run a shell command line
     """
-    if(python_3 == 3):
+    if(utils.python_3 == 3):
         try:
             retcode = subprocess.call(shell_cmd_line, shell=True)
             if -retcode < 0:
@@ -98,7 +97,7 @@ def runShellCmd(shell_cmd_line):
 def runShellWithReturn(shell_cmd_line):
     """Run a shell command line and return the output from the command
     """
-    if(python_3 == 3):
+    if(utils.python_3 == 3):
         #success = False
         try:
             output = subprocess.check_output(shell_cmd_line, stderr=subprocess.STDOUT, shell=True).decode()

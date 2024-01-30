@@ -1,8 +1,8 @@
 ## 
  ##############################################################################
- #  File  : utils.py
+ #  File  : list_apps_option.py
  #
- #  Title : SPBench makefile generator
+ #  Title : SPBench-CLI List Applications Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -26,32 +26,27 @@
  ##############################################################################
 ##
 
-import math
-from .utils import *
+import sys
 
-# check if string is blank
-def isNotBlank (my_string):
-    return bool(my_string and my_string.strip())
+from src.utils.utils import *
+from src.utils.dict import *
 
-def askToProceed():
-    # user input support for python 2 and 3
-    if(python_3 == 3):
-        answer = input("\n Do you want to proceed? [yes/no]\n ")
-    else:
-        answer = raw_input("\n Do you want to proceed? [yes/no]\n ")
+#print all inputs
+def list_apps_func(spbench_path):
 
-    if(answer.lower() not in ["y","yes"]): # delete the old benchmark
-        print(" Operation canceled!\n")
-        return False
+    # get apps registry in dictionay format
+    apps_registry = getAppsRegistry(spbench_path)
 
-    return True
+    # for each app in the registry, print name, type, number of operators, description, and notes
 
-def variance(data, ddof=0):
-	n = len(data)
-	mean = sum(data) / n
-	return sum((x - mean) ** 2 for x in data) / (n - ddof)
+    print(" -------------------------------------------------------------------")
+    for app in apps_registry:
+        #print the main key (app_id)
+        print(color.BOLD + " Application ID: " + color.END + str(app))
+        #print the other keys
+        for key in apps_registry[app]:
+            print(" " + key + ": " + str(apps_registry[app][key]))
+        print(" -------------------------------------------------------------------")
 
-def stdev(data):
-	var = variance(data)
-	std_dev = math.sqrt(var)
-	return std_dev
+    print("")
+    sys.exit()

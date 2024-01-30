@@ -29,9 +29,9 @@
 import os
 import math
 
-from src.utils.dict import *
+from .dict import *
 
-spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/../../"
+#spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/../../"
 
 from sys import version_info 
 python_3 = version_info[0]
@@ -50,11 +50,6 @@ class color:
 
 # list of SPBench reserved words
 reserved_words = {'all', 'bzip2', 'ferret', 'lane_detection', 'person_recognition', 'source', 'sink', 'spbench'}
-
-# list of supported apps
-apps_list = getAppsList(spbench_path_)
-apps_list_all = list(apps_list)
-apps_list_all.insert(0, 'all')
 
 # check if string is blank
 def isNotBlank (my_string):

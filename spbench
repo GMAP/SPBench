@@ -37,7 +37,7 @@ from argparse import RawTextHelpFormatter
 from sys import version_info 
 python_3 = version_info[0]
 
-from src.new_bench_option import new_func
+from src.new_bench_option import new_bench_func
 from src.new_op_option import new_op_func
 from src.new_app_option import new_app_func
 from src.delete_option import delete_reg_func
@@ -45,7 +45,7 @@ from src.exec_option import execute_func
 from src.compile_option import compile_func
 from src.clean_option import clean_func
 from src.update_option import update_func
-from src.list_benchmarks_option import list_reg_func
+from src.list_benchmarks_option import list_benchmarks_func
 from src.install_option import install_func
 from src.configure_option import configure_func
 from src.global_config_option import global_config_func
@@ -58,6 +58,8 @@ from src.delete_input_option import del_input_func
 from src.download_inputs_option import download_inputs_func
 from src.rename_bench_option import rename_bench_func
 from src.reset_option import reset_operators_func
+from src.delete_app_option import delete_app_func
+from src.list_apps_option import list_apps_func
 
 from src.errors import *
 
@@ -70,7 +72,7 @@ spbench_version="v0.4.3-alpha"
 spbench_path = os.path.dirname(os.path.realpath(__file__))#os.path.dirname(sys.argv[0])
 
 def new(args):
-    new_func(spbench_path, args)
+    new_bench_func(spbench_path, args)
 def new_op(args):
     new_op_func(spbench_path, args)
 def new_app(args):
@@ -78,7 +80,7 @@ def new_app(args):
 def delete_reg(args):
     delete_reg_func(spbench_path, args)
 def list_reg(args):
-    list_reg_func(spbench_path, args)
+    list_benchmarks_func(spbench_path, args)
 def configure(args):
     configure_func(spbench_path, args)
 def global_config(args):
@@ -108,8 +110,12 @@ def list_reg_inputs(args):
     list_inputs_func(spbench_path, args)
 def list_operators(args):
     list_op_func(spbench_path, args)
+def list_apps(args):
+    list_apps_func(spbench_path)
 def delete_input(args):
     del_input_func(spbench_path, args)
+def delete_app(args):
+    delete_app_func(spbench_path, args)
 def install(args):
     install_func(spbench_path, args)
 def rename_bench(args):
@@ -127,7 +133,7 @@ if len(sys.argv) < 2:
 
 class SmartFormatter(argparse.HelpFormatter):
     def _split_lines(self, text, width):
-        if text.startswith('R|'):
+        if text.startswith(''):
             return text[2:].splitlines()  
         # this is the RawTextHelpFormatter._split_lines
         return argparse.HelpFormatter._split_lines(self, text, width)
@@ -164,6 +170,8 @@ parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpForm
    delete-input - Delete a given input
 download-inputs - Download all available inputs provided by SPBench
         new-app - Add a new empty application to the SPBench suite
+     delete-app - Delete an application from SPBench
+      list-apps - List the information of all available applications
          
         version - Print the current SPBench version
 -------------------------------------------------------------
@@ -301,6 +309,18 @@ parser_new_app = subparsers.add_parser('new-app',
     usage="""./spbench new-app [subcommands]""", 
     description="""  Description: Create a simple application in SPBench. This toy application can be used as template to guide the additioning of new applications to SPBench.""")
 
+# subparser for deleting an application
+parser_del_app = subparsers.add_parser('delete-app',
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    usage="""./spbench delete-app [subcommands]""",
+    description="""  Description: Delete an application from SPBench.""")
+
+# subparser for listing all applications
+parser_list_apps = subparsers.add_parser('list-apps',
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    usage="""./spbench list-apps""",
+    description="""  Description: List the information of all available applications.""")
+
 #subparser for 'version' option
 parser_version = subparsers.add_parser('version',
     formatter_class=argparse.RawDescriptionHelpFormatter, 
@@ -317,7 +337,7 @@ parser_inst.add_argument('-app',
     dest='app_id',
     required=False,
     default='all',
-    choices=apps_list,
+    choices=getAppsList(spbench_path),
     help='You can choose a specific application to install or you can use \'all\' to install all applications.')
 parser_inst.set_defaults(func=install)
 
@@ -336,15 +356,16 @@ parser_new.add_argument('-app',
     type=str,
     dest='app_id',
     required=True,
-    choices=apps_list,
-    help="You must choose one from the following applications:\n " + str(apps_list) + " (mandatory)")
+    choices=getAppsList(spbench_path),
+    help="You must choose one from the following applications:\n " + str(getAppsList(spbench_path)) + " (mandatory)")
 
 parser_new.add_argument('-ppi',
     action='store',
     type=str,
     dest='ppi_id',
-    required=True,
-    help="You must insert a name for the PPI you will use \n(e.g., fastflow, spar, tbb, etc...). You can choose \'sequential\', as well. (Mandatory)")
+    required=False,
+    default='sequential',
+    help="You should insert here a name for the PPI you will use \n(e.g., fastflow, spar, tbb, ...). You can choose \'sequential\' or any name, as well. (Optional. Default: sequential)")
 
 parser_new.add_argument('-from',
     action='store',
@@ -458,8 +479,8 @@ parser_update.add_argument('-app',
     type=str,
     dest='app_id',
     required=False,
-    choices=apps_list_all,
-    help="Update all benchmarks for a specific application: \n " + str(apps_list_all) + " (optional)")
+    choices=getAppsListAll(spbench_path),
+    help="Update all benchmarks for a specific application: \n " + str(getAppsListAll(spbench_path)) + " (optional)")
 
 parser_update.add_argument('-ppi',
     action='store',
@@ -484,8 +505,8 @@ parser_cmp.add_argument('-app',
     type=str,
     dest='app_id',
     required=False,
-    choices=apps_list,
-    help="Compile all benchmarks based on a specific application: \n " + str(apps_list) + " (optional)")
+    choices=getAppsList(spbench_path),
+    help="Compile all benchmarks based on a specific application: \n " + str(getAppsList(spbench_path)) + " (optional)")
 
 parser_cmp.add_argument('-ppi',
     action='store',
@@ -518,8 +539,8 @@ parser_clean.add_argument('-app',
     type=str,
     dest='app_id',
     required=False,
-    choices=apps_list,
-    help="Clean all benchmarks based on a specific application:\n " + str(apps_list) + " (optional)")
+    choices=getAppsList(spbench_path),
+    help="Clean all benchmarks based on a specific application:\n " + str(getAppsList(spbench_path)) + " (optional)")
 
 parser_clean.add_argument('-ppi',
     action='store',
@@ -559,8 +580,8 @@ parser_exec.add_argument('-app',
     type=str,
     dest='app_id',
     required=False,
-    choices=apps_list,
-    help="Run all benchmarks based on a specific application: \n " + str(apps_list) + " (optional)")
+    choices=getAppsList(spbench_path),
+    help="Run all benchmarks based on a specific application: \n " + str(getAppsList(spbench_path)) + " (optional)")
 
 parser_exec.add_argument('-ppi',
     action='store',
@@ -744,8 +765,8 @@ parser_list.add_argument('-app',
     type=str,
     dest='app_id',
     required=False,
-    choices=apps_list,
-    help="You can filter by application:\n" + str(apps_list) + " (optional)")
+    choices=getAppsList(spbench_path),
+    help="You can filter by application:\n" + str(getAppsList(spbench_path)) + " (optional)")
 parser_list.add_argument('-ppi',
     action='store',
     type=str,
@@ -791,7 +812,7 @@ parser_reset_op.add_argument('-app',
     type=str,
     dest='app_id',
     required=False,
-    choices=apps_list,
+    choices=getAppsList(spbench_path),
     help="Reset operators for all benchmarks for a specific application: \n[bzip2] [lane_detection] [ferret] [person_recognition](optional)")
 
 parser_reset_op.add_argument('-ppi',
@@ -824,8 +845,8 @@ parser_reg_inputs.add_argument('-app',
     type=str,
     dest='app_id',
     required=True,
-    choices=apps_list,
-    help="You must choose one from the following applications:\n " + str(apps_list) + " (mandatory)")
+    choices=getAppsList(spbench_path),
+    help="You must choose one from the following applications:\n " + str(getAppsList(spbench_path)) + " (mandatory)")
 
 parser_reg_inputs.add_argument('-input-string',
     action='store',
@@ -851,15 +872,16 @@ parser_del_input.add_argument('-id',
     action='store',
     type=str,
     dest='input_id',
-    required=True,
-    help='Insert the ID of the input you want to remove from registry')
+    default='all',
+    required=False,
+    help='Insert the ID of the input you want to remove from registry. The default value is \'all\', it will delete all registered inputs from the application provided in the -app argument.')
 
 parser_del_input.add_argument('-app',
     action='store',
     type=str,
     dest='app_id',
     required=True,
-    help="Name of the linked application (mandatory).")
+    help="Name of the application (mandatory).")
 parser_del_input.set_defaults(func=delete_input)
 
 ##
@@ -871,7 +893,7 @@ parser_get_inputs.add_argument('-app',
     dest='app_id',
     required=False,
     default="all",
-    choices=apps_list_all,
+    choices=getAppsListAll(spbench_path),
     help="You can choose from the applications list or \n\n leave it empty to download all inputs.")
 
 parser_get_inputs.add_argument('-class', 
@@ -917,8 +939,8 @@ parser_list_inputs.add_argument('-app',
     type=str,
     dest='app_id',
     required=False,
-    choices=apps_list_all,
-    help="R|You can filter by application:\n" + str(apps_list) + " (optional)")
+    choices=getAppsList(spbench_path),
+    help="You can filter by application:\n" + str(getAppsList(spbench_path)) + " (optional)")
 parser_list_inputs.set_defaults(func=list_reg_inputs)
 
 ##
@@ -929,7 +951,15 @@ parser_new_app.add_argument('-app',
     type=str,
     dest='app_id',
     required=True,
-    help="R|The name of the new application (mandatory). The name should not contain empty spaces. Example of acceptable names are: \"bzip2\", \"lane_detection\", \"face-recognizer\", ...")
+    help="The ID of the new application (mandatory). The ID should not contain empty spaces. Example of acceptable names are: \"bzip2\", \"lane_detect\", \"face-recognizer\", ...")
+
+parser_new_app.add_argument('-name',
+    action='store',
+    type=str,
+    dest='app_name',
+    default='',
+    required=False,
+    help="The name of the new application (optional) (limited to 50 characters). Example: \"Bzip2\", \"Lane Detection\", \"Face Recognizer\". Default name: same as the ID.")
 
 parser_new_app.add_argument('-operators',               
     nargs='+',
@@ -937,9 +967,43 @@ parser_new_app.add_argument('-operators',
     type=str,
     dest='operators_list',
     required=True,
-    help='R|Add a list of middle operators to this new application (mandatory, at least one must be provided). Usage: [ -operators <op1_name> <op2_name> ... ]. Source and sink operators are already included.')
+    help='Add a list of middle operators to this new application (mandatory, at least one must be provided). Usage: [ -operators <op1_name> <op2_name> ... ]. Source and sink operators are already included.')
+
+parser_new_app.add_argument('-description',
+    action='store',
+    type=str,
+    dest='description',
+    required=False,
+    default='This is a user-defined application.',
+    help="A brief description of the application (optional).")
+
+parser_new_app.add_argument('-notes',
+    action='store',
+    type=str,
+    dest='notes',
+    required=False,
+    default='The original code of this application is a toy example. Edit it to create your own application.',
+    help="Notes about the application (optional).")
 
 parser_new_app.set_defaults(func=new_app)
+
+##
+# Delete application
+##
+parser_del_app.add_argument('-app',
+    action='store',
+    type=str,
+    dest='app_id',
+    required=True,
+    help="The name of the application to delete (mandatory).")
+
+parser_del_app.set_defaults(func=delete_app)
+
+
+##
+# List applications
+##
+parser_list_apps.set_defaults(func=list_apps)
 
 ##
 # Add operator for a given benchmark
