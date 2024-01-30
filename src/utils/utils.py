@@ -1,8 +1,8 @@
 ## 
  ##############################################################################
- #  File  : register_option.py
+ #  File  : utils.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench makefile generator
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -26,19 +26,41 @@
  ##############################################################################
 ##
 
-from src.utils.dict import *
-from src.codeGenerators.make_gen import *
+import os
+import math
 
-def update_func(spbench_path, args):
+from .dict import *
 
-    # get list of selected benchmarks to run
-    benchmarks_to_run = registryDicToList(filterRegistry(getBenchRegistry(spbench_path), args))
+#spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/../../"
 
-    for benchmark in benchmarks_to_run:
-        #app_id = benchmark["app_id"]
-        #ppi_id = benchmark["ppi_id"]
-        #bench_id = benchmark["bench_id"]
+from sys import version_info 
+python_3 = version_info[0]
 
-        print(" Updating compiling configurations for: " + benchmark["bench_id"])
+class color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
 
-        make_gen(spbench_path, benchmark)
+# list of SPBench reserved words
+reserved_words = {'all', 'bzip2', 'ferret', 'lane_detection', 'person_recognition', 'source', 'sink', 'spbench'}
+
+# check if string is blank
+def isNotBlank (my_string):
+    return bool(my_string and my_string.strip())
+
+def variance(data, ddof=0):
+	n = len(data)
+	mean = sum(data) / n
+	return sum((x - mean) ** 2 for x in data) / (n - ddof)
+
+def stdev(data):
+	var = variance(data)
+	std_dev = math.sqrt(var)
+	return std_dev

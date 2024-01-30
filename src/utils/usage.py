@@ -1,8 +1,8 @@
 ## 
  ##############################################################################
- #  File  : register_option.py
+ #  File  : utils.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench makefile generator
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -26,19 +26,32 @@
  ##############################################################################
 ##
 
-from src.utils.dict import *
-from src.codeGenerators.make_gen import *
+import math
+from .utils import *
 
-def update_func(spbench_path, args):
+# check if string is blank
+def isNotBlank (my_string):
+    return bool(my_string and my_string.strip())
 
-    # get list of selected benchmarks to run
-    benchmarks_to_run = registryDicToList(filterRegistry(getBenchRegistry(spbench_path), args))
+def askToProceed():
+    # user input support for python 2 and 3
+    if(python_3 == 3):
+        answer = input("\n Do you want to proceed? [yes/no]\n ")
+    else:
+        answer = raw_input("\n Do you want to proceed? [yes/no]\n ")
 
-    for benchmark in benchmarks_to_run:
-        #app_id = benchmark["app_id"]
-        #ppi_id = benchmark["ppi_id"]
-        #bench_id = benchmark["bench_id"]
+    if(answer.lower() not in ["y","yes"]): # delete the old benchmark
+        print(" Operation canceled!\n")
+        return False
 
-        print(" Updating compiling configurations for: " + benchmark["bench_id"])
+    return True
 
-        make_gen(spbench_path, benchmark)
+def variance(data, ddof=0):
+	n = len(data)
+	mean = sum(data) / n
+	return sum((x - mean) ** 2 for x in data) / (n - ddof)
+
+def stdev(data):
+	var = variance(data)
+	std_dev = math.sqrt(var)
+	return std_dev

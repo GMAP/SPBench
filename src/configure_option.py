@@ -28,8 +28,9 @@
 
 import sys
 
-from src.utils import *
-from src.make_gen import *
+from src.utils.shell import *
+from src.utils.dict import *
+from src.codeGenerators.make_gen import *
 
 def configure_func(spbench_path, args):
     

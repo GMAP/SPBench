@@ -26,39 +26,15 @@
  ##############################################################################
 ##
 
-import hashlib
 import sys
 import os
 import json
-import subprocess
-import math
 
+from . import utils
+from .shell import *
 from difflib import SequenceMatcher
 
-spbench_path_ = os.path.dirname(os.path.realpath(__file__)) + "/.."
-
-from sys import version_info 
-python_3 = version_info[0]
-
-class color:
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
-
-# list of SPBench reserved words
-reserved_words = {'all', 'bzip2', 'ferret', 'lane_detection', 'person_recognition', 'source', 'sink', 'spbench'}
-
-# list of supported apps
-apps_list = ['bzip2', 'ferret', 'lane_detection', 'person_recognition']
-apps_list_all = list(apps_list)
-apps_list_all.insert(0, 'all')
+spbench_path_ = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
 
 def getBenchRegistry(spbench_path):
     """return a dictionay with the benchmarks registered data
@@ -80,6 +56,42 @@ def getInputsRegistry(spbench_path):
         sys.exit()
     return getRegistry(registry_file)
 
+def getAppsRegistry(spbench_path):
+    """return a dictionay with the apps registered data
+    """
+    registry_file = spbench_path + "/sys/apps/apps_registry.json"
+    #check if the registry exists
+    if os.path.exists(registry_file) == False:
+        print("\n There is no apps registered.\n Registry file not found at " + registry_file + "\n")
+        sys.exit()
+    return getRegistry(registry_file)
+
+def getAppsList(spbench_path):
+    """return a list with the apps in the json registry
+    """
+    registry_dic = getAppsRegistry(spbench_path)
+    apps_list = []
+    for app_key in registry_dic:
+        apps_list.append(app_key)
+    return apps_list
+
+def getAppsListAll(spbench_path):
+    # list of supported apps
+    apps_list = getAppsList(spbench_path)
+    apps_list_all = list(apps_list)
+    apps_list_all.insert(0, 'all')
+    return apps_list_all
+
+def deleteAppFromRegistry(spbench_path, app_id):
+    """delete a app from the registry and sys/apps/ folder
+    """
+    # delete app key from the app registry
+    apps_registry = getAppsRegistry(spbench_path)
+    del apps_registry[app_id]
+    writeDicTo(spbench_path + "/sys/apps/apps_registry.json", apps_registry)
+
+    return
+
 def getRegistry(registry_file):
     """read the content of the json registry and store into a dictionary
     """
@@ -90,34 +102,20 @@ def getRegistry(registry_file):
     registry.close()
     return registry_dic
 
-# compute and return the md5 value of a file
-def md5(file_name):
-    hash_md5 = hashlib.md5()
-    with open(file_name, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
 
-# check if a file exists
-def fileExists(file):
-    return bool(os.path.exists(file))
+# check if a given app exists
+def appExists(spbench_path, selected_app):
+    """check if a given app exists
+    """
+    registry_dic = getBenchRegistry(spbench_path)
 
-# check if a directory exists
-def dirExists(file):
-    return bool(os.path.isdir(file))
-
-# check if an output file exists
-def outputExists(output_file):
-    if os.path.exists(output_file): 
-        return True
-    print(" Expected output file not found:\n " + output_file)
-    print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    # Run through the registry dictionary elements
+    for app_key in registry_dic:
+        if selected_app == app_key:
+            return True
     return False
 
-# check if string is blank
-def isNotBlank (my_string):
-    return bool(my_string and my_string.strip())
-
+# check if a given benchmark exists
 def benchmarkExists(spbench_path, selected_bench):
     """check if a given benchmark exists
     """
@@ -131,102 +129,12 @@ def benchmarkExists(spbench_path, selected_bench):
                     return True
     return False
 
-def programmExists(programm, err_msg):
-    """check if a given programm exists in shell
+def writeDicTo(registry_file, registry_dic):
+    """write dictionary to JSON registry file
     """
-    check_programm_cmd = "command -v " + programm + " >/dev/null 2>&1 || { echo >&2 \" " + err_msg + "\"; exit 1; }"
-
-    if(python_3 == 3):
-        try:
-            retcode = subprocess.call(check_programm_cmd, shell=True)
-            if -retcode < 0:
-                return False
-        except OSError as e:
-            print(" Execution failed:", e, file=sys.stderr)
-            print()
-        except KeyboardInterrupt as e:
-            print(" KeyboardInterrupt")
-            print("\n Unsuccessful execution\n")
-            sys.exit()
-    return True
-
-def getTextEditor(user_editor):
-    text_editor = ''
-    # if no editor was provided by the user, try to find one
-    if not user_editor:
-        if programmExists("nano", ''):
-            text_editor = 'nano'
-        elif programmExists("vim", ''):
-            text_editor = 'vim'
-        elif programmExists("vi", ''):
-            text_editor = 'vi'
-        else:
-            print("\n No text editor found! Please provide one through the \'-editor\' argument.")
-            print(" Type ./spbench [command] -help for more info.\n")
-            sys.exit()
-    else:  
-        editor_err = "\\n Text editor \'" + user_editor + "\' not found. Please select a different one.\n"
-        if not programmExists(user_editor, editor_err):
-            sys.exit()
-        text_editor = user_editor
-    return text_editor
-
-def runShellCmd(shell_cmd_line):
-    """Run a shell command line
-    """
-    if(python_3 == 3):
-        try:
-            retcode = subprocess.call(shell_cmd_line, shell=True)
-            if -retcode < 0:
-                print(" Process was terminated by signal", -retcode, file=sys.stderr)
-                print("\n Unsuccessful execution\n")
-        except OSError as e:
-            print(" Execution failed:", e, file=sys.stderr)
-            print()
-        except KeyboardInterrupt as e:
-            print(" KeyboardInterrupt")
-            print("\n Unsuccessful execution\n")
-            sys.exit()
-    else:
-        os.system(shell_cmd_line)
-
-def runShellWithReturn(shell_cmd_line):
-    """Run a shell command line and return the output from the command
-    """
-    if(python_3 == 3):
-        #success = False
-        try:
-            output = subprocess.check_output(shell_cmd_line, stderr=subprocess.STDOUT, shell=True).decode()
-            #success = True 
-        except subprocess.CalledProcessError as e:
-            output = e.output.decode() + "\n Unsuccessful execution\n"
-            #print(output)
-            #print("\n Unsuccessful execution\n")
-        except Exception as e:
-            # check_call can raise other exceptions, such as FileNotFoundError
-            output = str(e) + "\n Unsuccessful execution\n"
-            #print(output)
-            #print("\n Unsuccessful execution\n")
-        except KeyboardInterrupt as e:
-            print(" KeyboardInterrupt")
-            print("\n Unsuccessful execution\n")
-            sys.exit()
-        return(output)
-    else:
-        os.system(shell_cmd_line)
-
-def askToProceed():
-    # user input support for python 2 and 3
-    if(python_3 == 3):
-        answer = input("\n Do you want to proceed? [yes/no]\n")
-    else:
-        answer = raw_input("\n Do you want to proceed? [yes/no]\n")
-
-    if(answer.lower() not in ["y","yes"]): # delete the old benchmark
-        print(" Operation canceled!\n")
-        return False
-
-    return True
+    with open(registry_file, 'w') as f:
+        json.dump(registry_dic, f, indent=4)
+    f.close()
 
 def writeDicToBenchRegistry(spbench_path, registry_dic):
     """write dictionary to JSON registry file
@@ -242,7 +150,7 @@ def writeDicToInputRegistry(spbench_path, registry_dic):
         json.dump(registry_dic, f, indent=4)
     f.close()
 
-def filterBenchRegByApp(registry_dic, selected_app):
+def filterBenchRegByApp(registry_dic, selected_app, runDoYouMean = True):
     """Filter from a dictionary all keys that do not contain the given app
     """
     filtered_registry = {}
@@ -253,7 +161,7 @@ def filterBenchRegByApp(registry_dic, selected_app):
             filtered_registry.update({app_key:registry_dic[app_key]})
             benchmark_found = True
     
-    if not benchmark_found:
+    if not benchmark_found and runDoYouMean:
         print("\n  Application not found! " + doYouMeanPPI(selected_app))
         print("\n  Double check the name of the application.")
         print(" You can run \'./spbench list\' to see all available applications.")
@@ -263,7 +171,7 @@ def filterBenchRegByApp(registry_dic, selected_app):
         
     return filtered_registry
 
-def filterBenchRegByPPI(registry_dic, selected_ppi):
+def filterBenchRegByPPI(registry_dic, selected_ppi, runDoYouMean = True):
     """Filter from a dictionary all keys that do not contain the given PPI
     """
     filtered_registry = {}
@@ -274,7 +182,7 @@ def filterBenchRegByPPI(registry_dic, selected_ppi):
                 filtered_registry.update({app_key:{ppi_key:registry_dic[app_key][ppi_key]}})
                 benchmark_found = True
     
-    if not benchmark_found:
+    if not benchmark_found and runDoYouMean:
         print("\n  PPI not found! " + doYouMeanPPI(selected_ppi))
         print("\n  Double check the name of the PPI.")
         print("  You can run \'./spbench list\' to see all available PPIs.")
@@ -284,7 +192,7 @@ def filterBenchRegByPPI(registry_dic, selected_ppi):
 
     return filtered_registry
 
-def filterBenchRegByBench(registry_dic, selected_bench):
+def filterBenchRegByBench(registry_dic, selected_bench, runDoYouMean = True):
 
     filtered_registry = {}
     benchmark_found = False
@@ -295,7 +203,7 @@ def filterBenchRegByBench(registry_dic, selected_bench):
                     filtered_registry.update({app_key:{ppi_key:{bench_key:registry_dic[app_key][ppi_key][bench_key]}}})
                     benchmark_found = True
 
-    if not benchmark_found:
+    if not benchmark_found and runDoYouMean:
         print("\n  Benchmark not found! " + doYouMeanBench(selected_bench))
         print("\n  Double check the name of the benchmark.")
         print("  You can run \'./spbench list\' to see all available benchmarks.")
@@ -375,16 +283,6 @@ def print_dic(registry_dic):
     aux = json.dumps(registry_dic, indent=3)
     print(aux)
     return
-
-def variance(data, ddof=0):
-	n = len(data)
-	mean = sum(data) / n
-	return sum((x - mean) ** 2 for x in data) / (n - ddof)
-
-def stdev(data):
-	var = variance(data)
-	std_dev = math.sqrt(var)
-	return std_dev
 
 def doYouMeanBench(benchmark):
     """check if there is a benchmark with similar name

@@ -31,17 +31,20 @@ import os
 import datetime
 
 from src.errors import *
-from src.utils import *
+from src.utils.shell import *
+from src.utils.dict import *
+from src.utils.utils import *
 
 from sys import version_info 
 python_3 = version_info[0]
 
 def execute_func(spbench_path, args):
     
-    is_range = False
+    
+    is_range = False # range of threads x:y:z
     nthreads = ["1"]
 
-    inputs_registry_dic = getInputsRegistry(spbench_path) 
+    inputs_registry_dic = getInputsRegistry(spbench_path)
 
     # get list of selected benchmarks to run
     benchmarks_to_run = registryDicToList(filterRegistry(getBenchRegistry(spbench_path), args))
@@ -52,7 +55,7 @@ def execute_func(spbench_path, args):
         for input_id in sub_list:
             inputs_ID_list.append(input_id)
             
-    
+    # run each of the selected benchmarks
     for benchmark in benchmarks_to_run:
         app_id = benchmark["app_id"]
         ppi_id = benchmark["ppi_id"]
@@ -66,6 +69,14 @@ def execute_func(spbench_path, args):
 
             sys.exit()
         
+        # check if exists registered inputs for the base application
+        if app_id not in inputs_registry_dic:
+            print("\n  Error! No registered inputs for benchmarks based on \'" + app_id + "\' application.")
+            print("  You can run \'./spbench list-inputs\' to see the registered inputs.")
+            print("  You can also run \'./spbench new-input -h\' to register a new input.\n")
+            sys.exit()
+
+        # check if the selected input ID exists
         inputs_dic = inputs_registry_dic[app_id]
         input_list = []
         for key in inputs_ID_list:
@@ -74,10 +85,11 @@ def execute_func(spbench_path, args):
                     print(" You can run \'./spbench list-inputs\' to see the registered inputs.")
                     print(" You can also run \'./spbench new-input -h\' to register a new input.")
                     continue
-            if app_id == 'ferret' or app_id == 'person_recognition':
-                input_list.append(inputs_dic[key]['input'].replace('$SPB_HOME', spbench_path) + ' ' + key)
-            else:
+            if app_id == 'bzip2' or app_id == 'lane_detection':
                 input_list.append(inputs_dic[key]['input'].replace('$SPB_HOME', spbench_path))
+            else:
+                input_list.append(inputs_dic[key]['input'].replace('$SPB_HOME', spbench_path) + ' ' + key)
+                
 
             # if it is a single source benchmark, get only the first input
             if not nsources:
@@ -98,10 +110,11 @@ def execute_func(spbench_path, args):
         for input in input_list: # generate a list of input files
             if(app_id == 'bzip2'):
                 input_id += " " + os.path.abspath(input) # bzip2 does not require -i flag
-            elif(app_id == 'ferret' or app_id == 'person_recognition'):
-                input_id += " -i \"" + input + "\""   # ferret and person receive multiple files as workload
-            else: # generate a '-i input_id_list' argument
+            elif(app_id == 'lane_detection'): # lane requires only a single input argument
                 input_id += " -i " + os.path.abspath(input)
+            else:
+                input_id += " -i \"" + input + "\""   # general cases receive multiple arguments as input
+                
 
 
         # Check for errors in nthreads

@@ -28,45 +28,55 @@
 
 import sys
 
-from src.utils import *
+from src.utils.usage import *
+from src.utils.dict import *
 
 #add a new input to the suite
-def new_input_func(spbench_path, args):
+def new_input_func(spbench_path, args, continue_execution = False):
 
     # check if it is not a reserved word
     if args.input_id in reserved_words:
         print("\n " + args.input_id + " is a SPBench reserved word")
         print(" You can not use it to name a benchmark.\n")
-        sys.exit()
+#        if not continue_execution:
+#            sys.exit()
+
+        return None if continue_execution else sys.exit()
 
     inputs_registry = getInputsRegistry(spbench_path)
 
     # Check if the chosen app exists
-    if args.app_id not in inputs_registry:
+    if args.app_id not in getAppsList(spbench_path):
         print("\n Application \'" + args.app_id + "\' not found!\n")
-        sys.exit()
+        return None if continue_execution else sys.exit()
+
+    # If the app is not registered yet, create a new entry
+    if args.app_id not in inputs_registry:
+        inputs_registry.update({args.app_id:{}})
 
     # check if this input is already registered for this application
     if args.input_id in inputs_registry[args.app_id]:
         print("\n There is already an input named \'"+ args.input_id +"\' for " + args.app_id + ".\n")
-        print(" Registered input -> " + inputs_registry[args.app_id][args.input_id]["input"].replace('$SPB_HOME', spbench_path))
+        print(" Registered input -> " + inputs_registry[args.app_id][args.input_id]["input"])
+        print("        New input -> " + args.input)
+        print("\n Warning!!! If you proceed, the old input will be overwritten!\n")
 
         if not askToProceed():
-            sys.exit()
+            return None if continue_execution else sys.exit()
 
     # update the dictionary with the new entry
     inputs_registry[args.app_id].update({args.input_id:{"input":args.input,"md5_test":args.md5_hash}})
 
-    print("\n     New input added!\n")
-    print(" Application: " + args.app_id)
-    print("    Input ID: " + args.input_id)
-    print("       Input: " + args.input)
+    print("\n      New input added!\n")
+    print("  Application: " + args.app_id)
+    print("     Input ID: " + args.input_id)
+    print(" Input string: " + '\"'  + args.input.replace('$SPB_HOME', spbench_path) + '\"')
     if args.md5_hash:
-        print(" Testing md5: " + args.md5_hash + "\n")
+        print("  Testing md5: " + args.md5_hash + "\n")
     else:
-        print(" Testing md5: none (Result testing will not be available for this input).\n")
+        print("  Testing md5: no md5 key was added (Output correctness test will not be available for this input).\n")
         
     # write the dictionary to the json registry file
     writeDicToInputRegistry(spbench_path, inputs_registry)
 
-    sys.exit()
+    if not continue_execution: sys.exit()

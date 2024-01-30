@@ -1,8 +1,8 @@
 ## 
  ##############################################################################
- #  File  : register_option.py
+ #  File  : list_apps_option.py
  #
- #  Title : SPBench commands manager
+ #  Title : SPBench-CLI List Applications Option
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -26,19 +26,27 @@
  ##############################################################################
 ##
 
+import sys
+
+from src.utils.utils import *
 from src.utils.dict import *
-from src.codeGenerators.make_gen import *
 
-def update_func(spbench_path, args):
+#print all inputs
+def list_apps_func(spbench_path):
 
-    # get list of selected benchmarks to run
-    benchmarks_to_run = registryDicToList(filterRegistry(getBenchRegistry(spbench_path), args))
+    # get apps registry in dictionay format
+    apps_registry = getAppsRegistry(spbench_path)
 
-    for benchmark in benchmarks_to_run:
-        #app_id = benchmark["app_id"]
-        #ppi_id = benchmark["ppi_id"]
-        #bench_id = benchmark["bench_id"]
+    # for each app in the registry, print name, type, number of operators, description, and notes
 
-        print(" Updating compiling configurations for: " + benchmark["bench_id"])
+    print(" -------------------------------------------------------------------")
+    for app in apps_registry:
+        #print the main key (app_id)
+        print(color.BOLD + " Application ID: " + color.END + str(app))
+        #print the other keys
+        for key in apps_registry[app]:
+            print(" " + key + ": " + str(apps_registry[app][key]))
+        print(" -------------------------------------------------------------------")
 
-        make_gen(spbench_path, benchmark)
+    print("")
+    sys.exit()

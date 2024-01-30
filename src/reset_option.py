@@ -27,9 +27,11 @@
 ##
 
 import sys
-import os
 
-from src.utils import *
+from src.utils.dict import *
+from src.utils.usage import *
+from src.utils.shell import *
+
 
 def reset_operators_func(spbench_path, args):
     """reset all operators from a benchmark to default

@@ -28,7 +28,8 @@
 
 import sys
 
-from src.utils import *
+from src.utils.shell import *
+from src.utils.dict import *
 
 #print all operators
 def list_op_func(spbench_path, args):

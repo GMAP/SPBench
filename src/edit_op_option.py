@@ -29,7 +29,8 @@
 import sys
 
 from src.errors import *
-from src.utils import *
+from src.utils.shell import *
+from src.utils.dict import *
 
 def edit_op_source_func(spbench_path, args):
 

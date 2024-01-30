@@ -29,8 +29,10 @@
 import sys
 import os
 
-from src.utils import *
-from src.make_gen import *
+from src.utils.dict import *
+from src.utils.shell import *
+
+from src.codeGenerators.make_gen import *
 
 def clean_func(spbench_path, args):
     
