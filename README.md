@@ -74,15 +74,15 @@ The following packages are required to install SPBench:
 - cmake
 - python (tested on python3)
 
-You can run the command below to install these packages or ask a system admin.
+You can run the command below to install these packages on a Ubuntu system.
 
-`sudo apt-get install -y build-essential pkg-config cmake python3`
+`sudo apt install -y build-essential pkg-config cmake python3`
 
 To install SPBench, you can run:
 
 `./spbench install`
 
-The command above will install the dependencies for all supported applications.
+The command above will try to install the dependencies for all supported applications.
 For installing dependencies for a single application, you can run:
 
 `./spbench install -app <application name>`
@@ -93,7 +93,7 @@ For custom and manual installations, see libs/README.md or ppis/README.md.
 
 **>> Attention <<**
 
-It was tested on different Linux systems using with **GCC-9.4** compiler.
+It was tested on different Linux systems using the **GCC-9.4** compiler.
 We do not ensure that all libraries, such as OpenCV, will work with different versions or compilers.
 
 ## How to run:
