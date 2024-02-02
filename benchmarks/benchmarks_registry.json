@@ -77,10 +77,12 @@
             "ferret_grppi_farm-pipe": "single"
         },
         "threads": {
-            "ferret_threads_farm": "single"
+            "ferret_threads_farm": "single",
+            "ferret_threads_pipe-farm": "single"
         },
         "openmp": {
-            "ferret_omp_farm": "single"
+            "ferret_omp_farm": "single",
+            "ferret_omp_pipe-farm": "single"
         }
     },
     "person_recognition": {

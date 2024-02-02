@@ -1,8 +1,8 @@
-# SPBench
+# SPBench - Easing the Complex
 
 [![SPBench_logo](https://user-images.githubusercontent.com/11809226/121076611-fbef5300-c7ac-11eb-9213-5a30a284bec1.png)](https://spbench-doc.readthedocs.io/en/latest/)
 
-[SPBench](https://spbench-doc.readthedocs.io/en/latest/) (Stream Processing Benchmark) is a framework for benchmarking C++ stream processing applications. 
+[SPBench](https://spbench-doc.readthedocs.io/en/latest/) (Stream Processing Benchmark) is a framework for streamlining benchmarking of C++ stream processing. 
 The main goal of SPBench is to enable users to easily create custom benchmarks from real-world stream processing applications and evaluate multiple PPIs.
 
 <ins>**The SPbench documentation is available at https://spbench-doc.rtfd.io**</ins>
@@ -29,14 +29,16 @@ The main goal of SPBench is to enable users to easily create custom benchmarks f
 
 ### Other papers using SPBench
 
- - A. M. Garcia, D. Griebler, C. Schepke and L. G. L. Fernandes, Evaluating Micro-batch and Data Frequency for Stream Processing Applications on Multi-cores. In: 2022 30th Euromicro International Conference on Parallel, Distributed and NetworkBased Processing (PDP), 2022, Valladolid. 2022 30th Euromicro International Conference on Parallel, Distributed and Network-based Processing (PDP), 2022. p. 10-17, doi: 10.1109/PDP55904.2022.00011. \[[link](https://doi.org/10.1109/PDP55904.2022.00011)\] 
+ - A. M. Garcia, D. Griebler, C. Schepke and L. G. L. Fernandes, Micro-batch and data frequency for stream processing on multi-cores. The Journal of Supercomputing (2023), p. 1-39, doi: 10.1007/s11227-022-05024-y. \[[link](https://doi.org/10.1007/s11227-022-05024-y)\] 
+
+ - A. M. Garcia et al., "A Latency, Throughput, and Programmability Perspective of GrPPI for Streaming on Multi-cores," 2023 31st Euromicro International Conference on Parallel, Distributed and Network-Based Processing (PDP), Naples, Italy, 2023, pp. 164-168, doi: 10.1109/PDP59025.2023.00033. \[[link](https://doi.org/10.1109/PDP59025.2023.00033)\]
 
  - A. M. Garcia, D. Griebler, L. G. L. Fernandes and C. Schepke, "Introducing a Stream Processing Framework for Assessing Parallel Programming Interfaces", 2021 29th Euromicro International Conference on Parallel, Distributed and Network-Based Processing (PDP), 2021, pp. 84-88, doi: 10.1109/PDP52278.2021.00021. \[[link](https://doi.org/10.1109/PDP52278.2021.00021)\] 
 
 ## The SPBench is intended for three main audiences:
 - Users who want to run performance tests with the SPBench benchmarks. It implements different real-world stream processing applications using parallel programming interfaces (PPIs) and parallelism patterns and makes the primary metrics used in this domain available. The framework also enables users to create custom benchmarks with new PPIs.
 - Researchers and developers who want to test and evaluate new technologies and solutions. The SPBench benchmarks are also highly parameterizable, and its API allows for easy and fast code reuse across all applications.
-- Students and teachers who want to learn/teach stream parallelism. The benchmarks implemented with the SPBench API abstract the low-level code and expose to users only the stream core of each application (in a few lines of code). Therefore, it allows users to easily identify each operator and data dependencies and understand what the stream flow looks like. Then users can build parallelism on top of this highly simplified code.
+- Students and teachers who want to learn/teach stream parallelism. The benchmarks implemented with the SPBench API abstract the low-level code and expose to users only the stream core of each application (in a few lines of code). Therefore, it allows users to easily identify each operator and data dependencies and understand the stream flow. Then, users can build parallelism on top of this highly simplified code.
 
 ### The SPBench suite comprises the following stream processing applications and will be more in the future:
  - Ferret (PARSEC)
@@ -74,18 +76,15 @@ The following packages are required to install SPBench:
 - cmake
 - python (tested on python3)
 
-You can run the command below to install these packages or ask a system admin.
+You can run the command below to install these packages on a Ubuntu system.
 
-`sudo apt-get install -y build-essential pkg-config cmake python3`
-
-We tested it using GCC-9.4 and Ubuntu~20.04. 
-Some libraries may not work in newer systems.
+`sudo apt install -y build-essential pkg-config cmake python3`
 
 To install SPBench, you can run:
 
 `./spbench install`
 
-The command above will install the dependencies for all supported applications.
+The command above will try to install the dependencies for all supported applications.
 For installing dependencies for a single application, you can run:
 
 `./spbench install -app <application name>`
@@ -93,6 +92,11 @@ For installing dependencies for a single application, you can run:
 Run `./spbench install -h` for more info.
 
 For custom and manual installations, see libs/README.md or ppis/README.md.
+
+**>> Attention <<**
+
+It was tested on different Linux systems using the **GCC-9.4** compiler.
+We do not ensure that all libraries, such as OpenCV, will work with different versions or compilers.
 
 ## How to run:
 
@@ -106,6 +110,6 @@ Try: `./spbench -h` or `python3 spbench -h `
  
 See the [documentation](https://spbench-doc.readthedocs.io/en/latest/) for more info about SPBench.
 
-SPBench is an ongoing project, and you may face some bugs or other problems.
+SPBench is an ongoing project, and you may face bugs or other problems.
 Feel free to open an issue or contact me with any problem regarding the SPBench.
-adriano.garcia@edu.pucrs.br
+adriano1mg@gmail.com

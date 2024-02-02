@@ -8,7 +8,7 @@
         "PRE_SRC_CMD": "",
         "POST_SRC_CMD": "",
         "MACROS": "",
-        "EXTRA_MACROS": "",
+        "EXTRA_MACROS": "-DNO_UPL",
         "PKG-CONFIG": {
                 "myPKG": ""
         },
@@ -16,7 +16,7 @@
                 "UPL": "-I $SPB_HOME/libs/upl/include/upl/"
         },
         "LIBS": {
-                "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
+                "UPL" : ""
         },
         "LDFLAGS": "",
         "EXTRA_LDFLAGS": ""

@@ -29,7 +29,9 @@
 import sys
 import os
 
-from src.utils import *
+from src.utils.dict import *
+from src.utils.usage import *
+from src.utils.shell import *
 
 #delete a single registry entry
 def delete_reg_func(spbench_path, args):
@@ -51,7 +53,7 @@ def delete_reg_func(spbench_path, args):
     print(color.BOLD + "                            >> WARNING <<                         " + color.END)
     print(" ---------------------------------------------------------------")
     print("\n This option will delete all files related to this benchmark.")
-    print("\n Please, double check the benchmark to delete bellow before proceeding.")
+    print("\n Please, double check the benchmark to delete below before proceeding.")
     print("\n Benchmark info:")
     print(" - Bench ID: " + bench_id)
     print(" - Base app: " + app_id)
@@ -76,7 +78,7 @@ def delete_benchmark(spbench_path, args):
     dir_to_remove = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id + "/" + bench_id + "/"
 
     if dirExists(dir_to_remove):
-        runShellCmd("rm -r " + dir_to_remove)
+        runShellCmd("rm -rf " + dir_to_remove)
 
     registry_dic = getBenchRegistry(spbench_path)
 
@@ -86,11 +88,24 @@ def delete_benchmark(spbench_path, args):
     # if there is no other benchmark related to this PPI, remove also the PPI directory
     ppi_dir = spbench_path + "/benchmarks/" + app_id + "/" + ppi_id
     if dirExists(ppi_dir):
-        directory = os.listdir(ppi_dir) 
+        directory = os.listdir(ppi_dir) # content of the directory
         if len(directory) == 0: 
             runShellCmd("rm -r " + ppi_dir)
-            # remove also the PPI key from registry
-            del registry_dic[app_id][ppi_id]
+
+    # remove also the PPI key from registry, if any
+    if len(registry_dic[app_id][ppi_id]) == 0:
+        del registry_dic[app_id][ppi_id]
+
+    # if there is no other benchmark related to this app, remove also the app directory from benchmarks/
+    app_dir = spbench_path + "/benchmarks/" + app_id
+    if dirExists(app_dir):
+        directory = os.listdir(app_dir) # content of the directory
+        if len(directory) == 0: 
+            runShellCmd("rm -r " + app_dir)
+
+    # remove also the app key from registry, if any
+    if len(registry_dic[app_id]) == 0:
+        del registry_dic[app_id]
 
     # remove the binary
     bin_path = spbench_path + "/bin/" + app_id + "/" + ppi_id + "/" + bench_id

@@ -31,17 +31,20 @@ import os
 import datetime
 
 from src.errors import *
-from src.utils import *
+from src.utils.shell import *
+from src.utils.dict import *
+from src.utils.utils import *
 
 from sys import version_info 
 python_3 = version_info[0]
 
 def execute_func(spbench_path, args):
     
-    is_range = False
+    
+    is_range = False # range of threads x:y:z
     nthreads = ["1"]
 
-    inputs_registry_dic = getInputsRegistry(spbench_path) 
+    inputs_registry_dic = getInputsRegistry(spbench_path)
 
     # get list of selected benchmarks to run
     benchmarks_to_run = registryDicToList(filterRegistry(getBenchRegistry(spbench_path), args))
@@ -52,7 +55,7 @@ def execute_func(spbench_path, args):
         for input_id in sub_list:
             inputs_ID_list.append(input_id)
             
-    
+    # run each of the selected benchmarks
     for benchmark in benchmarks_to_run:
         app_id = benchmark["app_id"]
         ppi_id = benchmark["ppi_id"]
@@ -66,6 +69,14 @@ def execute_func(spbench_path, args):
 
             sys.exit()
         
+        # check if exists registered inputs for the base application
+        if app_id not in inputs_registry_dic:
+            print("\n  Error! No registered inputs for benchmarks based on \'" + app_id + "\' application.")
+            print("  You can run \'./spbench list-inputs\' to see the registered inputs.")
+            print("  You can also run \'./spbench new-input -h\' to register a new input.\n")
+            sys.exit()
+
+        # check if the selected input ID exists
         inputs_dic = inputs_registry_dic[app_id]
         input_list = []
         for key in inputs_ID_list:

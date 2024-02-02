@@ -26,8 +26,8 @@
  ##############################################################################
 ##
 
-from src.utils import *
-from src.make_gen import *
+from src.utils.dict import *
+from src.codeGenerators.make_gen import *
 
 def update_func(spbench_path, args):
 

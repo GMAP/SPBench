@@ -27,13 +27,9 @@
 ##
 
 import sys
-import os
 
-from src.utils import *
+from src.utils.shell import *
 from src.download_inputs_option import *
-
-from sys import version_info 
-python_3 = version_info[0]
 
 def install_func(spbench_path, args):
 
@@ -97,7 +93,7 @@ def install_func(spbench_path, args):
     print(color.BOLD + "                         >> IMPORTANT <<                         " + color.END)
     print(" ---------------------------------------------------------------\n")
     print(" Now you must run \'source setup_vars.sh\'\n to load the libraries.\n")
-    print(" Obs: You must load the libraries before using\n SPBench every time you star a new session!\n")
+    print(" Obs: You must load the libraries before using\n SPBench every time you start a new session!\n")
     
     if download_inputs_flag:
         args.app_id = "all"

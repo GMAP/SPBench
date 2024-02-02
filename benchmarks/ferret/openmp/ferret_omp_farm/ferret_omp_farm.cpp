@@ -17,6 +17,7 @@ In case of questions, please contact via email.
     #define QUEUESIZE 512
 #endif
 
+
 struct data{
 	spb::Item item;
 	bool omp_spar_eos;
@@ -79,11 +80,9 @@ int main(int argc, char *argv[]) {
 	#pragma omp taskgroup
 	{
 		// Stage 1
-		for(int _i=0;_i<1;_i++){
-			#pragma omp task
-			{
-				emitter(queue1);
-			}
+		#pragma omp task
+		{
+			emitter(queue1);
 		}
 		// Stage 2
 		for(int i=0;i < spb::nthreads; i++){
@@ -93,11 +92,9 @@ int main(int argc, char *argv[]) {
 			}
 		}
 		// Stage 3
-		for(int _i=0;_i<1;_i++){
-			#pragma omp task
-			{
-				collector(queue2);
-			}
+		#pragma omp task
+		{
+			collector(queue2);
 		}
 	}
 

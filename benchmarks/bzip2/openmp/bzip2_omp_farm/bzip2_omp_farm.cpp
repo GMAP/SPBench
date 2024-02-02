@@ -104,18 +104,15 @@ void compress(){
 	SParSharedQueue<struct data> * queue1 = new SParSharedQueue<struct data>(QUEUESIZE*spb::nthreads,1);
 	SParSharedQueue<struct data> * queue2 = new SParSharedQueue<struct data>(QUEUESIZE*spb::nthreads,spb::nthreads);
 
-
 	omp_set_num_threads(spb::nthreads+2);
 	#pragma omp parallel shared(queue1,queue2)
 	#pragma omp single nowait
 	#pragma omp taskgroup
 	{
 		// Stage 1
-		for(int _i=0;_i<1;_i++){
-			#pragma omp task
-			{
-				comp_emitter(queue1);
-			}
+		#pragma omp task
+		{
+			comp_emitter(queue1);
 		}
 		// Stage 2
 		for(int i=0;i < spb::nthreads; i++){
@@ -125,14 +122,11 @@ void compress(){
 			}
 		}
 		// Stage 3
-		for(int _i=0;_i<1;_i++){
-			#pragma omp task
-			{
-				comp_collector(queue2);
-			}
+		#pragma omp task
+		{
+			comp_collector(queue2);
 		}
 	}
-
 	spb::Metrics::stop();
 }
 
@@ -209,11 +203,9 @@ void decompress(){
 	#pragma omp taskgroup
 	{
 		// Stage 1
-		for(int _i=0;_i<1;_i++){
-			#pragma omp task
-			{
-				decomp_emitter(queue1);
-			}
+		#pragma omp task
+		{
+			decomp_emitter(queue1);
 		}
 		// Stage 2
 		for(int i=0;i < spb::nthreads; i++){
@@ -223,14 +215,11 @@ void decompress(){
 			}
 		}
 		// Stage 3
-		for(int _i=0;_i<1;_i++){
-			#pragma omp task
-			{
-				decomp_collector(queue2);
-			}
+		#pragma omp task
+		{
+			decomp_collector(queue2);
 		}
 	}
-
 	spb::Metrics::stop();
 }
 

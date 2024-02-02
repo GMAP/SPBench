@@ -29,7 +29,10 @@
 import sys
 import os
 
-from src.utils import *
+from src.utils.utils import *
+from src.utils.dict import *
+from src.utils.shell import *
+
 
 from src.delete_option import delete_benchmark
 
@@ -37,9 +40,9 @@ from sys import version_info
 python_3 = version_info[0]
 
 def new_op_func(spbench_path, args):
-    """!@brief Function for the new command.
+    """!@brief Function for the new operator command.
 
-    This function is used to add a new benchmark to the SPBench suite.
+    This function is used to add a new operator to a given benchmark in the SPBench suite.
 
     @param spbench_path Path of the SPBench root.
     @param args Arguments captured in the argparse methods.

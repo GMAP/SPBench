@@ -17,6 +17,7 @@ In case of questions, please contact via email.
     #define QUEUESIZE 512
 #endif
 
+
 struct data{
 	spb::Item item;
 	bool omp_spar_eos;

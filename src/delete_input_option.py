@@ -28,49 +28,56 @@
 
 import sys
 
-from src.utils import *
+from src.utils.dict import *
+from src.utils.usage import *
 
 # delete a input from the registry
-def del_input_func(spbench_path, args):
-
-    # check if it is not a reserved word
-    if args.input_id in reserved_words:
-        print("\n " + args.input_id + " is a SPBench reserved word")
-        print(" You can not use it to name a benchmark.\n")
-        sys.exit()
+def del_input_func(spbench_path, args, continue_execution = False):
 
     inputs_registry = getInputsRegistry(spbench_path)
 
     # Check if the chosen app exists
     if args.app_id not in inputs_registry:
         print("\n Application \'" + args.app_id + "\' not found!\n")
-        sys.exit()
+        return None if continue_execution else sys.exit()
 
     # check if this input is already registered for this application
-    if args.input_id not in inputs_registry[args.app_id]:
+    if args.input_id != 'all' and args.input_id not in inputs_registry[args.app_id]:
         print("\n Input ID not found for " + args.app_id + "\n")
-        sys.exit()
+        return None if continue_execution else sys.exit()
 
-    print("\n This procedure will completely remove the input from registry.\n")
-    print(" Take in mind that it will not delete the associated input files.\n")
-    print(" Please, double check the data to delete bellow before proceeding.\n")
+    print("\n This procedure will remove the input only from the registry.\n")
+    print(" It will not delete the associated input files from the file system.\n")
+    print(" Please, double check the data to delete below before proceeding.\n")
     print(" Application: " + args.app_id)
-    print("    Input ID: " + args.input_id)
-    print("       Input: " + inputs_registry[args.app_id][args.input_id]["input"])
-    if inputs_registry[args.app_id][args.input_id]["md5_test"]:
-        print(" Testing md5: " + inputs_registry[args.app_id][args.input_id]["md5_test"])
-    else:
-        print(" Testing md5: none")
+    print("    Input ID: " + (args.input_id if args.input_id != 'all' else "all the inputs of this application"))
+    if args.input_id != 'all':
+        print("       Input: " + inputs_registry[args.app_id][args.input_id]["input"])
+        if inputs_registry[args.app_id][args.input_id]["md5_test"]:
+            print(" Testing md5: " + inputs_registry[args.app_id][args.input_id]["md5_test"])
+        else:
+            print(" Testing md5: none")
 
     if not askToProceed():
-        sys.exit()
+        return None if continue_execution else sys.exit()
 
-    # delete input key from the dictionary
-    del inputs_registry[args.app_id][args.input_id]
+    # delete all inputs for the selected application
+    if args.input_id == 'all':
+        del inputs_registry[args.app_id]
+        print("\n All inputs for " + args.app_id + " were deleted from the registry!\n")
+
+    else:
+        # delete input key from the dictionary
+        del inputs_registry[args.app_id][args.input_id]
+
+        # check if the application still has inputs
+        if not bool(inputs_registry[args.app_id]):
+            # delete the application key from the dictionary
+            del inputs_registry[args.app_id]
+
+        print("\n " + args.input_id + " was deleted from the registry!\n")
 
     # write the dictionary to the json registry file      
     writeDicToInputRegistry(spbench_path, inputs_registry)
 
-    print("\n " + args.input_id + " deleted from the registry!\n")
-
-    sys.exit()
+    if not continue_execution: sys.exit()
