@@ -210,8 +210,13 @@ def execute_func(spbench_path, args):
 
         # Check for errors in latency sample interval
         if args.latency_sample_interval:
-            if not args.latency_sample_interval.isdigit():
-                raise ArgumentTypeError("Argument error! Latency sample interval must be an integer number higher than or equal to zero: " + args.latency_sample_interval)
+            if not isPositiveFloat(args.latency_sample_interval):
+                raise ArgumentTypeError("Argument error! Latency sample interval must be a number higher than or equal to zero: " + args.latency_sample_interval)
+            
+        # Check for errors in latency monitor sample interval
+        if args.latency_monitor_sample_interval:
+            if not isPositiveFloat(args.latency_monitor_sample_interval):
+                raise ArgumentTypeError("Argument error! Latency monitor sample interval must be a number higher than or equal to zero: " + args.latency_monitor_sample_interval)
         
         if nsources and args.sample_interval_thr:
             raise ArgumentTypeError("Argument error! -monitor-thread feature is not available for multi-source benchmarks. You can use the -monitor instead!")
@@ -258,6 +263,10 @@ def execute_func(spbench_path, args):
             latency_sample_interval = ''
             if args.latency_sample_interval:
                 latency_sample_interval = " -l" + args.latency_sample_interval
+
+            latency_monitor_sample_interval = ''
+            if args.latency_monitor_sample_interval:
+                latency_monitor_sample_interval = " -L" + args.latency_monitor_sample_interval
                 
             if args.sample_interval:
                 sample_interval = " -m" + args.sample_interval
@@ -298,6 +307,10 @@ def execute_func(spbench_path, args):
             if args.latency_sample_interval:
                 latency_sample_interval = " -l " + args.latency_sample_interval
 
+            latency_monitor_sample_interval = ''
+            if args.latency_monitor_sample_interval:
+                latency_monitor_sample_interval = " -L " + args.latency_monitor_sample_interval
+
             items_frequency = ''
             if args.items_frequency:
                 items_frequency = " -f " + args.items_frequency
@@ -314,7 +327,7 @@ def execute_func(spbench_path, args):
         if args.exec_arguments:
             exec_arguments = exec_arguments.join(args.exec_arguments) # join the input argument with the remaining arguments
 
-        exec_arguments = input_id + batch_size + batch_interval + sample_interval + items_frequency + frequency_pattern + latency_sample_interval + " " + exec_arguments + other_args
+        exec_arguments = input_id + batch_size + batch_interval + sample_interval + items_frequency + frequency_pattern + latency_sample_interval + latency_monitor_sample_interval + " " + exec_arguments + other_args
 
         # build the execution command line and run it
         cmd_line = spbench_path + "/bin/" + app_id + "/" + ppi_id + "/" + bench_id + exec_arguments + user_args
@@ -499,16 +512,16 @@ def execute_func(spbench_path, args):
                     output_lines = output.splitlines()
                     for line in output_lines:
                         
-                        if("End-to-end latency" in line):
-                            end_latency = line.split()[4]
+                        if("Average =" in line):
+                            end_latency = line.split()[2]
                             if(isPositiveFloat(end_latency)):
                                 latencies.append(float(end_latency))
 
-                        if("Maximum latency" in line):
-                            max_latency = line.split()[4]
+                        if("Maximum =" in line):
+                            max_latency = line.split()[2]
 
-                        if("Minimum latency" in line):
-                            min_latency = line.split()[4]
+                        if("Minimum =" in line):
+                            min_latency = line.split()[2]
                         
                         if("Execution time" in line):
                             exec_time = line.split()[4]

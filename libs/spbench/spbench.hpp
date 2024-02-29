@@ -47,6 +47,7 @@
 #include <math.h>
 #include <string.h>
 #include <ctime>
+#include <numeric>
 
 /* queue */
 #pragma once
@@ -85,8 +86,8 @@ void print_average_latency(data_metrics);
 void write_latency(data_metrics);
 void printGeneralUsage();
 
-float instantLatency(float time_window_in_seconds, long sourceId);
-float instantThroughput(float time_window_in_seconds, long sourceId);
+double instantLatency(double time_window_in_seconds, long sourceId);
+double instantThroughput(double time_window_in_seconds, long sourceId);
 
 void item_frequency_control(unsigned long last_source_item_timestamp, float items_reading_frequency);
 
@@ -141,21 +142,18 @@ const struct option long_opts[] = {
 };
 
 struct item_metrics_data {
-	std::vector<double> local_latency;
-	long total_latency;
-	long item_timestamp;
-	long item_sink_timestamp;
+	std::vector<std::chrono::duration<double>> local_latency;
+	std::chrono::duration<double> total_latency{};
+	std::chrono::high_resolution_clock::time_point item_timestamp{};
+	std::chrono::high_resolution_clock::time_point item_sink_timestamp{};
 	long batch_size;
 	item_metrics_data():
-		total_latency(0),
-		item_timestamp(0),
-		item_sink_timestamp(0),
 		batch_size(0)
 	{}
 };
 
 struct monitor_data{
-	float timestamp;
+	std::chrono::high_resolution_clock::time_point timestamp{};
 	float cpu_usage;
 	ssize_t mem_usage;
 	float instant_latency;
@@ -165,7 +163,6 @@ struct monitor_data{
 	float frequency;
 	int batch_size;
 	monitor_data():
-		timestamp(0),
 		cpu_usage(0.0),
 		mem_usage(0),
 		instant_latency(0.0),
@@ -180,8 +177,8 @@ struct monitor_data{
 struct data_metrics {
 		int *rapl_fd;
 		int fd_cache;
-		long start_throughput_clock;
-		long stop_throughput_clock; // stores the last time measured by an item at sink
+		std::chrono::high_resolution_clock::time_point start_throughput_clock{};
+		std::chrono::high_resolution_clock::time_point stop_throughput_clock{}; // stores the last time measured by an item at sink
 
 		std::vector<item_metrics_data> latency_vector_ns;
 		long global_batch_counter; //counted at source
@@ -195,7 +192,7 @@ struct data_metrics {
 		
 		/* monitoring variables */
 		std::vector<monitor_data> monitor_vector; //computed at sink
-		long last_measured_time;
+		std::chrono::high_resolution_clock::time_point last_measured_time;
 		
 		int sourceId;
 		std::string source_name;
@@ -203,14 +200,12 @@ struct data_metrics {
 	data_metrics():
 		rapl_fd(NULL),
 		fd_cache(0),
-		start_throughput_clock(0),
-		stop_throughput_clock(0),
 		global_batch_counter(0),
 		global_item_counter(0),
 		batches_at_sink_counter(0),
 		items_at_sink_counter(0),
 		global_latency_acc(0),
-		last_measured_time(current_time_usecs()),
+		last_measured_time(std::chrono::high_resolution_clock::now()),
 		sourceId(0),
 		source_name("unnamed")
 	{}
@@ -268,11 +263,11 @@ public:
 
 	static void frequency_pattern();
 
-	static void item_frequency_control(unsigned long last_source_item_timestamp);
+	static void item_frequency_control(std::chrono::high_resolution_clock::time_point last_source_item_timestamp);
 
 	static void setFrequencyPattern(std::string freq_pattern, float freq_period, float freq_low, float freq_high, float freq_spike = 10);
 
-	static unsigned long pattern_cycle_start_time;
+	static std::chrono::high_resolution_clock::time_point pattern_cycle_start_time;
 	
 	static std::vector<std::string> userArgs;
 	static void setArg(std::string);
@@ -333,12 +328,12 @@ public:
 	static long items_at_source_counter; // items processed at source
 	static std::atomic<long> my_items_at_source_counter; // custom counter for items processed at source
 	static long batches_at_sink_counter;
-	static long global_latency_acc;
-	static long execution_init_clock;
-	static long item_old_time;
+	static std::chrono::duration<double> global_latency_acc;
+	static std::chrono::high_resolution_clock::time_point execution_init_clock;
+	static std::chrono::high_resolution_clock::time_point item_old_time;
 	static long monitoring_sample_interval;
-	static long latency_sample_interval;
-	static long latency_last_sample_time;
+	static float latency_sample_interval;
+	static std::chrono::high_resolution_clock::time_point latency_last_sample_time;
 
 	static std::thread monitor_thread;
 
@@ -346,7 +341,7 @@ public:
 	struct item_metrics_data;
 
 	struct monitor_data{
-		float timestamp;
+		std::chrono::high_resolution_clock::time_point timestamp;
 		float cpu_usage;
 		ssize_t mem_usage;
 		float instant_latency;
@@ -360,17 +355,16 @@ public:
 	struct data_metrics {
 			int *rapl_fd;
 			int fd_cache;
-			unsigned long start_throughput_clock;
-			unsigned long stop_throughput_clock;
+			std::chrono::high_resolution_clock::time_point start_throughput_clock{};
+			std::chrono::high_resolution_clock::time_point stop_throughput_clock{};
 			std::vector<item_metrics_data> latency_vector_ns;
 		data_metrics():
 			rapl_fd(NULL),
-			fd_cache(0),
-			start_throughput_clock(0),
-			stop_throughput_clock(0)
+			fd_cache(0)
 		{}
 	};
 
+	/*
 	struct item_metrics_data {
 		std::vector<double> local_latency;
 		long total_latency;
@@ -381,6 +375,20 @@ public:
 			total_latency(0),
 			item_timestamp(0),
 			item_sink_timestamp(0),
+			batch_size(0)
+		{}
+	};
+	*/
+	struct item_metrics_data {
+		std::vector<std::chrono::duration<double>> local_latency;
+		std::chrono::duration<double> total_latency;
+		std::chrono::high_resolution_clock::time_point item_timestamp{};
+		std::chrono::high_resolution_clock::time_point item_sink_timestamp{};
+		long batch_size;
+		item_metrics_data():
+			total_latency(0.0),
+	//		item_timestamp(0.0),
+	//		item_sink_timestamp(0.0),
 			batch_size(0)
 		{}
 	};
@@ -411,15 +419,21 @@ public:
 		return item_metrics_data();
 	}
 
-	static float getAverageLatency(){
-		return batches_at_sink_counter > 0? ((global_latency_acc/batches_at_sink_counter) / 1000.0) : 0.0;
+	static double getAverageLatency(){
+		return batches_at_sink_counter > 0? ((global_latency_acc.count()/batches_at_sink_counter)) : 0.0;
 	}
-	static float getAverageThroughput(){
-		return items_at_sink_counter/((current_time_usecs() - execution_init_clock)/1000000.0);
+	static double getAverageThroughput(){
+
+		std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed_time_since_starting = now - execution_init_clock;
+
+		//return items_at_sink_counter/((current_time_usecs() - execution_init_clock)/1000000.0);
+		return elapsed_time_since_starting.count() > 0.0 ? items_at_source_counter/elapsed_time_since_starting.count() : 0.0;
+		// items_at_sink_counter is more accurate, but does not work well for applications that drop items
 	}
 
-	static float getInstantThroughput(float time_window_in_seconds);
-	static float getInstantLatency(float time_window_in_seconds);
+	static double getInstantThroughput(double time_window_in_seconds);
+	static double getInstantLatency(double time_window_in_seconds);
 
 	static float getCPUUsage();
 	static float getMemoryUsage();
@@ -430,30 +444,37 @@ public:
 	static void enable_throughput(){ throughput = true; }
 	static bool throughput_is_enabled(){ return throughput; }
 
-	static void enable_monitoring(){ monitoring = true; }
-	static bool monitoring_is_enabled(){ return monitoring; }
-
-	static void enable_monitoring_thread(){ monitoring_thread = true; }
-	static bool monitoring_thread_is_enabled(){ return monitoring_thread; }
-	static void start_monitoring(){ monitor_thread = std::thread(monitor_metrics_thread); }
-
-	static void enable_latency(long sample_interval){
-		latency = true; 
-		latency_sample_interval = sample_interval * 1000; // convert milliseconds to microseconds, which is the unit used by the timer
+	static void enable_monitoring(){ 
+		monitoring = true;
+		// if monitoring is enabled, latency is also should be enabled
+		if (!latency){
+			latency = true;
+			latency_sample_interval = monitoring_sample_interval;
+		} 
 	}
-	static bool latency_is_enabled(){ return latency; }
-	static long get_latency_sample_interval(){ return latency_sample_interval / 1000; } // convert microseconds to milliseconds
+	static bool monitoring_is_enabled(){ return monitoring; }
+	static void enable_monitoring_thread(){ monitoring_thread = true; }
 
 	static void set_monitoring_sample_interval(long _monitoring_sample_interval){monitoring_sample_interval = _monitoring_sample_interval;}
 	static unsigned long get_monitoring_sample_interval(){ return monitoring_sample_interval; }
 
-	static void enable_print_latency(long sample_interval){
+	static bool monitoring_thread_is_enabled(){ return monitoring_thread; }
+	static void start_monitoring(){ monitor_thread = std::thread(monitor_metrics_thread); }
+
+	static void enable_latency(float sample_interval){
+		latency = true; 
+		latency_sample_interval = sample_interval;
+	}
+	static bool latency_is_enabled(){ return latency; }
+	static float get_latency_sample_interval(){ return latency_sample_interval; }
+
+	static void enable_print_latency(float sample_interval){
 		print_latency = true;
 		enable_latency(sample_interval);
 	}
 	static bool print_latency_is_enabled(){ return print_latency; }
 
-	static void enable_latency_to_file(long sample_interval){
+	static void enable_latency_to_file(float sample_interval){
 		latency_to_file = true;
 		enable_latency(sample_interval);
 	}
@@ -590,14 +611,14 @@ class NsItem {
 /* This class implements the batch infrastructure for the items */
 class Batch {
 	public:
-		std::vector<double> latency_op;
-		unsigned long timestamp;
+		std::vector<std::chrono::duration<double>> latency_op;
+		std::chrono::high_resolution_clock::time_point timestamp{};
 		int batch_size;
 		int batch_index;
 
 		Batch(int operators):
 			//latency_op(operators, 0.0),
-			timestamp(0.0),
+//			timestamp(0.0),
 			batch_size(0),
 			batch_index(0)
 		{};
@@ -701,16 +722,16 @@ class SuperSource{
 			return sourceDepleted;
 		}
 
-		float getInstantThroughput(float time_window_in_seconds){
+		double getInstantThroughput(double time_window_in_seconds){
 			return sourceDepleted ? 0.0 : instantThroughput(time_window_in_seconds, sourceId);
 		}
-		float getAverageThroughput(){
-			return sourceDepleted ? 0.0 : metrics_vec[sourceId].items_at_sink_counter /((current_time_usecs() - metrics_vec[sourceId].start_throughput_clock)/1000000.0);
+		double getAverageThroughput(){
+			return sourceDepleted ? 0.0 : metrics_vec[sourceId].items_at_sink_counter /(std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - metrics_vec[sourceId].start_throughput_clock).count());
 		}
-		float getInstantLatency(float time_window_in_seconds){
+		double getInstantLatency(double time_window_in_seconds){
 			return sourceDepleted ? 0.0 : instantLatency(time_window_in_seconds, sourceId);
 		}
-		float getAverageLatency(){
+		double getAverageLatency(){
 			if(metrics_vec[sourceId].batches_at_sink_counter <= 0){
 				return 0.0;
 			}

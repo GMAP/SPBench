@@ -79,7 +79,8 @@ void input_parser(char * input){
 		input_id = split_string(input, ' ')[1];
 
 	if(!file_exists(input_file)) throw std::invalid_argument("\n ERROR --> Input file not found: " + split_string(input, ' ')[0] + "\n");
-	if(!iteractions > 0) throw std::invalid_argument("\n ERROR --> Dataset iteractions value must be higher than zero: " + split_string(input, ' ')[0] + "\n");
+
+	if(!(iteractions > 0)) throw std::invalid_argument("\n ERROR --> Dataset iteractions value must be higher than zero: " + split_string(input, ' ')[0] + "\n");
 }
 
 /**
@@ -218,7 +219,7 @@ void set_operators_name(){
 	SPBench::addOperatorName("Sink     ");
 }
 
-long Source::source_item_timestamp = current_time_usecs();
+std::chrono::high_resolution_clock::time_point Source::source_item_timestamp = std::chrono::high_resolution_clock::now();
 
 /**
  * Function to execute the source operator
@@ -234,14 +235,15 @@ bool Source::op(Item &item){
 	//}
 
 	// frequency control mechanism
-	SPBench::item_frequency_control(source_item_timestamp);
+	//SPBench::item_frequency_control(source_item_timestamp);
 
-	item.timestamp = source_item_timestamp = current_time_usecs();
+	item.timestamp = source_item_timestamp = std::chrono::high_resolution_clock::now();
 	//unsigned long batch_elapsed_time = source_item_timestamp;
 	
-	unsigned long latency_op;
+	//unsigned long op_timestamp1;
+	std::chrono::high_resolution_clock::time_point op_timestamp1;
 	if(Metrics::latency_is_enabled()){
-		latency_op = source_item_timestamp;
+  		op_timestamp1 = item.timestamp;
 	}
 
 	//while(1) { //main source loop
@@ -264,7 +266,9 @@ bool Source::op(Item &item){
 			//break;
 		//}
 
-	if((current_time_usecs() - Metrics::metrics.start_throughput_clock) / 1000000.0 >= iteractions){
+	std::chrono::duration<double> source_elapsed_time = std::chrono::duration_cast<std::chrono::duration<double>>(item.timestamp - Metrics::metrics.start_throughput_clock);
+
+	if(source_elapsed_time.count() >= iteractions){
 		return false;
 	}
 
@@ -282,7 +286,7 @@ bool Source::op(Item &item){
 //	item.index = Metrics::items_at_source_counter;
 	//item.item_batch.resize(item.batch_size+1);
 	//item.item_batch[item.batch_size] = item_data;
-	//item.batch_size++;
+	item.batch_size++;
 	//Metrics::items_at_source_counter++;
 
 	//}
@@ -294,7 +298,8 @@ bool Source::op(Item &item){
 
 	if(Metrics::latency_is_enabled()){
 		//item.latency_op.push_back(current_time_usecs() - latency_op);
-		item.latency_op.push_back(current_time_usecs() - latency_op);
+		std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
+		item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(op_timestamp2 - op_timestamp1));
 	}
 
 	//item.batch_index = Metrics::batch_counter;
@@ -313,10 +318,12 @@ void Sink::op(Item &item){
 	
 	if(item.record.empty()) return;
 
-	unsigned long latency_op;
-	if(Metrics::latency_is_enabled()){
-		latency_op = current_time_usecs();
-	}	
+	#if !defined NO_LATENCY
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+			op_timestamp1 = std::chrono::high_resolution_clock::now();
+		}
+	#endif
 
 	//when 'in-memory', do nothing here, the result is already ready on the output vector
 	//if not in-memory, then retrieve the data from itens and write it on the disk
@@ -336,35 +343,47 @@ void Sink::op(Item &item){
 	
 	Metrics::batches_at_sink_counter++;
 
-	if(Metrics::latency_is_enabled()){
-		unsigned long current_time_sink = current_time_usecs();
-		
-		//std::cout << item.timestamp << " - " << Metrics::latency_last_sample_time << " = " << item.timestamp - Metrics::latency_last_sample_time << " sample:" << Metrics::latency_sample_interval << std::endl;
+	#if !defined NO_LATENCY
+		if(Metrics::latency_is_enabled()){
+			//unsigned long current_time_sink = current_time_usecs();
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
 
-		//if(Metrics::items_at_sink_counter > 30) exit(0);
+			//std::cout << item.timestamp << " - " << Metrics::latency_last_sample_time << " = " << item.timestamp - Metrics::latency_last_sample_time << " sample:" << Metrics::latency_sample_interval << std::endl;
 
-		if(item.timestamp - Metrics::latency_last_sample_time >= Metrics::latency_sample_interval){
+			//if(Metrics::items_at_sink_counter > 30) exit(0);
 
-			Metrics::latency_last_sample_time = current_time_sink;
+			std::chrono::duration<double, std::milli> elapsed_time_since_last_sample = op_timestamp2 - Metrics::latency_last_sample_time;
 
-			item.latency_op.push_back(current_time_sink - latency_op);
+			//std::cout << "elapsed_time_since_last_sample: " << elapsed_time_since_last_sample.count() << " " << Metrics::latency_sample_interval << std::endl;
 
-			unsigned long total_item_latency = (current_time_sink - item.timestamp);
+			if(elapsed_time_since_last_sample.count() >= Metrics::latency_sample_interval){
 
-			if(total_item_latency > 0){
-				Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
+				Metrics::latency_last_sample_time = op_timestamp2;
 
-				auto latency = Metrics::Latency_t();
-				latency.local_latency = item.latency_op;
-				latency.total_latency = total_item_latency;
-				latency.item_timestamp = item.timestamp;
-				latency.item_sink_timestamp = current_time_sink;
-				latency.batch_size = item.batch_size;
-				Metrics::latency_vector.push_back(latency);
-				item.latency_op.clear();
+				item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(op_timestamp2 - op_timestamp1));
+
+				std::chrono::duration<double, std::milli> total_item_latency = op_timestamp2 - item.timestamp;
+
+				if(total_item_latency.count() > 0.0){
+					Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
+
+					// print total item latency in milliseconds
+					//auto dadad = std::chrono::duration_cast(total_item_latency);
+					//std::cout << "Total item latency: " << total_item_latency.count() << " ms" << std::endl;
+
+					auto latency = Metrics::Latency_t();
+					latency.local_latency = item.latency_op;
+					latency.total_latency = total_item_latency;
+					latency.item_timestamp = item.timestamp;
+					latency.item_sink_timestamp = op_timestamp2;
+					latency.batch_size = item.batch_size;
+					Metrics::latency_vector.push_back(latency);
+					item.latency_op.clear();
+				}
 			}
 		}
-	}
+	#endif
+
 	if(Metrics::monitoring_is_enabled()){
 		Metrics::monitor_metrics();
 	}

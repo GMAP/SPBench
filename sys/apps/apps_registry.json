@@ -26,5 +26,12 @@
         "num_operators": "6",
         "description": "Content similarity application.",
         "notes": "Benchmark from PARSEC"
+    },
+    "fraud_detection": {
+        "name": "Fraud Detection",
+        "type": "SPBench",
+        "num_operators": "3",
+        "description": "Transaction fraud detection application.",
+        "notes": "Adapted from DSPBench (https://github.com/GMAP/DSPBench)"
     }
 }

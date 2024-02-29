@@ -23,5 +23,5 @@
                 "myLIB_N": "",
                 "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
         },
-        "LDFLAGS": "-lpthread"
+        "LDFLAGS": ""
     }

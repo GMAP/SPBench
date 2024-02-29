@@ -671,9 +671,12 @@ parser_exec.add_argument('-in-memory',
 parser_exec.add_argument('-latency',
     action='store',
     type=str,
+    nargs='?',
     dest='latency_sample_interval',
     required=False,
-    help='Print average latency results (Optional). Usage: [-latency <sample_interval_in_ms>]. Example: \'-latency 100\' takes a latency sample every 100 milliseconds (or as soon as an data item is processed after every 100 ms). Default sample interval: 10')
+    const='10',
+    metavar='<sample interval in milliseconds>',
+    help='Print average latency results (Optional). Usage: [-latency <sample_interval_in_milliseconds>]. Example: \'-latency 10\' takes a latency sample every 10 milliseconds (or as soon as an data item is processed after every 10 ms). Default sample interval: 10 ms')
 
 parser_exec.add_argument('-throughput', 
     action='append_const',
@@ -690,11 +693,14 @@ parser_exec.add_argument('-throughput',
 #     help='Insert a file name to store latency results (Optional)')
 
 parser_exec.add_argument('-latency-monitor', 
-    action='append_const',
-    const="-L",
-    dest='exec_arguments',
+    action='store',
+    type=str,
+    nargs='?',
+    dest='latency_monitor_sample_interval',
     required=False,
-    help='Monitors latency per stage and per item and generates a log file (Optional)')
+    const='10',
+    metavar='<sample interval in milliseconds>',
+    help='Monitors the internal latency of each operator according to the number of samples defined by the sample interval and generates a log file (Optional). Default sample interval: 10 ms')
 
 parser_exec.add_argument('-resource-usage', 
     action='append_const',
