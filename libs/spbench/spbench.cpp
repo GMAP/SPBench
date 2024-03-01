@@ -67,7 +67,9 @@ long Metrics::items_at_source_counter = 0;
 long Metrics::items_at_sink_counter = 0;
 std::atomic<long> Metrics::my_items_at_source_counter(0);
 long Metrics::batches_at_sink_counter = 0;
-std::chrono::duration<double> Metrics::global_latency_acc{};
+
+latency_accumulator Metrics::global_latency_acc;
+
 std::chrono::high_resolution_clock::time_point Metrics::execution_init_clock{};
 std::chrono::high_resolution_clock::time_point Metrics::item_old_time{};
 float Metrics::latency_sample_interval = 0.0;
@@ -706,7 +708,7 @@ double Metrics::getInstantLatency(double time_window_in_seconds){
 	std::chrono::duration<double> window_computed_time_sec{};
 	
 	// if a single item was processed, than return its latency
-	if (latency_vector.size() < 2) return inst_latency / 1000.0;
+	if (latency_vector.size() < 2) return inst_latency * 1000.0;
 	
 	// Sum latencies while computing window is not closed and there is still elements to compute
 	while(1) {
@@ -728,7 +730,7 @@ double Metrics::getInstantLatency(double time_window_in_seconds){
 	if((latency_vector.size() - index) <= 0) return 0.0;
 
 	//std::cout << (last_element_index - index) << " " << window_computed_time_sec  << " " << time_window_in_seconds << std::endl;
-	return (inst_latency / (latency_vector.size() - index)) / 1000.0; //ms
+	return (inst_latency / (latency_vector.size() - index)) * 1000.0; //ms
 }
 
 /**

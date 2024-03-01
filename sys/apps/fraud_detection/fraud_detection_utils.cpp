@@ -365,7 +365,8 @@ void Sink::op(Item &item){
 				std::chrono::duration<double, std::milli> total_item_latency = op_timestamp2 - item.timestamp;
 
 				if(total_item_latency.count() > 0.0){
-					Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
+					Metrics::global_latency_acc.total += total_item_latency; // to compute real time average latency
+					Metrics::global_latency_acc.count++;
 
 					// print total item latency in milliseconds
 					//auto dadad = std::chrono::duration_cast(total_item_latency);

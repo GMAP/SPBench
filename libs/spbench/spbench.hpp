@@ -174,6 +174,43 @@ struct monitor_data{
 	{}
 };
 
+/* 
+ * This struct is used to store and accumulate some data
+ */
+/*template<typename T>
+struct Accumulator {
+    static T total;
+    static long count;
+
+    static void Add(const T& value) {
+        total += value;
+        count++;
+    }
+
+    static double Average() {
+        if (count == 0) {
+            return 0; // Avoid division by zero
+        }
+        return static_cast<double>(total) / count;
+    }
+
+    static void Reset() {
+        total = T();
+        count = 0;
+    }
+};*/
+
+struct latency_accumulator {
+	std::chrono::duration<double, std::milli> total;
+	long count;
+
+	latency_accumulator():
+		total(0.0),
+		count(0)
+	{}
+};
+
+
 struct data_metrics {
 		int *rapl_fd;
 		int fd_cache;
@@ -328,7 +365,7 @@ public:
 	static long items_at_source_counter; // items processed at source
 	static std::atomic<long> my_items_at_source_counter; // custom counter for items processed at source
 	static long batches_at_sink_counter;
-	static std::chrono::duration<double> global_latency_acc;
+	static latency_accumulator global_latency_acc; // latency accumulator with type duration <double>
 	static std::chrono::high_resolution_clock::time_point execution_init_clock;
 	static std::chrono::high_resolution_clock::time_point item_old_time;
 	static long monitoring_sample_interval;
@@ -420,8 +457,10 @@ public:
 	}
 
 	static double getAverageLatency(){
-		return batches_at_sink_counter > 0? ((global_latency_acc.count()/batches_at_sink_counter)) : 0.0;
+		//return batches_at_sink_counter > 0? (global_latency_acc.value_acc.count()/global_latency_acc.sample_counter) : 0.0;
+		return batches_at_sink_counter > 0? (global_latency_acc.total.count()/global_latency_acc.count) : 0.0;
 	}
+
 	static double getAverageThroughput(){
 
 		std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
