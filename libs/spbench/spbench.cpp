@@ -166,18 +166,23 @@ void SPBench::parseCMDLine(int opt, const char * optarg){
 		case 'm':
 			if (Metrics::monitoring_thread_is_enabled())
 				throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
+			if(!isNumber(optarg) || (atoi(optarg) < 0))
+				throw std::invalid_argument("\n ARGUMENT ERROR (-m <sample_interval_ms>) --> Sample interval must be an integer number equal or higher than zero!\n");
 			Metrics::set_monitoring_sample_interval(atoi(optarg));
 			Metrics::enable_monitoring();
 			break;
 		case 'M':
 			if(Metrics::monitoring_is_enabled())
 				throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
+			if(!isNumber(optarg) || (atoi(optarg) < 0))
+				throw std::invalid_argument("\n ARGUMENT ERROR (-M <sample_interval_ms>) --> Sample interval must be an integer number equal or higher than zero!\n");
+
 			Metrics::set_monitoring_sample_interval(atoi(optarg));
 			Metrics::enable_monitoring_thread();
 			break;
 		case 'f':
 			if(!isNumber(optarg) || (atof(optarg) <= 0.0))
-				throw std::invalid_argument("\n ARGUMENT ERROR (-f <frequency>) \n--> Frequency value must be a positive number higher than zero!\n");
+				throw std::invalid_argument("\n ARGUMENT ERROR (-f <items_per_second>) \n--> Frequency value must be a positive number higher than zero!\n");
 			SPBench::setFrequency(atof(optarg));
 			break;
 		case 'F':
@@ -188,7 +193,7 @@ void SPBench::parseCMDLine(int opt, const char * optarg){
 			break;
 		case 'l':
 			if(!isNumber(optarg) || (atof(optarg) < 0.0))
-				throw std::invalid_argument("\n ARGUMENT ERROR (-l <latency_sample_interval_ms>) \n--> Sample interval must be an integer number equal or higher than zero!\n");
+				throw std::invalid_argument("\n ARGUMENT ERROR (-l <latency_sample_interval_us>) \n--> Sample interval must be a number equal or higher than zero!\n");
 			if(Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)){
 				std::cout << "\n Warning: there is already a latency sample interval set as " << Metrics::get_latency_sample_interval() << " microsseconds." << std::endl;
 				std::cout << "          The new latency sample interval will be set as " << atof(optarg) << " microsseconds, set by the \'-latency\' argument." << std::endl;
@@ -197,7 +202,7 @@ void SPBench::parseCMDLine(int opt, const char * optarg){
 			break;
 		case 'L':
 			if(!isNumber(optarg) || (atof(optarg) < 0.0))
-				throw std::invalid_argument("\n ARGUMENT ERROR (-L <latency_sample_interval_ms>) \n--> Sample interval must be an integer number equal or higher than zero!\n");
+				throw std::invalid_argument("\n ARGUMENT ERROR (-L <latency_sample_interval_us>) \n--> Sample interval must be a number equal or higher than zero!\n");
 			if(Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)){
 				std::cout << "\n Warning: there is already a latency sample interval set as " << Metrics::get_latency_sample_interval() << " microsseconds." << std::endl;
 				std::cout << "          The new latency sample interval will be set as " << atof(optarg) << " microsseconds,\n          set by the \'-latency-monitor\' argument." << std::endl;
@@ -468,6 +473,9 @@ void SPBench::item_frequency_control(std::chrono::high_resolution_clock::time_po
 	
 	// Run the pattern computation (if set one) to set the correct items_reading_frequency
 	SPBench::frequency_pattern();
+
+	std::cout << "items_reading_frequency: " << items_reading_frequency << std::endl;
+
 
 	// The time the source toke to process and send the last item
 	std::chrono::duration<double, std::micro> last_source_item_processing_time_us = (std::chrono::high_resolution_clock::now() - last_source_item_timestamp);

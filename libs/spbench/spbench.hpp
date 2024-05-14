@@ -142,11 +142,11 @@ const struct option long_opts[] = {
 };
 
 struct item_metrics_data {
-	std::vector<std::chrono::duration<double>> local_latency;
-	std::chrono::duration<double> total_latency{};
+	std::vector<std::chrono::duration<float>> local_latency;
+	std::chrono::duration<float> total_latency{};
 	std::chrono::high_resolution_clock::time_point item_timestamp{};
 	std::chrono::high_resolution_clock::time_point item_sink_timestamp{};
-	long batch_size;
+	int batch_size;
 	item_metrics_data():
 		batch_size(0)
 	{}
@@ -201,7 +201,7 @@ struct Accumulator {
 };*/
 
 struct latency_accumulator {
-	std::chrono::duration<double, std::milli> total;
+	std::chrono::duration<float, std::milli> total;
 	long count;
 
 	latency_accumulator():
@@ -417,11 +417,11 @@ public:
 	};
 	*/
 	struct item_metrics_data {
-		std::vector<std::chrono::duration<double>> local_latency;
-		std::chrono::duration<double> total_latency;
+		std::vector<std::chrono::duration<float>> local_latency;
+		std::chrono::duration<float> total_latency;
 		std::chrono::high_resolution_clock::time_point item_timestamp{};
 		std::chrono::high_resolution_clock::time_point item_sink_timestamp{};
-		long batch_size;
+		int batch_size;
 		item_metrics_data():
 			total_latency(0.0),
 	//		item_timestamp(0.0),
@@ -650,7 +650,7 @@ class NsItem {
 /* This class implements the batch infrastructure for the items */
 class Batch {
 	public:
-		std::vector<std::chrono::duration<double>> latency_op;
+		std::vector<std::chrono::duration<float>> latency_op;
 		std::chrono::high_resolution_clock::time_point timestamp{};
 		int batch_size;
 		int batch_index;
