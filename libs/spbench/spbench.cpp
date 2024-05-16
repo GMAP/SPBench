@@ -474,9 +474,6 @@ void SPBench::item_frequency_control(std::chrono::high_resolution_clock::time_po
 	// Run the pattern computation (if set one) to set the correct items_reading_frequency
 	SPBench::frequency_pattern();
 
-	std::cout << "items_reading_frequency: " << items_reading_frequency << std::endl;
-
-
 	// The time the source toke to process and send the last item
 	std::chrono::duration<double, std::micro> last_source_item_processing_time_us = (std::chrono::high_resolution_clock::now() - last_source_item_timestamp);
 
