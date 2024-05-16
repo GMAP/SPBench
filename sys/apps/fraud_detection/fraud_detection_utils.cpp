@@ -133,8 +133,6 @@ void init_bench(int argc, char* argv[]){
 					input_parser(optarg);
 					break;
 				case 't':
-				case 'b':
-				case 'B':
 				case 'm':
 				case 'M':
 				case 'f':
@@ -145,8 +143,12 @@ void init_bench(int argc, char* argv[]){
 				case 'T':
 				case 'r':
 				case 'u':
+					// all the above empty cases fall into this option
 					SPBench::parseCMDLine(opt, optarg);
 					break;
+				case 'b':
+				case 'B':
+					throw std::invalid_argument("BATCH OPTION ERROR\n SPBench still does not provide native batching mechanisms with key-by data partitioning support, wich is a requirement of this application. \n You can still use batching in SPBench with the acceleration library of your choice.");
 				case 'h':
 					std::cout << std::endl; 
 					usage(argv[0]);
@@ -159,11 +161,11 @@ void init_bench(int argc, char* argv[]){
 		}
 	} catch(const std::invalid_argument& e) {
 		std::cerr << "exception: " << e.what() << std::endl;
-		printf("You can use -h to see more options.\n");
+		printf(" You can use -h to see more options.\n");
 		exit(1);
 	} catch (const char* msg) {
 		std::cerr << "exception: " << msg << std::endl;
-		printf("You can use -h to see more options.\n");
+		printf(" You can use -h to see more options.\n");
 		exit(1);
 	} catch(...) {
 		std::cout << std::endl; 

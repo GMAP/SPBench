@@ -33,6 +33,7 @@ class Sink;
 
 void init_bench(int argc, char* argv[]);
 void end_bench();
+
 /*
 struct item_data {
 
