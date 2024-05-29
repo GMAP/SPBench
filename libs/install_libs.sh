@@ -2,11 +2,11 @@
 
 DEPENDENCIES=
 
-if [[ "$1" == "lane_detection" ]] || [[ "$1" == "person_recognition" ]]; then
+if [ "$1" = "lane_detection" ] || [ "$1" = "person_recognition" ]; then
     DEPENDENCIES="yasm ffmpeg opencv upl"
-elif [[ "$1" == "ferret" ]]; then
+elif [ "$1" = "ferret" ]; then
     DEPENDENCIES="gsl jpeg upl"
-elif [[ "$1" == "bzip2" ]]; then
+elif [ "$1" = "bzip2" ]; then
     DEPENDENCIES="bzlib upl"
 else
     DEPENDENCIES="bzlib yasm ffmpeg opencv gsl jpeg upl"
@@ -24,31 +24,31 @@ prompt_users() {
             echo "Trying to install the remaining libraries..."
             ;;
         2)
-			echo "Exiting the installation..."
-			exit 1
-			;;
+            echo "Exiting the installation..."
+            exit 1
+            ;;
         *)
-			echo ""
+            echo ""
             echo " ERROR: INVALID CHOICE!"
-			echo ""
-			sleep 1
-			if ! prompt_user; then
-				cd $THIS_DIR
-				return 1
-			fi
+            echo ""
+            sleep 1
+            if ! prompt_users; then
+                cd "$THIS_DIR"
+                return 1
+            fi
             ;;
     esac
-	return 0
+    return 0
 }    
 
 # Iterate the string variable using for loop
 for val in $DEPENDENCIES; do
 
-    THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+    THIS_DIR=$(cd "$(dirname "$0")" && pwd)
     echo "---------------------------------------"
     echo " Installing $val..."
     echo "---------------------------------------"
-    if ! source $THIS_DIR/$val/'setup_'$val'.sh'; then
+    if ! . "$THIS_DIR/$val/setup_$val.sh"; then
         echo "*************** ERROR *****************"
         echo ""
         echo " SPBench failed to install $val. Please check the error messages above."
@@ -56,12 +56,15 @@ for val in $DEPENDENCIES; do
         echo " The $val library can be found at $THIS_DIR/$val. You can try to install it manually."
         echo ""
         echo "***************************************"
-        prompt_users
-        
+        if ! prompt_users; then
+            cd "$THIS_DIR"
+            return 1
+        fi
     fi
-    source 'setup_'$val'_vars.sh'
+    . "$THIS_DIR/setup_${val}_vars.sh"
 
     cd ..
 
     echo "DONE!"
 done
+

@@ -1,3 +1,7 @@
+* v0.5.1-alpha
+  - [New feature] Added the NO_LATENCY compiling macro support: now, users can compile the benchmarks with the NO_LATENCY macro completely disable latency monitoring. This can be useful for avoiding possible overheads when evaluating applications with massive data item throughput and when users are interested only in evaluating throughput.
+  - [CLI update] The shell scripts used by the 'install' command to install the libraries were improved. Now they are more robust, more verbose, offer more options, and more portable. The commands now are supported for all the main shells (e.g. bash, ksh, zsh, and sh).
+
 * v0.5-alpha
   - [New feature] Added a new command to the CLI: 'new-app'. This command allows users to create a new application from scratch. It will create a new folder inside the 'SPBench/sys/apps/' folder with the name provided by the user. Inside this folder, it will create a toy application with a basic structure which users can use as template.
   - [New feature] Added a new command to the CLI: 'delete-app'. This command allows users to delete an application from the 'SPBench/sys/apps/' folder and from the registry, as well as all benchmarks associated with it and registered inputs. 

@@ -1,9 +1,20 @@
 #!/bin/bash
 
-THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+THIS_DIR=$(cd "$(dirname "$0")" && pwd)
 cd $THIS_DIR
 
-wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.xz
+if [ ! -f "upl.tar.xz" ]; then
+    wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.xz
+fi
 
-tar -xf upl.tar.xz
-rm upl.tar.xz
+if ! tar -xf upl.tar.xz; then
+    echo "Failed to extract upl.tar.xz"
+    echo "Trying to download it again..."
+    rm -rf upl.tar.xz
+    wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.xz
+fi
+
+if ! tar -xf upl.tar.xz; then
+    echo "Failed to extract upl.tar.xz"
+    exit 1
+fi
