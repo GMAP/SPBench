@@ -1,7 +1,4 @@
-#!/bin/bash
-
-THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-cd $THIS_DIR
+#!/bin/sh
 
 DEPENDENCIES=
 
@@ -15,14 +12,56 @@ else
     DEPENDENCIES="bzlib yasm ffmpeg opencv gsl jpeg upl"
 fi
 
+# Function to prompt the user for input
+prompt_users() {
+    echo "Please select an option:"
+    echo " 1) Proceed with the installation of the next libraries (WARNING: This may cause errors if the libraries depend on this one!)."
+    echo " 2) Stop the libraries installation."
+    echo "Enter your choice: "
+    read choice
+    case $choice in
+        1)
+            echo "Trying to install the remaining libraries..."
+            ;;
+        2)
+			echo "Exiting the installation..."
+			exit 1
+			;;
+        *)
+			echo ""
+            echo " ERROR: INVALID CHOICE!"
+			echo ""
+			sleep 1
+			if ! prompt_user; then
+				cd $THIS_DIR
+				return 1
+			fi
+            ;;
+    esac
+	return 0
+}    
+
 # Iterate the string variable using for loop
 for val in $DEPENDENCIES; do
+
+    THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
     echo "---------------------------------------"
     echo " Installing $val..."
     echo "---------------------------------------"
-    cd $val
-    bash 'setup_'$val'.sh'
+    if ! source $THIS_DIR/$val/'setup_'$val'.sh'; then
+        echo "*************** ERROR *****************"
+        echo ""
+        echo " SPBench failed to install $val. Please check the error messages above."
+        echo ""
+        echo " The $val library can be found at $THIS_DIR/$val. You can try to install it manually."
+        echo ""
+        echo "***************************************"
+        prompt_users
+        
+    fi
     source 'setup_'$val'_vars.sh'
+
     cd ..
+
     echo "DONE!"
 done
