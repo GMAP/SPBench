@@ -3,11 +3,14 @@
 namespace spb{
 void Recognize::op(Item &item){
 
-	Metrics metrics;
-	volatile unsigned long latency_op;
-	if(metrics.latency_is_enabled()){
-		latency_op = current_time_usecs();
-	}
+
+	#if !defined NO_LATENCY
+		Metrics metrics;
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+			op_timestamp1 = std::chrono::high_resolution_clock::now();
+		}
+	#endif
 	unsigned int num_item = 0;
 
 	while(num_item < item.batch_size){ //batch loop

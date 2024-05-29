@@ -19,14 +19,14 @@
             "grppi":"-I $SPB_HOME/ppis/grppi/grppi-0.4.0/include/",
             "grppi_":"-I $SPB_HOME/ppis/grppi/grppi-0.4.0/grppi/include/",
             "tbb": "-I $SPB_HOME/ppis/tbb/tbb/include/",
-            "bzlib":"-I $SPB_HOME/libs/bzlib/include/"
+            "bzlib":"-I $SPB_HOME/libs/bzlib/bzip2-1.0.8/build/include/"
     },
     "LIBS": {
             "myLIB_1": "",
             "myLIB_2": "",
             "myLIB_N": "",
             "tbb"    : "-L $SPB_HOME/ppis/tbb/tbb/ -ltbb",
-            "bzlib"  : "-L $SPB_HOME/libs/bzlib/lib/ -lbz2"
+            "bzlib"  : "-L $SPB_HOME/libs/bzlib/bzip2-1.0.8/build/lib/ -lbz2"
     },
     "LDFLAGS": "-lpthread -fopenmp"
 }

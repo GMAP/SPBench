@@ -2,11 +2,14 @@
 
 namespace spb{
 
-void Segment::op(Item &item){	Metrics metrics;
-	volatile unsigned long latency_op;
-	if(metrics.latency_is_enabled()){
-		latency_op = current_time_usecs();
-	}
+void Segment::op(Item &item){
+	#if !defined NO_LATENCY
+		Metrics metrics;
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+			op_timestamp1 = std::chrono::high_resolution_clock::now();
+		}
+	#endif
 	unsigned int num_item = 0;
 
 	while(num_item < item.batch_size){ //batch loop
@@ -16,9 +19,12 @@ void Segment::op(Item &item){	Metrics metrics;
 		num_item++;
 	}
 	
-	if(metrics.latency_is_enabled()){
-		item.latency_op.push_back(current_time_usecs() - latency_op);
-	}
+	#if !defined NO_LATENCY
+		if(metrics.latency_is_enabled()){
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
+			item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(op_timestamp2 - op_timestamp1));
+		}
+	#endif
 }
 
 }

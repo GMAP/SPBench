@@ -15,7 +15,7 @@
             "myINC_1": "",
             "myINC_2": "",
             "myINC_N": "",
-            "bzlib": "-I $SPB_HOME/libs/bzlib/include/",
+            "bzlib": "-I $SPB_HOME/libs/bzlib/bzip2-1.0.8/build/include/",
             "SHARED_QUEUE" : "-I $SPB_HOME/libs/spar-shared-queue-dev",
             "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
     },
@@ -23,7 +23,7 @@
             "myLIB_1": "",
             "myLIB_2": "",
             "myLIB_N": "",
-            "bzlib": "-L $SPB_HOME/libs/bzlib/lib/ -lbz2",
+            "bzlib": "-L $SPB_HOME/libs/bzlib/bzip2-1.0.8/build/lib/ -lbz2",
             "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
     },
     "LDFLAGS": "-lpthread"

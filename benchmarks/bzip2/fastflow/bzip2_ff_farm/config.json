@@ -16,14 +16,14 @@
             "myINC_2": "",
             "myINC_N": "",
             "ff": "-I $SPB_HOME/ppis/fastflow/",
-            "bzlib": "-I $SPB_HOME/libs/bzlib/include/",
+            "bzlib": "-I $SPB_HOME/libs/bzlib/bzip2-1.0.8/build/include/",
             "UPL" : "-I $SPB_HOME/libs/upl/include/upl/"
     },
     "LIBS": {
             "myLIB_1": "",
             "myLIB_2": "",
             "myLIB_N": "",
-            "bzlib": "-L $SPB_HOME/libs/bzlib/lib/ -lbz2",
+            "bzlib": "-L $SPB_HOME/libs/bzlib/bzip2-1.0.8/build/lib/ -lbz2",
             "UPL" : "-L $SPB_HOME/libs/upl/lib/x86 -lupl"
     },
     "LDFLAGS": "-lpthread"
