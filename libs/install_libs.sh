@@ -1,16 +1,40 @@
 #!/bin/sh
 
+# Function to determine the directory of the currently executed or sourced script
+get_script_dir() {
+    if [ -n "$BASH_SOURCE" ]; then
+        # Bash
+        script="$BASH_SOURCE"
+    elif [ -n "$ZSH_VERSION" ]; then
+        # Zsh
+        script="${(%):-%N}"
+    else
+        # Fallback for other shells
+        script="$0"
+    fi
+
+    # Resolve the absolute path to the script
+    script_dir=$(cd "$(dirname "$script")" && pwd)
+    echo "$script_dir"
+}
+
 DEPENDENCIES=
 
-if [ "$1" = "lane_detection" ] || [ "$1" = "person_recognition" ]; then
-    DEPENDENCIES="yasm ffmpeg opencv upl"
-elif [ "$1" = "ferret" ]; then
-    DEPENDENCIES="gsl jpeg upl"
-elif [ "$1" = "bzip2" ]; then
-    DEPENDENCIES="bzlib upl"
-else
-    DEPENDENCIES="bzlib yasm ffmpeg opencv gsl jpeg upl"
-fi
+# Declare dependencies based on input argument
+case "$1" in
+    lane_detection|person_recognition)
+        DEPENDENCIES=("yasm" "ffmpeg" "opencv" "upl")
+        ;;
+    ferret)
+        DEPENDENCIES=("gsl" "jpeg" "upl")
+        ;;
+    bzip2)
+        DEPENDENCIES=("bzlib" "upl")
+        ;;
+    *)
+        DEPENDENCIES=("bzlib" "yasm" "ffmpeg" "opencv" "gsl" "jpeg" "upl")
+        ;;
+esac
 
 # Function to prompt the user for input
 prompt_users() {
@@ -31,40 +55,38 @@ prompt_users() {
             echo ""
             echo " ERROR: INVALID CHOICE!"
             echo ""
-            sleep 1
-            if ! prompt_users; then
-                cd "$THIS_DIR"
-                return 1
-            fi
+            return 1
             ;;
     esac
     return 0
 }    
 
-# Iterate the string variable using for loop
-for val in $DEPENDENCIES; do
+# Store the original directory
+original_dir=$(get_script_dir)
 
-    THIS_DIR=$(cd "$(dirname "$0")" && pwd)
+# Iterate over the dependencies and attempt to install each one
+for val in "${DEPENDENCIES[@]}"; do
+    
+    cd "$original_dir/$val"
+    
     echo "---------------------------------------"
     echo " Installing $val..."
     echo "---------------------------------------"
-    if ! . "$THIS_DIR/$val/setup_$val.sh"; then
+    if ! . "$original_dir/$val/setup_$val.sh"; then
         echo "*************** ERROR *****************"
         echo ""
         echo " SPBench failed to install $val. Please check the error messages above."
         echo ""
-        echo " The $val library can be found at $THIS_DIR/$val. You can try to install it manually."
+        echo " The $val library can be found at $original_dir/$val. You can try to install it manually."
         echo ""
         echo "***************************************"
-        if ! prompt_users; then
-            cd "$THIS_DIR"
+        prompt_users
+        if [ $? -ne 0 ]; then
+            cd "$original_dir"
             return 1
         fi
     fi
-    . "$THIS_DIR/setup_${val}_vars.sh"
-
-    cd ..
-
+    . $original_dir/$val/setup_${val}_vars.sh
+    cd "$original_dir"
     echo "DONE!"
 done
-

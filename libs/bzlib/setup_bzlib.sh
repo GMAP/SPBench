@@ -1,6 +1,26 @@
 #!/bin/sh
 
-THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+# Function to determine the directory of the currently executed or sourced script
+get_script_dir() {
+    if [ -n "$BASH_SOURCE" ]; then
+        # Bash
+        script="$BASH_SOURCE"
+    elif [ -n "$ZSH_VERSION" ]; then
+        # Zsh
+        script="${(%):-%N}"
+    else
+        # Fallback for other shells
+        script="$0"
+    fi
+
+    # Resolve the absolute path to the script
+    script_dir=$(cd "$(dirname "$script")" && pwd)
+    echo "$script_dir"
+}
+
+# Get the directory of the currently executed script
+THIS_DIR=$(get_script_dir)
+
 cd $THIS_DIR
 
 LIB_FILE=bzip2-1.0.8.tar.gz
@@ -135,6 +155,7 @@ prompt_user() {
     case $choice in
         1)
             echo "Keeping the current installation."
+			cd $THIS_DIR
             ;;
         2)
 			echo "Removing the current installation..."

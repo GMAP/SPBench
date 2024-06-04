@@ -16,5 +16,7 @@ fi
 
 if ! tar -xf upl.tar.xz; then
     echo "Failed to extract upl.tar.xz"
-    exit 1
+    return 1
 fi
+
+return 0
