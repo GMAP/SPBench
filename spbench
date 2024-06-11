@@ -596,7 +596,8 @@ parser_exec.add_argument('-input',
     type=str,
     dest='input_id',
     required=True,
-    help='Input file (mandatory) - You can select more than one for multiple sources apps')
+    metavar='Workload class ID',
+    help='Workload class ID. Workloads in SPBench are defined by an ID or alias. You can run [./spbench list-inputs] to check the available workloads. You can also add a custom workload with the [./spbench new-input] command. You can also select multiple IDs if you are running a multiple sources benchmark.')
 
 parser_exec.add_argument('-nthreads', 
     action='store',
@@ -619,6 +620,7 @@ parser_exec.add_argument('-batch',
     dest='batch_size',
     required=False,
     default='',
+    metavar='Batch size',
     help='Batch size. It can be used to set a batch size. Default value: 1. (Optional)')
 
 parser_exec.add_argument('-batch-interval', 
@@ -627,7 +629,8 @@ parser_exec.add_argument('-batch-interval',
     dest='batch_interval',
     required=False,
     default='',
-    help='Batch interval in seconds. It can be used to set a batch size based on a time window. Default value: 0 (0 = disabled). (Optional)')
+    metavar='Batch time size in milliseconds',
+    help='Batch interval in milliseconds. It can be used to set a batch size based on a time window. Default value: 0 (0 = disabled). (Optional)')
     
 parser_exec.add_argument('-monitor', 
     action='store',
@@ -635,6 +638,7 @@ parser_exec.add_argument('-monitor',
     dest='sample_interval',
     required=False,
     default='',
+    metavar='sample interval in milliseconds',
     help='Monitor latency, throughput, CPU and memory usage. You must indicate the monitoring sample interval in milliseconds (e.g. 250. Optional).')
 
 parser_exec.add_argument('-monitor-thread', 
@@ -643,6 +647,7 @@ parser_exec.add_argument('-monitor-thread',
     dest='sample_interval_thr',
     required=False,
     default='',
+    metavar='sample interval in milliseconds',
     help='It does the same as \'-monitor\', but here the monitoring computation runs as an individual thread. You must indicate the monitoring sample interval in milliseconds (e.g. 250. Optional).')
 
 parser_exec.add_argument('-frequency',
@@ -675,7 +680,7 @@ parser_exec.add_argument('-latency',
     dest='latency_sample_interval',
     required=False,
     const='10',
-    metavar='<sample interval in milliseconds>',
+    metavar='sample interval in milliseconds',
     help='Print average latency results (Optional). Usage: [-latency <sample_interval_in_milliseconds>]. Example: \'-latency 10\' takes a latency sample every 10 milliseconds (or as soon as an data item is processed after every 10 ms). Default sample interval: 10 ms')
 
 parser_exec.add_argument('-throughput', 
