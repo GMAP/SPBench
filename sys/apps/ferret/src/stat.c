@@ -21,7 +21,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include <stdio.h>
 #include <stdlib.h> 
 #include <math.h> 
-#include <values.h>
+#include <limits.h>
+#include <float.h>
 #include <cass_stat.h>
 
 #ifdef _OPENMP
@@ -83,8 +84,8 @@ stat_reset(stat_t *ret)
 	ret->sum = 0; 
 	ret->sum2 = 0; 
 	ret->cnt = 0; 
-	ret->max = MINFLOAT;
-	ret->min = MAXFLOAT;
+	ret->max = FLT_MIN;
+	ret->min = FLT_MAX;
 } 
 
 static inline void

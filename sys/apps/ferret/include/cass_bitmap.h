@@ -21,7 +21,7 @@
 #define bittest(map, bit)	((map)[bitbyte(bit)]&bitmask(bit))
 #define bitisset(map, bit)	((map)[bitbyte(bit)]&bitmask(bit))
 #define bitisclear(map, bit)	(((map)[bitbyte(bit)]&bitmask(bit))==0)
-#define bitset(map, bit)	((map)[bitbyte(bit)] |= bitmask(bit))
+#define cass_bitset(map, bit)	((map)[bitbyte(bit)] |= bitmask(bit))
 #define bitclear(map, bit)	((map)[bitbyte(bit)] &= ~bitmask(bit))
 
 typedef struct bitmap_t {

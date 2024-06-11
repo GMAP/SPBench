@@ -23,6 +23,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #endif
 #include <cass.h>
 #include <cass_timer.h>
+#include <limits.h>
+#include <float.h>
 #include "LSH.h"
 
 static inline int prime (int n)

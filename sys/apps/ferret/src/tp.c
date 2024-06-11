@@ -20,7 +20,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 /* Transportation problem solver */
 #include <assert.h>
 #include <stdlib.h>
-#include <values.h>
+#include <limits.h>
+#include <float.h>
 #include <cass.h>
 
 struct sol

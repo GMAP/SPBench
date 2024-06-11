@@ -20,6 +20,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include <math.h>
 #include "LSH.h"
 #include <cass_topk.h>
+#include <limits.h>
+#include <float.h>
 #include "local.h"
 
 #define ptb_vec_ge(a,b)	((a)->key >= (b)->key)

@@ -135,7 +135,7 @@ bitmap_insert(bitmap_t *map, uint32_t item)
 	if(bitisset(map->vec, item) == 0)
 		map->count++;
 
-	bitset(map->vec, item);
+	cass_bitset(map->vec, item);
 
 	return 0;
 }

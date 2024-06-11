@@ -4,7 +4,7 @@ ARCH = parsec
 
 CFLAGS += -O3
 
-LDLIBS += `pkg-config --cflags --libs gsl` $(LIBS) -lrt -lm -lcass -lgsl -lgslcblas -ljpeg -lstdc++ `pkg-config --cflags --libs libjpeg`
+LDLIBS += `pkg-config --cflags --libs gsl` $(LIBS) -lm -lcass -lgsl -lgslcblas -ljpeg -lstdc++ `pkg-config --cflags --libs libjpeg`
 #`pkg-config --cflags --libs gsl` $(LIBS) -lrt -lm -lcass -lgsl -lgslcblas -ljpeg -lstdc++ `pkg-config --cflags --libs libjpeg`
 
 .PHONY:	all clean install dirs tools image server $(OBJDIR)/%.o $(LIBDIR)/libcass.a $(LIBDIR)/libcassimage.a

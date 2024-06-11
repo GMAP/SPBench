@@ -21,7 +21,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <values.h>
+#include <limits.h>
 #include <cass.h>
 
 #define M_STAR	1

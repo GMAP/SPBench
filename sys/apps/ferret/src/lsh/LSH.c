@@ -22,6 +22,13 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include <gsl/gsl_randist.h>
 #include "LSH.h"
 
+// Check if the 'finite' function is available
+#ifdef finite
+    #define MY_ISFINITE(x) finite(x)
+#else
+    #define MY_ISFINITE(x) isfinite(x)
+#endif
+
 extern int LSH_release (cass_table_t *table);
 extern int LSH_dump (cass_table_t *table);
 
@@ -489,7 +496,7 @@ double LSH_est (LSH_est_t *est, double a, double b, int K)
 {
 	int A, B;
 	double alpha, beta;
-	if (!(finite(a) && finite(b))) return 0.0;
+	if (!(MY_ISFINITE(a) && MY_ISFINITE(b))) return 0.0;
 
 	A = (a - est->a_min) / est->a_delta;
 	B = (b - est->b_min) / est->b_delta;
