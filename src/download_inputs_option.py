@@ -31,6 +31,7 @@ import sys
 from src.utils.utils import *
 from src.utils.shell import *
 from src.utils.usage import *
+from src.utils.get_inputs import *
 
 # download the inputs for the SPBench applications 
 def download_inputs_func(spbench_path, args, skip = False):
@@ -43,9 +44,9 @@ def download_inputs_func(spbench_path, args, skip = False):
     else:
         args.app_id = "all"
 
-    overwrite_files=''
-    if args.force:
-        overwrite_files = "force"
+    #overwrite_files=''
+    #if args.force:
+    #    overwrite_files = True
 
     if args.app_id == "all" and args.class_id == "all" and skip == False:
         print("\n Warning: No specific application selected.")
@@ -56,24 +57,25 @@ def download_inputs_func(spbench_path, args, skip = False):
 
     print("\n >> It may take a while to finish <<\n")
     
+    #get_inputs_file = spbench_path + "/inputs/get_inputs.py"
     if args.app_id == "lane_detection" or args.app_id == "all":
-        get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "lane_detection " + args.class_id + " " + overwrite_files
-        runShellCmd("sh " + get_input_cmd)
+        get_inputs_func(spbench_path, "lane_detection", args.class_id, args.force)
+        #runShellCmd("sh " + get_input_cmd)
     
     if args.app_id == "person_recognition" or args.app_id == "all":
-        get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "person_recognition " + "all " + overwrite_files
-        runShellCmd("sh " + get_input_cmd)
+        get_inputs_func(spbench_path, "person_recognition", "all", args.force)
+        #runShellCmd("sh " + get_input_cmd)
 
     if args.app_id == "fraud_detection" or args.app_id == "all":
-        get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "fraud_detection " + "all " + overwrite_files
-        runShellCmd("sh " + get_input_cmd)
+        get_inputs_func(spbench_path, "fraud_detection", "all", args.force)
+        #runShellCmd("sh " + get_input_cmd)
     
     if args.app_id == "ferret" or args.app_id == "all":
-        get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "ferret " + args.class_id + " " + overwrite_files
-        runShellCmd("sh " + get_input_cmd)
+        get_inputs_func(spbench_path, "ferret", args.class_id, args.force)
+        #runShellCmd("sh " + get_input_cmd)
     
     if args.app_id == "bzip2" or args.app_id == "all":
-        get_input_cmd = spbench_path + "/inputs/get_inputs.sh " + "bzip2 " + args.class_id + " " + overwrite_files
-        runShellCmd("sh " + get_input_cmd)
+        get_inputs_func(spbench_path, "bzip2", args.class_id, args.force)
+        #runShellCmd(" " + get_input_cmd)
 
     sys.exit()
