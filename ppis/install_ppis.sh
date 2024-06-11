@@ -1,12 +1,30 @@
-#!/bin/bash
+#!/bin/sh
 
-cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+# Function to determine the directory of the currently executed or sourced script
+get_script_dir() {
+    if [ -n "$BASH_SOURCE" ]; then
+        # Bash
+        script="$BASH_SOURCE"
+    elif [ -n "$ZSH_VERSION" ]; then
+        # Zsh
+        script="${(%):-%N}"
+    else
+        # Fallback for other shells
+        script="$0"
+    fi
+
+    # Resolve the absolute path to the script
+    script_dir=$(cd "$(dirname "$script")" && pwd)
+    echo "$script_dir"
+}
+
+cd $(get_script_dir)
 
 echo "---------------------------------------"
 echo " Installing FastFlow..."
 echo "---------------------------------------"
 cd fastflow
-bash setup_fastflow.sh
+sh setup_fastflow.sh
 cd ..
 echo "DONE!"
 
@@ -14,7 +32,7 @@ echo "---------------------------------------"
 echo " Installing SPAR..."
 echo "---------------------------------------"
 cd SPar
-bash setup_spar.sh
+sh setup_spar.sh
 make
 cd ..
 echo "DONE!"
@@ -23,7 +41,7 @@ echo "---------------------------------------"
 echo " Installing TBB..."
 echo "---------------------------------------"
 cd tbb
-bash setup_tbb.sh
+sh setup_tbb.sh
 cd ..
 echo "DONE!"
 
@@ -31,7 +49,7 @@ echo "---------------------------------------"
 echo " Installing GrPPI..."
 echo "---------------------------------------"
 cd grppi
-bash setup_grppi.sh
+sh setup_grppi.sh
 cd ..
 echo "DONE!"
 
@@ -39,6 +57,6 @@ echo "---------------------------------------"
 echo " Installing WindFlow..."
 echo "---------------------------------------"
 cd WindFlow
-bash setup_windflow.sh
+sh setup_windflow.sh
 cd ..
 echo "DONE!"
