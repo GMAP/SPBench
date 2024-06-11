@@ -8,7 +8,7 @@ The folowing packages are required to install SPBench dependencies:
 - cmake
 - python (tested on python3)
 
-You can run the command bellow to install theses dependencies or ask a system admin.
+You can run the command bellow in a Ubuntu system, for examplo, to install theses dependencies.
 
 `sudo apt-get install -y build-essential pkg-config cmake python3`
 

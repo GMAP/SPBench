@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ -n "$ZSH_VERSION" ]; then
   LIB_DIR="$(cd "$(dirname "${(%):-%N}")" &> /dev/null && pwd)"
