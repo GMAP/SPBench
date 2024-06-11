@@ -118,6 +118,7 @@ T remove_extension(T const & filename)
 	return p > 0 && p != T::npos ? filename.substr(0, p) : filename;
 }
 
+
 /**
  * Struct to support both short and long options from command line
  */
@@ -297,22 +298,11 @@ private:
 public:
 
 	static int getNewOpId();
-
-	static void frequency_pattern();
-
-	static void item_frequency_control(std::chrono::high_resolution_clock::time_point last_source_item_timestamp);
-
-	static void setFrequencyPattern(std::string freq_pattern, float freq_period, float freq_low, float freq_high, float freq_spike = 10);
-
 	static std::chrono::high_resolution_clock::time_point pattern_cycle_start_time;
-	
 	static std::vector<std::string> userArgs;
 	static void setArg(std::string);
-
 	static std::string getArg(int);
-
 	static void parseCMDLine(int, const char *);
-
 	static std::string bench_path; //stores executable name from arg[0] in init_bench()
 
 	SPBench(){}
@@ -323,11 +313,15 @@ public:
 		return current_time_usecs();
 	}
 
+	static void frequency_pattern();
+	static void item_frequency_control(std::chrono::high_resolution_clock::time_point last_source_item_timestamp);
+	static void setFrequencyPattern(std::string freq_pattern, float freq_period, float freq_low, float freq_high, float freq_spike = 10);
 	static void setFrequency(float _items_reading_frequency){items_reading_frequency = _items_reading_frequency;} //usec precision
 	static float getFrequency(){return items_reading_frequency;} //usec precision
 
 	static void setBatchSize(int _batch_size){batch_size = _batch_size;}
 	static int getBatchSize(){return batch_size;}
+	static bool batch_closure(std::chrono::high_resolution_clock::time_point batch_opening_time, int curent_batch_size);
 
 	static void setBatchInterval(float _batch_interval){batch_interval = _batch_interval;}
 	static float getBatchInterval(){return batch_interval;}

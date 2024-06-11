@@ -163,6 +163,7 @@ void SPBench::parseCMDLine(int opt, const char * optarg){
 			if(!isNumber(optarg) || (atof(optarg) <= 0.0))
 				throw std::invalid_argument("\n ARGUMENT ERROR (-B <batch_interval_ms>) \n--> Batch interval must be a number higher than zero!\n");
 			SPBench::setBatchInterval(atof(optarg));
+			break;
 		case 'm':
 			if (Metrics::monitoring_thread_is_enabled())
 				throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
@@ -193,19 +194,19 @@ void SPBench::parseCMDLine(int opt, const char * optarg){
 			break;
 		case 'l':
 			if(!isNumber(optarg) || (atof(optarg) < 0.0))
-				throw std::invalid_argument("\n ARGUMENT ERROR (-l <latency_sample_interval_us>) \n--> Sample interval must be a number equal or higher than zero!\n");
+				throw std::invalid_argument("\n ARGUMENT ERROR (-l <latency_sample_interval_ms>) \n--> Sample interval must be a number equal or higher than zero!\n");
 			if(Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)){
-				std::cout << "\n Warning: there is already a latency sample interval set as " << Metrics::get_latency_sample_interval() << " microsseconds." << std::endl;
-				std::cout << "          The new latency sample interval will be set as " << atof(optarg) << " microsseconds, set by the \'-latency\' argument." << std::endl;
+				std::cout << "\n Warning: there is already a latency sample interval set as " << Metrics::get_latency_sample_interval() << " millisseconds." << std::endl;
+				std::cout << "          The new latency sample interval will be set as " << atof(optarg) << " millisseconds, set by the \'-latency\' argument." << std::endl;
 			}
 			Metrics::enable_print_latency(atof(optarg));
 			break;
 		case 'L':
 			if(!isNumber(optarg) || (atof(optarg) < 0.0))
-				throw std::invalid_argument("\n ARGUMENT ERROR (-L <latency_sample_interval_us>) \n--> Sample interval must be a number equal or higher than zero!\n");
+				throw std::invalid_argument("\n ARGUMENT ERROR (-L <latency_sample_interval_ms>) \n--> Sample interval must be a number equal or higher than zero!\n");
 			if(Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)){
-				std::cout << "\n Warning: there is already a latency sample interval set as " << Metrics::get_latency_sample_interval() << " microsseconds." << std::endl;
-				std::cout << "          The new latency sample interval will be set as " << atof(optarg) << " microsseconds,\n          set by the \'-latency-monitor\' argument." << std::endl;
+				std::cout << "\n Warning: there is already a latency sample interval set as " << Metrics::get_latency_sample_interval() << " millisseconds." << std::endl;
+				std::cout << "          The new latency sample interval will be set as " << atof(optarg) << " millisseconds,\n          set by the \'-latency-monitor\' argument." << std::endl;
 			}
 			Metrics::enable_latency_to_file(atof(optarg));
 			break;
@@ -593,6 +594,24 @@ void SPBench::frequency_pattern(){
 		}
         pattern_cycle_start_time = std::chrono::high_resolution_clock::now();
     }
+}
+
+
+bool SPBench::batch_closure(std::chrono::high_resolution_clock::time_point batch_opening_time, int curent_batch_size){
+	// batching management routines
+	if(SPBench::getBatchInterval()){
+		// Check if the interval of this batch is higher than the batch interval defined by the user
+		std::chrono::duration<float, std::milli> batch_elapsed_time_ms = std::chrono::high_resolution_clock::now() - batch_opening_time;
+		if(batch_elapsed_time_ms.count() >= SPBench::getBatchInterval()) return true;
+	} else {
+		// If no batch interval is set, than try to close it by size
+		if(curent_batch_size >= SPBench::getBatchSize()) return true;
+	}
+	// This couples with batching interval to close the batch by size if a size higher than one is defined
+	if(SPBench::getBatchSize() > 1){
+		if(curent_batch_size >= SPBench::getBatchSize()) return true;
+	}
+	return false;
 }
 
 /**
@@ -1046,9 +1065,9 @@ void compute_metrics(){
 		}
 		
 		if(Metrics::print_latency_is_enabled() || Metrics::throughput_is_enabled()){
-			printf("\n===============================================\n");
-			std::cout << " -> Resulting metrics for source: " << element.source_name << std::endl;
-			printf(  "===============================================\n");
+			printf("\n=============================================================\n");
+			std::cout << "  ->  Resulting metrics for source: " << element.source_name << std::endl;
+			printf("=============================================================\n");
 		}
 
 		#if !defined(NO_UPL)
@@ -1076,7 +1095,7 @@ void compute_metrics(){
 			print_throughput(element);
 		}
 		if(Metrics::print_latency_is_enabled() || Metrics::throughput_is_enabled())
-			printf("-----------------------------------------------\n");
+			printf("---------------------------------------------------------------\n");
 
 		if(Metrics::latency_to_file_is_enabled()){
 			write_latency(element);
@@ -1152,20 +1171,19 @@ void Metrics::print_average_latency(){
 			max_ts = (latency_vector[i].item_sink_timestamp - execution_init_clock);
 		}
 	}
-	printf("\n--------------- AVERAGE LATENCY ---------------\n\n");
-
+	printf("\n----------------------- AVERAGE LATENCY -----------------------\n\n");
 	std::cout << "  Average latency by operator (ms):" << std::endl << std::endl;
 	if(SPBench::get_operator_name_list().size() != latency_vector[0].local_latency.size()){
 		printf("Warning: the list of operator names does not match up the number of analyzed operators.\n");
 		printf("The names will be changed to default names.\n\n");
 		for(unsigned int j = 0; j < operator_aux.size(); j++){
 			std::chrono::duration<double, std::milli> operator_aux_ms = operator_aux[j];
-			printf("\tOperator %d = %f\n", j, (operator_aux_ms.count()/latency_vector.size()));
+			printf("\t\tOperator %d = %f\n", j, (operator_aux_ms.count()/latency_vector.size()));
 		}
 	} else {
 		for(unsigned int j = 0; j < operator_aux.size(); j++){
 			std::chrono::duration<double, std::milli> operator_aux_ms = operator_aux[j];
-			printf("\tOperator %s = %f\n", SPBench::get_operator_name_list()[j].c_str(), (operator_aux_ms.count()/latency_vector.size()));
+			printf("\t\tOperator %s = %f\n", SPBench::get_operator_name_list()[j].c_str(), (operator_aux_ms.count()/latency_vector.size()));
 		}
 	}
 	//std::chrono::duration<double, std::milli> end_to_end_ms = end_to_end_latency;
@@ -1174,14 +1192,14 @@ void Metrics::print_average_latency(){
 
 	std::cout << std::endl << "  End-to-end latency (ms):" << std::endl;
 
-	printf("\n\tAverage = %f (%ld samples)\n", std::chrono::duration<double, std::milli>(end_to_end_latency).count()/latency_vector.size(), latency_vector.size());
-	printf("\tMaximum = %f (at %.1f sec)\n", std::chrono::duration<double, std::milli>(max_latency).count(), max_ts.count());
-	printf("\tMinimum = %f (at %.1f sec)\n", std::chrono::duration<double, std::milli>(min_latency).count(), min_ts.count());
+	printf("\n\t\tAverage = %f (%ld samples)\n", std::chrono::duration<double, std::milli>(end_to_end_latency).count()/latency_vector.size(), latency_vector.size());
+	printf("\t\tMaximum = %f (at %.1f sec)\n", std::chrono::duration<double, std::milli>(max_latency).count(), max_ts.count());
+	printf("\t\tMinimum = %f (at %.1f sec)\n", std::chrono::duration<double, std::milli>(min_latency).count(), min_ts.count());
 
 	//printf("\n  End-to-end latency (ms) = %f\n", (total/latency_vector.size())/1000.0);
 	//printf("\n     Maximum latency (ms) = %f (at %.1f sec)\n", max_latency/1000.0, max_ts/1000000.0);
 	//printf("     Minimum latency (ms) = %f (at %.1f sec)\n", min_latency/1000.0, min_ts/1000000.0);
-	printf("\n-----------------------------------------------\n");
+	printf("\n---------------------------------------------------------------\n");
 }
 
 /**
@@ -1225,7 +1243,7 @@ void print_average_latency(data_metrics metrics){
 			min_ts = (metrics.latency_vector_ns[i].item_sink_timestamp - metrics.latency_vector_ns[0].item_timestamp);
 		}
 	}
-	printf("-------------- AVERAGE LATENCIES --------------\n\n");
+	printf("---------------------- AVERAGE LATENCIES ----------------------\n\n");
 	if(SPBench::get_operator_name_list().size() != metrics.latency_vector_ns[0].local_latency.size()){
 		printf("Warning: the list of operator names does not match up the number of analyzed operators.\n");
 		printf("The names will be changed to default names.\n\n");
@@ -1248,7 +1266,7 @@ void print_average_latency(data_metrics metrics){
 	printf("\n     Maximum latency (ms) = %f\n", max_latency_ms.count());
 	printf("     Minimum latency (ms) = %f\n", min_latency_ms.count());
 	printf("\n  Total number of samples = %ld\n", metrics.latency_vector_ns.size());
-	printf("\n-----------------------------------------------\n");
+	printf("\n---------------------------------------------------------------\n");
 	return;
 }
 
@@ -1261,7 +1279,7 @@ void print_average_latency(data_metrics metrics){
  */
 void Metrics::print_throughput(data_metrics metrics){
 	std::chrono::duration<double> clock = metrics.stop_throughput_clock - metrics.start_throughput_clock;
-	printf("------------------ THROUGHPUT -----------------\n\n");
+	printf("-------------------------- THROUGHPUT -------------------------\n\n");
 /*	printf("         Execution time (sec) = %f\n\n", clock / 1000000.0);
 	if(items_at_source_counter != items_at_sink_counter){
 		printf("     Items sent by the source = %lu\n", items_at_source_counter);
@@ -1276,19 +1294,19 @@ void Metrics::print_throughput(data_metrics metrics){
 		printf(" Batches processed per second = %f\n", batches_at_sink_counter/(clock / 1000000.0));
 	}
 	*/
-	printf("\tExecution time (sec) = %f\n\n", clock.count());
+	printf("\t\tExecution time (sec) = %f\n\n", clock.count());
 	if(my_items_at_source_counter > 0){
-		printf("\tItems processed = %lu\n", (long) my_items_at_source_counter);
-		printf("\tItems-per-second = %f\n\n", (long) my_items_at_source_counter/clock.count());
+		printf("\t\tItems processed = %lu\n", (long) my_items_at_source_counter);
+		printf("\t\tItems-per-second = %f\n\n", (long) my_items_at_source_counter/clock.count());
 	} else {
-		printf("\tItems processed = %lu\n", items_at_source_counter);
-		printf("\tItems-per-second = %f\n\n", items_at_source_counter/clock.count());
+		printf("\t\tItems processed = %lu\n", items_at_source_counter);
+		printf("\t\tItems-per-second = %f\n\n", items_at_source_counter/clock.count());
 	}
 	if(items_at_sink_counter != batches_at_sink_counter){
-		printf("\tBatches processed = %lu\n", batches_at_sink_counter);
-		printf("\tBatches-per-second = %f\n", batches_at_sink_counter/clock.count());
+		printf("\t\tBatches processed = %lu\n", batches_at_sink_counter);
+		printf("\t\tBatches-per-second = %f\n", batches_at_sink_counter/clock.count());
 	}
-	printf("\n-----------------------------------------------\n");
+	printf("\n---------------------------------------------------------------\n");
 }
 
 /**
@@ -1301,7 +1319,7 @@ void Metrics::print_throughput(data_metrics metrics){
  */
 void print_throughput(data_metrics metrics){
 	std::chrono::duration<double> clock = metrics.stop_throughput_clock - metrics.start_throughput_clock;
-	printf("------------------ THROUGHPUT -----------------\n\n");
+	printf("-------------------------- THROUGHPUT ------------------------\n\n");
 	/*printf("\tExecution time (sec) = %f\n\n", (clock / 1000000.0));
 	if(metrics.items_at_source_counter != metrics.items_at_sink_counter){
 		printf("     Items sent by the source = %lu\n", metrics.items_at_source_counter);
@@ -1315,12 +1333,12 @@ void print_throughput(data_metrics metrics){
 		printf("\n            Batches processed = %lu\n", metrics.batches_at_sink_counter);
 		printf(" Batches processed per second = %f\n", metrics.batches_at_sink_counter/(clock / 1000000.0));
 	}*/
-	printf("\tExecution time (sec) = %f\n\n", clock.count());
-	printf("\tItems processed = %lu\n", metrics.items_at_source_counter);
-	printf("\tItems-per-second = %f\n", metrics.items_at_source_counter/clock.count());
+	printf("\t\tExecution time (sec) = %f\n\n", clock.count());
+	printf("\t\tItems processed = %lu\n", metrics.items_at_source_counter);
+	printf("\t\tItems-per-second = %f\n", metrics.items_at_source_counter/clock.count());
 	if(metrics.items_at_sink_counter != metrics.batches_at_sink_counter){
-		printf("\n\tBatches processed = %lu\n", metrics.batches_at_sink_counter);
-		printf("\tBatches-per-second = %f\n", metrics.batches_at_sink_counter/clock.count());
+		printf("\n\t\tBatches processed = %lu\n", metrics.batches_at_sink_counter);
+		printf("\t\tBatches-per-second = %f\n", metrics.batches_at_sink_counter/clock.count());
 	}
 	printf("\n");
 }
