@@ -40,6 +40,8 @@
 #include <dirent.h>
 #include <pthread.h>
 #include <stack>
+#include <float.h>
+#include <limits.h>
 #include "include/cass.h"
 #include "include/cass_timer.h"
 #include "image/image.h"
@@ -148,7 +150,7 @@ public:
 
 class Source{
 public:
-	static long source_item_timestamp;
+	static std::chrono::high_resolution_clock::time_point source_item_timestamp;
 	static bool op(Item &item);
 	Source(){}
 	virtual ~Source(){}
