@@ -359,15 +359,38 @@ def execute_func(spbench_path, args):
         #print("Execution string >> " + cmd_line)
         print("\n Running benchmark: " + bench_id)
         if not nsources and not args.quiet:
-            print("    Selected input: " + inputs_ID_list[0])
-            if batch_size:
-                print("        Batch size: " + args.batch_size + " items per batch")
-            if batch_interval:
-                print("    Batch interval: " + args.batch_interval + " milliseconds")
+            print("---------------------------------------------------------------")
+            print("                     Execution parameters                      ")
+            print("---------------------------------------------------------------")
+            print("               Benchmark name: " + bench_id)
+            print("               Selected input: " + inputs_ID_list[0])
+            print("            Number of threads: " + str(args.nthreads))
+
             if args.exec_arguments and "-I" in args.exec_arguments:
-                print("    In-memory mode: enabled")
+                print("               In-memory mode: enabled")
             else:
-                print("    In-memory mode: not enabled")
+                print("               In-memory mode: not enabled")
+
+            if batch_size:
+                print("                   Batch size: " + args.batch_size + " items per batch")
+            if batch_interval:
+                print("               Batch interval: " + args.batch_interval + " milliseconds")
+
+            if args.latency_sample_interval:
+                print("              Average latency: enabled")
+                print("      Latency sample interval: " + args.latency_sample_interval + " milliseconds")
+            if args.latency_monitor_sample_interval:
+                print("              Latency monitor: enabled")
+                print(" Lat. monitor sample interval: " + args.latency_monitor_sample_interval + " milliseconds")
+            if args.sample_interval:
+                print("                   Monitoring: enabled")
+                print("   Monitoring sample interval: " + args.sample_interval + " milliseconds")
+            if args.sample_interval_thr:
+                print("            Monitoring thread: enabled")
+                print("  Monit. thr. sample interval: " + args.sample_interval_thr + " milliseconds")
+            if args.exec_arguments and "-T" in args.exec_arguments:
+                print("           Average throughput: enabled")
+            
             if frequency_pattern:
                 if(pattern == 'wave'):
                     print("\n Frequency pattern: wave\n")
@@ -409,7 +432,8 @@ def execute_func(spbench_path, args):
                     print("Invalid frequency pattern:", pattern)
                     sys.exit()
             elif args.items_frequency:
-                print("  Target frequency: " + args.items_frequency)
+                print("             Target frequency: " + args.items_frequency)
+            print("---------------------------------------------------------------")
         else:
             if not args.quiet:
                 print("   Selected inputs: ")
@@ -576,7 +600,7 @@ def execute_func(spbench_path, args):
                 # result correctness checking
                 ##
                 if args.test_result:
-                    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                     for input in inputs_ID_list:
                         if not args.quiet:
                             print("\n Checking result correctness for input \'" + input + '\'...\n')
@@ -589,7 +613,8 @@ def execute_func(spbench_path, args):
                                 print("   Run \'./spbench list-inputs\' to check it.")
                                 print("\n - Check the documentation for more info on how\n   to fix it (link)(forthcoming).")
                                 print("\n - Or run \'./spbench edit_input -h\' to associate\n   an verification hash (forthcoming feature).")
-                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
                             continue
                         
                         checking_file = ''
@@ -636,7 +661,7 @@ def execute_func(spbench_path, args):
                                 print(" Incorrect output")
                                 print(" - Expected md5 hash:  " + inputs_registry_dic[app_id][input]['md5_test'])
                                 print(" - Resulting md5 hash: " + resulting_md5)
-                        print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                        print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")    
                     print("")
                 # end of the correcteness checking
 
@@ -659,24 +684,24 @@ def execute_func(spbench_path, args):
                         thr_error = stdev(throughputs)
 
                     if (latencies or exec_times or throughputs) and not args.quiet:
-                        print("*************** RESULTS SUMARY ***************\n")
-                        print("             Benchmark:", bench_id)
-                        print("           Repetitions:", args.repetitions)
+                        print("*********************** RESULTS SUMARY ************************\n")
+                        print("                Benchmark name:", bench_id)
+                        print("                   Repetitions:", args.repetitions)
                         if(latencies):
-                            print("\n       Average latency:", latency_average)
-                            print("     Latency std. dev.:", latency_error)
+                            print("\n               Average latency:", latency_average)
+                            print("             Latency std. dev.:", latency_error)
                         if(throughputs):
-                            print("\n    Average throughput:", thr_average)
-                            print("  Throughput std. dev.:", thr_error)
+                            print("\n            Average throughput:", thr_average)
+                            print("          Throughput std. dev.:", thr_error)
                         if(exec_times):
-                            print("\n    Average exec. time:", exec_time_average)
-                            print("  Exec. time std. dev.:", exec_time_error)
+                            print("\n            Average exec. time:", exec_time_average)
+                            print("          Exec. time std. dev.:", exec_time_error)
 
                         if nsources:
                             print("\n CAUTION: This is a multi-source benchmark.")
                             print("          This summary includes all different")
                             print("          sources and may not be accurate.")
-                        print("\n********************************************")
+                        print("\n*************************************************************")
                 
                     ##
                     # Generate a specific performance log if repetitions and nthreads range are enabled
@@ -700,5 +725,7 @@ def execute_func(spbench_path, args):
                                 str(exec_time_average) + " " + 
                                 str(exec_time_error) + "\n")
                             nth_log_file.truncate()
+                        print("\n -> Performance log saved to: " + range_log_file, end='\n\n')
+
 
     sys.exit()

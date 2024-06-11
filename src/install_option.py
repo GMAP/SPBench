@@ -40,35 +40,43 @@ def install_func(spbench_path, args):
     print("    - build-essential")
     print("    - cmake")
     print("    - python\n")
-    print(" To install them, you can run:\n")
-    print(" sudo apt-get install -y build-essential cmake python3.\n")
-    print(" Or ask a system admin if you don't have sudo access.")
+    print(" To install them on a Ubuntu system, for example, you can run:\n")
+    print(" sudo apt install -y build-essential cmake python3.\n")
     print(" ---------------------------------------------------------------\n")
+
+    YASM_VERSION = "YASM-v1.3.0"
+    FFMPEG_VERSION = "FFMPEG-v3.4.8"
+    OPENCV_VERSION = "OpenCV-v2.4.13.6"
+    BZLIB_VERSION = "BZLIB-v1.0.8"
+    GSL_VERSION = "GSL-v2.6"
+    JPEG_VERSION = "LIBJPEG-TURBO-v1.5.2"
 
     print(" You are installing dependencies for the following\n application:")
     print("\n -> " + args.app_id + "\n")
     if(args.app_id == "lane_detection") or (args.app_id == "person_recognition"):
-        print(" This will install FastFlow, SPar, TBB, yasm, FFMPEG and OpenCV.\n")
+        print(f" This will install {YASM_VERSION}, {FFMPEG_VERSION} and {OPENCV_VERSION}.\n")
         print(" >> It may take several minutes. <<")
     elif(args.app_id == "ferret"):
-        print(" This will install FastFlow, SPar, TBB, GSL and JPEG.\n")
+        print(f" This will install {GSL_VERSION} and {JPEG_VERSION}.\n")
         print(" It may take a few minutes.")
     elif(args.app_id == "bzip2"):
-        print(" This will install FastFlow, SPar, TBB, BZLIB.\n")
+        print(f" This will install {BZLIB_VERSION}.\n")
         print(" It may take a few moments.")
     else:
-        print(" This will install FastFlow, SPar, TBB,\n BZLIB, yasm, FFMPEG, OpenCV, GSL, and JPEG.\n")
+        print(f" This will install {BZLIB_VERSION}, {YASM_VERSION}, {FFMPEG_VERSION}, {OPENCV_VERSION}, {GSL_VERSION}, and {JPEG_VERSION}.\n")
         print(" >> It may take several minutes. <<")
         
     # user input support for python 2 and 3
     if(python_3 == 3):
-        answer = input(color.BOLD + "\n Do you want to proceed with the installation? [yes/no]\n" + color.END)
+        answer = input(color.BOLD + "\n Do you want to proceed with the installation? [yes/no]\n " + color.END)
     else:
-        answer = raw_input(color.BOLD + "\n Do you want to proceed with the installation? [yes/no]\n" + color.END)
+        answer = raw_input(color.BOLD + "\n Do you want to proceed with the installation? [yes/no]\n " + color.END)
 
     if(answer.lower() not in ["y","yes"]):
         print("Installation canceled!\n")
         sys.exit()
+
+    print(" ---------------------------------------------------------------\n")
 
     print(" For running the benchmarks you can use the inputs provided by SPBench.")
     print(" Otherwise, you can use your own inputs.")
@@ -79,15 +87,28 @@ def install_func(spbench_path, args):
     download_inputs_flag = True
     # user input support for python 2 and 3
     if(python_3 == 3):
-        answer = input(color.BOLD + "\n Do you want to download all benchmark inputs now? [yes/no]\n" + color.END)
+        answer = input(color.BOLD + "\n Do you want to download all benchmark inputs now? [yes/no]\n " + color.END)
     else:
-        answer = raw_input(color.BOLD + "\n Do you want to download all benchmark inputs now? [yes/no]\n" + color.END)
+        answer = raw_input(color.BOLD + "\n Do you want to download all benchmark inputs now? [yes/no]\n " + color.END)
 
     if(answer.lower() not in ["y","yes"]):
         download_inputs_flag = False
 
-    runShellCmd('bash ' + spbench_path + '/ppis/install_ppis.sh')
-    runShellCmd('bash ' + spbench_path + '/libs/install_libs.sh ' + args.app_id)
+    print(" ---------------------------------------------------------------\n")
+
+    print(" For running the parallel benchmarks you must also install the\n parallelism libraries (FastFlow, TBB, GrPPI, SPar, WindFlow).")
+    print(f"\n You can install them now or later, running the script in\n \'{spbench_path}/ppis/install_ppis.sh\'")
+
+     # user input support for python 2 and 3
+    if(python_3 == 3):
+        answer = input(color.BOLD + "\n Do you want to download and install the parallelism libraries now? [yes/no]\n " + color.END)
+    else:
+        answer = raw_input(color.BOLD + "\n Do you want to download and install the parallelism libraries now? [yes/no]\n " + color.END)
+
+    if(answer.lower() in ["y","yes"]):
+        runShellCmd('sh ' + spbench_path + '/ppis/install_ppis.sh')
+    
+    runShellCmd('sh ' + spbench_path + '/libs/install_libs.sh ' + args.app_id)
 
     print(" ---------------------------------------------------------------")
     print(color.BOLD + "                         >> IMPORTANT <<                         " + color.END)

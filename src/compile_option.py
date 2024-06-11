@@ -111,10 +111,10 @@ def compile_func(spbench_path, args):
 
         # Avoid using -j for ferret, because it is already used by its submake routine
         make_cmd = ""
-        if app_id == "ferret":
-            make_cmd = ("make -C " + programm_path)
-        else:
-            make_cmd = ("make -C " + programm_path + " -j$(nproc)")
+        #if app_id == "ferret":
+        #    make_cmd = ("make -C " + programm_path)
+        #else:
+        make_cmd = ("make -C " + programm_path + " -j$(nproc)")
         
         # compile the programm
         if(os.WEXITSTATUS(os.system(make_cmd))):
