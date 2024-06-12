@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Function to determine the directory of the currently executed or sourced script
 get_script_dir() {
@@ -26,7 +26,7 @@ case "$1" in
         DEPENDENCIES=("yasm" "ffmpeg" "opencv" "upl")
         ;;
     ferret)
-        DEPENDENCIES=("gsl" "jpeg" "upl")
+        DEPENDENCIES=("yasm" "gsl" "jpeg" "upl")
         ;;
     bzip2)
         DEPENDENCIES=("bzlib" "upl")
