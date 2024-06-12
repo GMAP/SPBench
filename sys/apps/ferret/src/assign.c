@@ -23,6 +23,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include <string.h>
 #include <limits.h>
 #include <cass.h>
+#include <float.h>
 
 #define M_STAR	1
 #define M_PRIME	2
@@ -159,7 +160,7 @@ step4:
 
 step5:
 //	printf("S5\n");
-	min = MAXFLOAT;
+	min = FLT_MAX;
 	for (i = 0; i < n; i++) if (!r_cov[i])
 		for (j = 0; j < n; j++) if (!c_cov[j])
 		{

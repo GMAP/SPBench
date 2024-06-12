@@ -2,10 +2,11 @@
 #define CASS_TYPE
 #include <stdint.h>
 #include <limits.h>
+#include <float.h>
 //typedef union {float f; int32_t i;} cass_featprec_t;
 typedef float cass_dist_t;
 
-#define CASS_DIST_MAX	MAXFLOAT
+#define CASS_DIST_MAX	FLT_MAX
 
 #ifndef uchar
 typedef unsigned char uchar;
