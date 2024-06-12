@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Function to determine the directory of the currently executed or sourced script
 get_script_dir() {
