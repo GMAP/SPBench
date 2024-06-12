@@ -2,12 +2,24 @@ import os
 import subprocess
 import sys
 
+PUB_DATA_URL = "https://gmap.pucrs.br/public_data/spbench/workloads"
+
+
+def download_and_extract(app_id, class_id, tar_file, force):
+
+	if force and os.path.isfile(tar_file):
+		os.remove(tar_file)
+	if not os.path.isfile(tar_file):
+		print(f" Downloading {tar_file}...")
+		subprocess.run(["wget", f"{PUB_DATA_URL}/{app_id}/{tar_file}"])
+	if os.path.isfile(tar_file):
+		print(f" Building {app_id} {class_id} class...")
+		subprocess.run(["tar", "-xf", tar_file])
+		
 def get_inputs_func(spbench_path, app_id, class_id, force):
 
 	inputs_dir = spbench_path + "/inputs"
 	os.chdir(inputs_dir)
-
-	PUB_DATA_URL = "https://gmap.pucrs.br/public_data/spbench/workloads"
 
 	print("---------------------------------------------------------------")
 
@@ -20,33 +32,14 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 		if class_id == "test" or class_id == "all":
 			this_class = "test"
 			FILE = f"{this_class}.tar.gz"
-			if force and os.path.isfile(FILE):
-				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
+			return
 
 		if class_id == "small" or class_id == "all":
 			this_class = "small"
 			FILE = f"{this_class}.tar.gz"
-			if force and os.path.isfile(FILE):
-				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		if class_id == "medium" or class_id == "all":
@@ -54,15 +47,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		if class_id == "large" or class_id == "all":
@@ -70,15 +55,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		if class_id == "huge" or class_id == "all":
@@ -86,15 +63,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		os.chdir("..")
@@ -108,16 +77,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 		print(" Building Fraud Detection input classes...")
 
 		FILE = "fraud_detection.tar.gz"
-		if force and os.path.isfile(FILE):
-			os.remove(FILE)
-		if not os.path.isfile(FILE):
-			print(f" Downloading {FILE}...")
-			subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-		if os.path.isfile(FILE):
-			subprocess.run(["tar", "-xf", FILE])
-		else:
-			print(f" File {FILE} not found!")
-		print(" Done!")
+		download_and_extract(this_app, "all", FILE, force)
 		print("---------------------------------------------------------------")
 
 		os.chdir("..")
@@ -131,16 +91,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 		print(" Building Person Recognition input classes...")
 
 		FILE = "person_inputs.tar.gz"
-		if force and os.path.isfile(FILE):
-			os.remove(FILE)
-		if not os.path.isfile(FILE):
-			print(f" Downloading {FILE}...")
-			subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-		if os.path.isfile(FILE):
-			subprocess.run(["tar", "-xf", FILE])
-		else:
-			print(f" File {FILE} not found!")
-		print(" Done!")
+		download_and_extract(this_app, "all", FILE, force)
 		print("---------------------------------------------------------------")
 
 		os.chdir("..")
@@ -156,15 +107,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		if class_id == "medium" or class_id == "all":
@@ -172,15 +115,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		if class_id == "large" or class_id == "all":
@@ -188,15 +123,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		if class_id == "huge" or class_id == "all":
@@ -204,15 +131,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		os.chdir("..")
@@ -228,15 +147,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		if class_id == "small" or class_id == "all":
@@ -244,15 +155,7 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		if class_id == "medium" or class_id == "all":
@@ -260,47 +163,23 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 
 		if class_id == "large" or class_id == "all":
 			this_class = "large"
 			FILE = f"{this_class}.tar.gz"
 			if force and os.path.isfile(FILE):
 				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			print(" Done!")
+			download_and_extract(this_app, this_class, FILE, force)
 			print("---------------------------------------------------------------")
 
 		if class_id == "huge" or class_id == "all":
 			this_class = "huge"
 			FILE = "large.tar.gz"
-			if force and os.path.isfile(FILE):
-				os.remove(FILE)
-			if not os.path.isfile(FILE):
-				print(f" Downloading {FILE}...")
-				subprocess.run(["wget", f"{PUB_DATA_URL}/{this_app}/{FILE}"])
-			print(f" Building {this_app} {this_class} class...")
-			if os.path.isfile(FILE):
-				subprocess.run(["tar", "-xf", FILE])
-			else:
-				print(f" File {FILE} not found!")
-			subprocess.run(["cp", "enwiki-20211120-pages-articles-multistream9.xml", "enwiki-20211120-pages-articles-multistream9-2x.xml"])
-			subprocess.run(["cat", "enwiki-20211120-pages-articles-multistream9.xml", ">>", "enwiki-20211120-pages-articles-multistream9-2x.xml"])
+			download_and_extract(this_app, this_class, FILE, force)
+			if os.path.isfile("enwiki-20211120-pages-articles-multistream9.xml"):
+				subprocess.run(["cp", "enwiki-20211120-pages-articles-multistream9.xml", "enwiki-20211120-pages-articles-multistream9-2x.xml"])
+				subprocess.run(["cat", "enwiki-20211120-pages-articles-multistream9.xml", ">>", "enwiki-20211120-pages-articles-multistream9-2x.xml"])
 			print(" Done!")
 			print("---------------------------------------------------------------")
 
