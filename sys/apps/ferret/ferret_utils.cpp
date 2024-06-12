@@ -71,6 +71,12 @@ void scan(const char *);
 
 bool stream_end = false;
 
+/**
+ * Function to read an image file
+ * 
+ * @param file image file
+ * @return struct item_data*
+ */
 struct item_data *file_helper (const char *file)
 {
 	int r;
@@ -91,6 +97,12 @@ struct item_data *file_helper (const char *file)
 	return data;
 }
 
+/**
+ * Function to push a directory into the stack
+ * 
+ * @param dir directory to be pushed
+ * @return void
+ */
 void push_dir(const char * dir) {
 	int path_len = strlen(m_path);
 	DIR *pd = NULL;
@@ -106,6 +118,12 @@ void push_dir(const char * dir) {
 	}
 }
 
+/**
+ * Function to scan the directory
+ * 
+ * @param dir directory to be scanned
+ * @return void
+ */
 void scan(const char * dir) {
 	m_path[0] = 0;
 	int ret;
@@ -131,6 +149,11 @@ void scan(const char * dir) {
 	}
 }
 
+/**
+ * Function to set the name of the operators
+ * 
+ * @return void
+ */
 void set_operators_name(){
 	SPBench::addOperatorName("Source       ");
 	SPBench::addOperatorName("Segmentation ");
@@ -140,6 +163,11 @@ void set_operators_name(){
 	SPBench::addOperatorName("Sink         ");
 }
 
+/**
+ * Function to print the general usage of the application
+ * 
+ * @return void
+ */
 void usage(std::string name){
 	fprintf(stderr, "Usage: %s\n", name.c_str());
 	fprintf(stderr, "  -i, --input            \"<db_dir> <table_name> <query_dir> <top_K> <id (optional)>\" (mandatory)\n");
@@ -147,6 +175,12 @@ void usage(std::string name){
 	exit(-1);
 }
 
+/**
+ * Function to parse the input arguments
+ * 
+ * @param argv arguments
+ * @return void
+ */
 void input_parser(char * argv){ 
 	db_dir = strtok (argv," ");
 	table_name = strtok (NULL," ");
@@ -155,6 +189,13 @@ void input_parser(char * argv){
 	input_id = strtok (NULL," ");
 }
 
+/**
+ * Function to initialize the benchmark
+ *
+ * @param argc number of arguments
+ * @param argv arguments
+ * @return void
+ */
 void init_bench(int argc, char *argv[]){
 
 	SPBench::bench_path = argv[0];
@@ -316,13 +357,17 @@ void init_bench(int argc, char *argv[]){
 	}
 
 	set_operators_name();
-	//Metrics::enable_latency();
 	
 	if(Metrics::monitoring_thread_is_enabled()){
 		Metrics::start_monitoring();
 	}
 }
 
+/**
+ * Function to end the benchmark
+ *
+ * @return void
+ */
 void end_bench(){
 
 	if(SPBench::memory_source_is_enabled()){
@@ -379,6 +424,12 @@ void end_bench(){
 
 std::chrono::high_resolution_clock::time_point Source::source_item_timestamp = std::chrono::high_resolution_clock::now();
 
+/**
+ * Function to execute the source operator
+ *
+ * @param item item to be processed
+ * @return bool
+ */
 bool Source::op(Item &item){
 
 	//if last batch included the last item, ends computation
@@ -507,9 +558,13 @@ bool Source::op(Item &item){
 	return true;
 }
 
+/**
+ * Function to execute the sink operator
+ *
+ * @param item item to be processed
+ * @return void
+ */
 void Sink::op(Item &item){	
-
-	if(item.batch_size == 0){ return; }
 
 	//metrics computation
 	#if !defined NO_LATENCY
