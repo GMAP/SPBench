@@ -29,10 +29,6 @@ namespace spb{
 #define WRITE_OUTPUT
 #define WRITE_CSV
 
-/** Inputs: **/
-//#define input_data.cascade_path  "inputs/person_recognition/cascades/haarcascade_frontalface_default.xml"
-//#define input_data.training_list "inputs/person_recognition/obama_faces/list"
-
 /** Input video: **/
 #define START_FRAME  2400
 #define END_FRAME    4800
@@ -121,7 +117,7 @@ public:
 
 class Source{
 public:
-	static long source_item_timestamp;
+	static std::chrono::high_resolution_clock::time_point source_item_timestamp;
 	static bool op(Item &item);
 	Source(){}
 	virtual ~Source(){}

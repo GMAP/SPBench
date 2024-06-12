@@ -33,6 +33,11 @@ inline void usage(std::string);
 
 void input_parser(char *);
 
+/**
+ * @brief Show the usage of the application
+ * 
+ * @param name of the applciation 
+ */
 void usage(std::string name){
 	fprintf(stderr, "Usage: %s\n", name.c_str());
 	fprintf(stderr, "  -i, --input            \"<input_video> <training_list> <cascade_path>\" (mandatory)\n");
@@ -40,6 +45,12 @@ void usage(std::string name){
 	exit(-1);
 }
 
+/**
+ * Function to parse the input
+ * 
+ * @param input
+ * @return void
+ */
 void input_parser(char * input){
 
 	input_data.input_vid = split_string(input, ' ')[0];
@@ -56,7 +67,13 @@ void input_parser(char * input){
 	if(!file_exists(input_data.cascade_path)) throw std::invalid_argument("\n ERROR in input --> Invalid cascade path: " + split_string(input, ' ')[2] + "\n");
 }
 
-
+/**
+ * Function to initialize the benchmark
+ *
+ * @param argc number of arguments
+ * @param argv arguments
+ * @return void
+ */
 void init_bench(int argc, char* argv[]){
 
 	std::string input;
@@ -69,7 +86,7 @@ void init_bench(int argc, char* argv[]){
 
 	try {
 		//while ((opt = getopt(argc,argv,"i:t:b:B:m:M:F:u:p:klfxrh")) != EOF){
-		while ((opt = getopt_long(argc, argv, "i:t:b:B:m:M:f:F:IlLTru:h", long_opts, &opt_index)) != -1) {
+		while ((opt = getopt_long(argc, argv, "i:t:b:B:m:M:f:F:Il:L:Tru:h", long_opts, &opt_index)) != -1) {
 			switch(opt){
 				case 'i':
 					if(split_string(optarg, ' ').size() < 3) 
@@ -77,55 +94,24 @@ void init_bench(int argc, char* argv[]){
 					input_parser(optarg);
 					break;
 				case 't':
-					nthreads = atoi(optarg);
-					break;
-				case 'b':
-					if (atoi(optarg) <= 0)
-						throw std::invalid_argument("\n ARGUMENT ERROR (-b <batch_size>) --> Batch size must be an integer positive value higher than zero!\n");
-					SPBench::setBatchSize(atoi(optarg));
-					break;
-				case 'B':
-					if (atof(optarg) <= 0.0)
-						throw std::invalid_argument("\n ARGUMENT ERROR (-B <batch_interval>) --> Batch interval must be a value higher than zero!\n");
-					SPBench::setBatchInterval(atof(optarg));
 				case 'm':
-					if (Metrics::monitoring_thread_is_enabled())
-						throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
-					Metrics::set_monitoring_sample_interval(atoi(optarg));
-					Metrics::enable_monitoring();
-					break;
 				case 'M':
-					if (Metrics::monitoring_is_enabled())
-						throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
-					Metrics::set_monitoring_sample_interval(atoi(optarg));
-					Metrics::enable_monitoring_thread();
-					break;
 				case 'f':
-					if (atof(optarg) <= 0.0)
-						throw std::invalid_argument("\n ARGUMENT ERROR (-f <frequency>) --> Frequency value must be a positive value higher than zero!\n");
-					SPBench::setFrequency(atof(optarg));
-					break;
 				case 'F':
-					//pattern = optarg;
-					input_freq_pattern_parser(optarg);
-					break;
 				case 'I':
-					SPBench::enable_memory_source();
-					break;
 				case 'l':
-					Metrics::enable_print_latency();
-					break;
 				case 'L':
-					Metrics::enable_latency_to_file();
-					break;
 				case 'T':
-					Metrics::enable_throughput();
-					break;
 				case 'r':
-					Metrics::enable_upl();
-					break;
+				case 'b':
+				case 'B':
 				case 'u':
-					SPBench::setArg(optarg);
+					// all the above empty cases fall into this option
+					if(optarg != NULL) {
+						SPBench::parseCMDLine(opt, optarg);
+					} else {
+						SPBench::parseCMDLine(opt, "");
+					}
 					break;
 				case 'h':
 					usage(argv[0]);
@@ -189,13 +175,17 @@ void init_bench(int argc, char* argv[]){
 	}
 
 	set_operators_name();
-	Metrics::enable_latency();
 
 	if(Metrics::monitoring_thread_is_enabled()){
 		Metrics::start_monitoring();
 	}
 }
 
+/**
+ * Function to set the name of the operators
+ * 
+ * @return void
+ */
 void set_operators_name(){
 	SPBench::addOperatorName("Source   ");
 	SPBench::addOperatorName("Detect   ");
@@ -203,8 +193,14 @@ void set_operators_name(){
 	SPBench::addOperatorName("Sink     ");
 }
 
-long Source::source_item_timestamp = current_time_usecs();
+std::chrono::high_resolution_clock::time_point Source::source_item_timestamp = std::chrono::high_resolution_clock::now();
 
+/**
+ * Function to execute the source operator
+ * 
+ * @param item
+ * @return bool
+ */
 bool Source::op(Item &item){
 
 	//if last batch included the last item, ends computation
@@ -215,19 +211,21 @@ bool Source::op(Item &item){
 	// frequency control mechanism
 	SPBench::item_frequency_control(source_item_timestamp);
 
-	item.timestamp = source_item_timestamp = current_time_usecs();
-	unsigned long batch_elapsed_time = source_item_timestamp;
+	std::chrono::high_resolution_clock::time_point batch_opening_time = item.timestamp = source_item_timestamp = std::chrono::high_resolution_clock::now();
 	
-	unsigned long latency_op;
-	if(Metrics::latency_is_enabled()){
-		latency_op = source_item_timestamp;
-	}
+	#if !defined NO_LATENCY
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+  			op_timestamp1 = item.timestamp;
+		}
+	#endif
 
 	while(1) { //main source loop
 		// batching management routines
 		if(SPBench::getBatchInterval()){
 			// Check if the interval of this batch is higher than the batch interval defined by the user
-			if(((current_time_usecs() - batch_elapsed_time) / 1000.0) >= SPBench::getBatchInterval()) break;
+			std::chrono::duration<float, std::milli> batch_elapsed_time_ms = std::chrono::high_resolution_clock::now() - batch_opening_time;
+			if(batch_elapsed_time_ms.count() >= SPBench::getBatchInterval()) break;
 		} else {
 			// If no batch interval is set, than try to close it by size
 			if(item.batch_size >= SPBench::getBatchSize()) break;
@@ -266,22 +264,33 @@ bool Source::op(Item &item){
 		return false;
 	}
 
-	if(Metrics::latency_is_enabled()){
-		//item.latency_op.push_back(current_time_usecs() - latency_op);
-		item.latency_op.push_back(current_time_usecs() - latency_op);
-	}
+	#if !defined NO_LATENCY
+		if(Metrics::latency_is_enabled()){
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
+			item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<float>>(op_timestamp2 - op_timestamp1));
+		}
+	#endif
 
 	item.batch_index = Metrics::batch_counter;
 	Metrics::batch_counter++;	// sent batches
 	return true;
 }
 
+/**
+ * Function to execute the detect operator
+ * 
+ * @param item
+ * @return void
+ */
 void Sink::op(Item &item){
 	
-	unsigned long latency_op;
-	if(Metrics::latency_is_enabled()){
-		latency_op = current_time_usecs();
-	}	
+	//metrics computation
+	#if !defined NO_LATENCY
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+			op_timestamp1 = std::chrono::high_resolution_clock::now();
+		}
+	#endif
 	
 	//when 'in-memory', do nothing here, the result is already ready on the output vector
 	//if not in-memory, then retrieve the data from itens and write it on the disk
@@ -299,27 +308,46 @@ void Sink::op(Item &item){
 	
 	Metrics::batches_at_sink_counter++;
 
-	if(Metrics::latency_is_enabled()){
-		double current_time_sink = current_time_usecs();
-		item.latency_op.push_back(current_time_sink - latency_op);
+	//metrics computation
+	#if !defined NO_LATENCY
+		if(Metrics::latency_is_enabled()){
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
 
-		unsigned long total_item_latency = (current_time_sink - item.timestamp);
-		Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
+			std::chrono::duration<float, std::milli> elapsed_time_since_last_sample = op_timestamp2 - Metrics::latency_last_sample_time;
 
-		auto latency = Metrics::Latency_t();
-		latency.local_latency = item.latency_op;
-		latency.total_latency = total_item_latency;
-		latency.item_timestamp = item.timestamp;
-		latency.item_sink_timestamp = current_time_sink;
-		latency.batch_size = item.batch_size;
-		Metrics::latency_vector.push_back(latency);
-		item.latency_op.clear();
-	}
+			if(elapsed_time_since_last_sample.count() >= Metrics::latency_sample_interval){
+				Metrics::latency_last_sample_time = op_timestamp2;
+
+				item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<float>>(op_timestamp2 - op_timestamp1));
+
+				std::chrono::duration<float, std::milli> total_item_latency = op_timestamp2 - item.timestamp;
+
+				if(total_item_latency.count() > 0.0){
+					Metrics::global_latency_acc.total += total_item_latency; // to compute real time average latency
+					Metrics::global_latency_acc.count++;
+
+					auto latency = Metrics::Latency_t();
+					latency.local_latency = item.latency_op;
+					latency.total_latency = total_item_latency;
+					latency.item_timestamp = item.timestamp;
+					latency.item_sink_timestamp = op_timestamp2;
+					latency.batch_size = item.batch_size;
+					Metrics::latency_vector.push_back(latency);
+					item.latency_op.clear();
+				}
+			}
+		}
+	#endif
 	if(Metrics::monitoring_is_enabled()){
 		Metrics::monitor_metrics();
 	}
 }
 
+/**
+ * Function to finalize the benchmark
+ * 
+ * @return void
+ */
 void end_bench(){
 	if(SPBench::memory_source_is_enabled()){
 		while(!MemData.empty()){
@@ -331,6 +359,13 @@ void end_bench(){
 	}
 }
 
+/**
+ * Function to read the training set
+ * 
+ * @param list_path
+ * @param images
+ * @return void
+ */
 void read_training_set(const std::string &list_path, std::vector<cv::Mat> &images) {
 	std::ifstream file(list_path.c_str());
 	std::string path;
