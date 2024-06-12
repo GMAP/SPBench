@@ -4,9 +4,16 @@ import sys
 
 PUB_DATA_URL = "https://gmap.pucrs.br/public_data/spbench/workloads"
 
-
 def download_and_extract(app_id, class_id, tar_file, force):
-
+	"""
+	Download and extract a tar file.
+      
+	Parameters:
+	- app_id: str : Application ID.
+	- class_id: str : Class ID.
+	- tar_file: str : Tar file name.
+	- force: bool : Force download and extraction.
+	"""
 	if force and os.path.isfile(tar_file):
 		os.remove(tar_file)
 	if not os.path.isfile(tar_file):
@@ -15,9 +22,35 @@ def download_and_extract(app_id, class_id, tar_file, force):
 	if os.path.isfile(tar_file):
 		print(f" Building {app_id} {class_id} class...")
 		subprocess.run(["tar", "-xf", tar_file])
+
+def concatenate_file_with_itself(input_file, output_file, chunk_size=1024*1024):
+    """
+    Concatenate a file with itself by reading and writing in chunks.
+
+    Parameters:
+    - input_file: str : Path to the input file to be concatenated with itself.
+    - output_file: str : Path to the output file.
+    - chunk_size: int : Size of chunks to read and write at a time (default 1 MB).
+    """
+    with open(output_file, 'wb') as outfile:
+        for _ in range(2):  # Loop twice to read the same file two times
+            with open(input_file, 'rb') as infile:
+                while True:
+                    chunk = infile.read(chunk_size)
+                    if not chunk:
+                        break
+                    outfile.write(chunk)
 		
 def get_inputs_func(spbench_path, app_id, class_id, force):
-
+	"""
+	Download, extract, and prepare the inputs for SPBench applications.
+      
+	Parameters:
+	- spbench_path: str : Path to the SPBench directory.
+	- app_id: str : Application ID.
+	- class_id: str : Class ID.
+	- force: bool : Force download and extraction.
+	"""
 	inputs_dir = spbench_path + "/inputs"
 	os.chdir(inputs_dir)
 
@@ -177,9 +210,11 @@ def get_inputs_func(spbench_path, app_id, class_id, force):
 			this_class = "huge"
 			FILE = "large.tar.gz"
 			download_and_extract(this_app, this_class, FILE, force)
+			#if os.path.isfile("enwiki-20211120-pages-articles-multistream9.xml"):
+				#subprocess.run(["cp", "enwiki-20211120-pages-articles-multistream9.xml", "enwiki-20211120-pages-articles-multistream9-2x.xml"])
+				#subprocess.run(["cp", "enwiki-20211120-pages-articles-multistream9.xml", "-", ">>", "enwiki-20211120-pages-articles-multistream9-2x.xml"])
 			if os.path.isfile("enwiki-20211120-pages-articles-multistream9.xml"):
-				subprocess.run(["cp", "enwiki-20211120-pages-articles-multistream9.xml", "enwiki-20211120-pages-articles-multistream9-2x.xml"])
-				subprocess.run(["cat", "enwiki-20211120-pages-articles-multistream9.xml", ">>", "enwiki-20211120-pages-articles-multistream9-2x.xml"])
+				concatenate_file_with_itself("enwiki-20211120-pages-articles-multistream9.xml", "enwiki-20211120-pages-articles-multistream9-2x.xml")
 			print(" Done!")
 			print("---------------------------------------------------------------")
 
