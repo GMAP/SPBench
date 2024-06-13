@@ -76,7 +76,8 @@ def getAppsList(spbench_path):
     return apps_list
 
 def getAppsListAll(spbench_path):
-    # list of supported apps
+    """return a list with the allowed apps names
+    """
     apps_list = getAppsList(spbench_path)
     apps_list_all = list(apps_list)
     apps_list_all.insert(0, 'all')
