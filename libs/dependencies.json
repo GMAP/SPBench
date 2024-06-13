@@ -1,0 +1,33 @@
+{
+    "bzip2" : {
+        "1" : "bzlib",
+        "2" : "upl"
+    },
+    "lane_detection" : {
+        "1" : "yasm",
+        "2" : "ffmpeg",
+        "3" : "opencv",
+        "4" : "upl"
+    },
+    "person_recognition" : {
+        "1" : "yasm",
+        "2" : "ffmpeg",
+        "3" : "opencv",
+        "4" : "upl"
+    },
+    "ferret" : {
+        "1" : "yasm",
+        "2" : "gsl",
+        "3" : "jpeg",
+        "4" : "upl"
+    },
+    "all" : {
+        "1" : "yasm",
+        "2" : "bzlib",
+        "3" : "ffmpeg",
+        "4" : "opencv",
+        "5" : "gsl",
+        "6" : "jpeg",
+        "7" : "upl"
+    }
+}
