@@ -23,6 +23,11 @@ THIS_DIR=$(get_script_dir)
 
 cd $THIS_DIR
 
+# Load the GSL environment variables
+cd ../gsl
+source setup_gsl_vars.sh
+cd $THIS_DIR
+
 LIB_FILE=libjpeg-turbo-1.5.2.tar.gz
 LIB_FILE_PATH=$THIS_DIR/$LIB_FILE
 LIB_NAME=libjpeg-turbo-1.5.2

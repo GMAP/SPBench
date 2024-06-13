@@ -30,6 +30,7 @@ import sys
 
 from src.utils.shell import *
 from src.download_inputs_option import *
+from src.utils.install_libs import *
 
 def install_func(spbench_path, args):
 
@@ -108,7 +109,8 @@ def install_func(spbench_path, args):
     if(answer.lower() in ["y","yes"]):
         runShellCmd('sh ' + spbench_path + '/ppis/install_ppis.sh')
     
-    runShellCmd('sh ' + spbench_path + '/libs/install_libs.sh ' + args.app_id)
+    #runShellCmd('sh ' + spbench_path + '/libs/install_libs.sh ' + args.app_id)
+    install_libraries(spbench_path, args.app_id)
 
     print(" ---------------------------------------------------------------")
     print(color.BOLD + "                         >> IMPORTANT <<                         " + color.END)

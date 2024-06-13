@@ -23,6 +23,11 @@ THIS_DIR=$(get_script_dir)
 
 cd $THIS_DIR
 
+# Load the YASM environment variables
+cd ../yasm
+source setup_yasm_vars.sh
+cd $THIS_DIR
+
 LIB_FILE=ffmpeg-3.4.8.tar.xz
 LIB_FILE_PATH=$THIS_DIR/$LIB_FILE
 LIB_NAME=ffmpeg-3.4.8

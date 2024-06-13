@@ -23,6 +23,11 @@ THIS_DIR=$(get_script_dir)
 
 cd $THIS_DIR
 
+# Load the FFMPEG environment variables
+cd ../ffmpeg
+source setup_ffmpeg_vars.sh
+cd $THIS_DIR
+
 LIB_FILE=opencv-2.4.13.6.tar.gz
 LIB_FILE_PATH=$THIS_DIR/$LIB_FILE
 LIB_NAME=opencv-2.4.13.6

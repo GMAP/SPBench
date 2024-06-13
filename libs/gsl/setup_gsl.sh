@@ -23,6 +23,11 @@ THIS_DIR=$(get_script_dir)
 
 cd $THIS_DIR
 
+# Load the YASM environment variables
+cd ../yasm
+source setup_yasm_vars.sh
+cd $THIS_DIR
+
 LIB_FILE=gsl-2.6.tar.gz
 LIB_FILE_PATH=$THIS_DIR/$LIB_FILE
 LIB_NAME=gsl-2.6
