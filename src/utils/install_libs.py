@@ -39,9 +39,10 @@ def install_libraries(spbench_path, app_id):
         print("---------------------------------------")
         print(f" Installing {dependency}...")
         print("---------------------------------------")
+        dependency_dir = os.path.join(libs_dir, dependency)
         try:
-            setup_script = os.path.join(libs_dir, dependency, f"setup_{dependency}.sh")
-            if os.system(f". {setup_script}") != 0:
+            setup_script = os.path.join(dependency_dir, f"setup_{dependency}.sh")
+            if os.system(f". {setup_script} {dependency_dir}") != 0:
                 print("*************** ERROR *****************")
                 print("")
                 print(f" SPBench failed to install {dependency}. Please check the error messages above.")

@@ -18,7 +18,27 @@ get_script_dir() {
     echo "$script_dir"
 }
 
-cd $(get_script_dir)
+THIS_DIR=""
+THIS_SCRIPT="setup_upl.sh"
+
+# Check if $1 is set
+if [ -z "$1" ]; then
+	echo "The directory of the currently executed script was not passed as an argument."
+	echo "Trying to determine the directory of the currently executed script..."
+	THIS_DIR=$(get_script_dir)
+else
+	THIS_DIR=$1
+fi
+
+# Check if the script exists on THIS_DIR
+if [ ! -f "$THIS_DIR/$THIS_SCRIPT" ]; then
+	echo "The script $THIS_DIR/$THIS_SCRIPT was not found."
+	echo "Please make sure you are running this script from the same directory where the script is, or pass this script path as an argument."
+	return 1
+fi
+
+cd $THIS_DIR
+	echo "Entering $THIS_DIR ..."
 
 if [ ! -f "upl.tar.xz" ]; then
     wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.xz

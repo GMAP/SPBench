@@ -20,6 +20,7 @@ get_script_dir() {
 
 THIS_DIR=$(get_script_dir)
 cd $THIS_DIR
+	echo "Entering $THIS_DIR ..."
 
 FILE=grppi_install_pkg.tar.gz
 
