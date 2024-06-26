@@ -44,7 +44,7 @@ def getBenchRegistry(spbench_path):
     if os.path.exists(registry_file) == False:
         print("\n There is no benchmarks registered.\n Registry file not found at " + registry_file + "\n")
         sys.exit()
-    return getRegistry(registry_file)
+    return getDictFromJSON(registry_file)
 
 def getInputsRegistry(spbench_path):
     """return a dictionay with the inputs registered data
@@ -54,7 +54,7 @@ def getInputsRegistry(spbench_path):
     if os.path.exists(registry_file) == False:
         print("\n There is no inputs registered.\n Registry file not found at " + registry_file + "\n")
         sys.exit()
-    return getRegistry(registry_file)
+    return getDictFromJSON(registry_file)
 
 def getDependenciesRegistry(spbench_path):
     """return a dictionay with the dependencies registered in SPBench/libs/dependecies.json
@@ -64,7 +64,7 @@ def getDependenciesRegistry(spbench_path):
     if os.path.exists(registry_file) == False:
         print("\n There is no dependencies registered.\n Registry file not found at " + registry_file + "\n")
         sys.exit()
-    return getRegistry(registry_file)
+    return getDictFromJSON(registry_file)
 
 def getAppsRegistry(spbench_path):
     """return a dictionay with the apps registered data
@@ -74,7 +74,7 @@ def getAppsRegistry(spbench_path):
     if os.path.exists(registry_file) == False:
         print("\n There is no apps registered.\n Registry file not found at " + registry_file + "\n")
         sys.exit()
-    return getRegistry(registry_file)
+    return getDictFromJSON(registry_file)
 
 def getAppsList(spbench_path):
     """return a list with the apps in the json registry
@@ -103,7 +103,7 @@ def deleteAppFromRegistry(spbench_path, app_id):
 
     return
 
-def getRegistry(registry_file):
+def getDictFromJSON(registry_file):
     """read the content of the json registry and store into a dictionary
     """
     registry = open(registry_file, 'r')
@@ -112,7 +112,6 @@ def getRegistry(registry_file):
         registry_dic = json.load(f)
     registry.close()
     return registry_dic
-
 
 # check if a given app exists
 def appExists(spbench_path, selected_app):
