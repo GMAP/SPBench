@@ -84,9 +84,11 @@ def runShellCmd(shell_cmd_line):
             if -retcode < 0:
                 print(" Process was terminated by signal", -retcode, file=sys.stderr)
                 print("\n Unsuccessful execution\n")
+            return retcode
         except OSError as e:
             print(" Execution failed:", e, file=sys.stderr)
             print()
+            return e
         except KeyboardInterrupt as e:
             print(" KeyboardInterrupt")
             print("\n Unsuccessful execution\n")

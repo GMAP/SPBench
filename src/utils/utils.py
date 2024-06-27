@@ -28,6 +28,7 @@
 
 import os
 import math
+import logging
 
 from .dict import *
 
@@ -64,3 +65,12 @@ def stdev(data):
 	var = variance(data)
 	std_dev = math.sqrt(var)
 	return std_dev
+
+def setup_logging():
+    """Configure logging for the script."""
+    logging.basicConfig(
+        level=logging.INFO,  # Set logging level to INFO
+        format='%(asctime)s - %(levelname)s - %(message)s',  # Define log message format
+        datefmt='%Y-%m-%d %H:%M:%S',  # Define date format
+        handlers=[logging.StreamHandler()]  # Output logs to console
+    )

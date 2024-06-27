@@ -31,8 +31,11 @@ import sys
 from src.utils.shell import *
 from src.download_inputs_option import *
 from src.utils.install_libs import *
+from src.utils.utils import *
 
 def install_func(spbench_path, args):
+
+    setup_logging()
 
     print(" ---------------------------------------------------------------")
     print(color.BOLD + "                         >> ATTENTION <<                         " + color.END)
@@ -55,10 +58,10 @@ def install_func(spbench_path, args):
     print(" You are installing dependencies for the following\n application:")
     print("\n -> " + args.app_id + "\n")
     if(args.app_id == "lane_detection") or (args.app_id == "person_recognition"):
-        print(f" This will install {YASM_VERSION}, {FFMPEG_VERSION} and {OPENCV_VERSION}.\n")
+        print(f" This will install {YASM_VERSION}, {FFMPEG_VERSION}, and {OPENCV_VERSION}.\n")
         print(" >> It may take several minutes. <<")
     elif(args.app_id == "ferret"):
-        print(f" This will install {GSL_VERSION} and {JPEG_VERSION}.\n")
+        print(f" This will install {YASM_VERSION}, {GSL_VERSION}, and {JPEG_VERSION}.\n")
         print(" It may take a few minutes.")
     elif(args.app_id == "bzip2"):
         print(f" This will install {BZLIB_VERSION}.\n")

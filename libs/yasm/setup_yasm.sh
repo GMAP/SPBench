@@ -21,13 +21,14 @@ get_script_dir() {
 THIS_DIR=""
 THIS_SCRIPT="setup_yasm.sh"
 
+echo "$0 $1 $2"
 # Check if $1 is set
 if [ -z "$1" ]; then
 	echo "The directory of the currently executed script was not passed as an argument."
 	echo "Trying to determine the directory of the currently executed script..."
 	THIS_DIR=$(get_script_dir)
 else
-	THIS_DIR=$1
+	THIS_DIR=$1	
 fi
 
 # Check if the script exists on THIS_DIR
