@@ -168,12 +168,18 @@ def configure_library():
         if not os.path.isfile("configure"):
             logging.info("The library does not have a configure file. Trying to run the previous steps...")
             extract_files()
+
+        # Remove existing Makefile
+        if os.path.isfile("Makefile"):
+            logging.info("Removing existing Makefile...")
+            os.remove("Makefile")  
         
-        # Check if the build directory exists
+        # Create a fresh build directory
         build_dir = os.path.join(LIB_PATH, "build")
-        if not os.path.isdir(build_dir):
-            logging.info("The build directory does not exist. Creating it...")
-            os.mkdir(build_dir)
+        if os.path.isdir(build_dir):
+            logging.info("Cleanning previous builds...")
+            shutil.rmtree(build_dir)
+        os.mkdir(build_dir)
         
         os.chdir(LIB_PATH)
         PREFIX = os.path.join(os.getcwd(), "build")
@@ -196,7 +202,7 @@ def build_library():
         original_dir = os.getcwd()
         os.chdir(LIB_PATH)
         logging.info("Building the library...")
-        
+
         # Check if there is a Makefile
         if not any(f.startswith("Makefile") for f in os.listdir(LIB_PATH)):
             logging.info("Makefile not found. Trying to run the previous steps...")

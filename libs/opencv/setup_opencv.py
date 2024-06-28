@@ -158,41 +158,6 @@ def libdir_exists():
     finally:
         os.chdir(original_dir)  # Return to original directory
 
-# Function to build the libraryrary
-def configure_library():
-    if libdir_exists():
-        original_dir = os.getcwd()
-        os.chdir(LIB_PATH)
-        
-        # Check if the library has a configure file
-        if not os.path.isfile("configure"):
-            logging.info("The library does not have a configure file. Trying to run the previous steps...")
-            extract_files()
-        
-        # Check if the build directory exists
-        build_dir = os.path.join(LIB_PATH, "build")
-        if not os.path.isdir(build_dir):
-            logging.info("The build directory does not exist. Creating it...")
-            os.mkdir(build_dir)
-        
-        os.chdir(LIB_PATH)
-        PREFIX = os.path.join(os.getcwd(), "build")
-        os.environ["PATH"] = f"{PREFIX}/bin:{os.environ['PATH']}"
-        os.environ["PKG_CONFIG_PATH"] = f"{PREFIX}/pkgconfig"
-        logging.info("Configuring the library...")
-        
-        try:
-            os.chdir("build")
-            result = subprocess.run(["cmake -DCMAKE_CXX_FLAGS=\"--std=c++11\" -DBUILD_PNG=ON -DBUILD_EXAMPLES=OFF -DWITH_FFMPEG=ON -DOPENCV_FFMPEG_SKIP_BUILD_CHECK=ON -DWITH_CUDA=OFF -DCMAKE_INSTALL_PREFIX=../ .."], check=True, capture_output=True, text=True)
-            logging.info(result.stdout)
-            if result.stderr:
-                logging.error(result.stderr)
-        except subprocess.CalledProcessError as e:
-            logging.error(f"Configuration failed with error: {e}")
-        finally:
-            os.chdir(original_dir)
-
-
 def configure_library():
     
     if libdir_exists():
@@ -209,16 +174,17 @@ def configure_library():
             logging.info("CMake files not found. Trying to run the previous steps...")
             extract_files()
 
-        # Check if the build directory exists
-        build_path = os.path.join(LIB_PATH, "build")
-        if not os.path.isdir(build_path):
-            logging.info("The build directory does not exist. Creating it...")
-            os.makedirs(build_path)
+        # Create a fresh build directory
+        build_dir = os.path.join(LIB_PATH, "build")
+        if os.path.isdir(build_dir):
+            logging.info("Cleanning previous builds...")
+            shutil.rmtree(build_dir)
+        os.mkdir(build_dir)
 
         #prefix = os.path.join(LIB_PATH, "build")
 
         logging.info("Configuring the library...")
-        os.chdir(build_path)
+        os.chdir(build_dir)
         cmake_command = [
             "cmake",
             "-DBUILD_PNG=ON",
@@ -246,7 +212,9 @@ def build_library():
         logging.info("Building the library...")
         
         # Check if there is a Makefile
-        if not any(f.startswith("Makefile") for f in os.listdir(LIB_PATH)):
+        build_dir = os.path.join(LIB_PATH, "build")
+        os.chdir(build_dir)
+        if not any(f.startswith("Makefile") for f in os.listdir(build_dir)):
             logging.info("Makefile not found. Trying to run the previous steps...")
             extract_files()
             configure_library()
@@ -270,7 +238,9 @@ def install_library():
         if not os.path.isdir("build"):
             print("The library has not been built yet. Building it first...")
             build_library()
-        os.chdir(LIB_PATH)
+
+        build_dir = os.path.join(LIB_PATH, "build")
+        os.chdir(build_dir)
         print("Installing the library...")
         result = subprocess.run(["make", "install", "-j"])
         if result.returncode == 0:
