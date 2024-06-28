@@ -37,7 +37,7 @@ if [ ! -f "$THIS_DIR/$THIS_SCRIPT" ]; then
 	return 1
 fi
 
-LIB_FILE=ffmpeg-3.4.8.tar.xz
+LIB_FILE=ffmpeg-3.4.8.tar.gz
 LIB_FILE_PATH=$THIS_DIR/$LIB_FILE
 LIB_NAME=ffmpeg-3.4.8
 LIB_PATH=$THIS_DIR/$LIB_NAME

@@ -40,19 +40,19 @@ fi
 cd $THIS_DIR
 	echo "Entering $THIS_DIR ..."
 
-if [ ! -f "upl.tar.xz" ]; then
-    wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.xz
+if [ ! -f "upl.tar.gz" ]; then
+    wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.gz
 fi
 
-if ! tar -xf upl.tar.xz; then
-    echo "Failed to extract upl.tar.xz"
+if ! tar -xf upl.tar.gz; then
+    echo "Failed to extract upl.tar.gz"
     echo "Trying to download it again..."
-    rm -rf upl.tar.xz
-    wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.xz
+    rm -rf upl.tar.gz
+    wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.gz
 fi
 
-if ! tar -xf upl.tar.xz; then
-    echo "Failed to extract upl.tar.xz"
+if ! tar -xf upl.tar.gz; then
+    echo "Failed to extract upl.tar.gz"
     return 1
 fi
 

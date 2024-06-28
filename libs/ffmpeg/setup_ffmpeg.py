@@ -10,7 +10,7 @@ import urllib.request
 
 THIS_SCRIPT = "setup_ffmpeg.sh"
 
-LIB_FILE = "ffmpeg-3.4.8.tar.xz"
+LIB_FILE = "ffmpeg-3.4.8.tar.gz"
 LIB_NAME = "ffmpeg-3.4.8"
 HOST_URL = "https://gmap.pucrs.br"
 FILE_URL = f"{HOST_URL}/public_data/spbench/libs/ffmpeg/{LIB_FILE}"

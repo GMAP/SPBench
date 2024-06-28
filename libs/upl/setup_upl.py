@@ -83,8 +83,8 @@ def main():
 
     logging.info(f"Trying to run {os.path.join(THIS_DIR, THIS_SCRIPT)}...")
 
-    LIB_FILE_PATH = os.path.join(THIS_DIR, "upl.tar.xz")
-    FILE_URL = "https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.xz"
+    LIB_FILE_PATH = os.path.join(THIS_DIR, "upl.tar.gz")
+    FILE_URL = "https://gmap.pucrs.br/public_data/spbench/libs/upl/upl.tar.gz"
 
     if not os.path.isfile(LIB_FILE_PATH):
         download_file()
@@ -102,8 +102,6 @@ def main():
         except Exception as e:
             logging.error(f"Failed to extract {LIB_FILE_PATH} again: {e}")
             return 1
-
-    return 0
 
 if __name__ == "__main__":
     setup_logging()
