@@ -112,7 +112,7 @@ def extract_files():
             else:
                 logging.info(f"Library file {LIB_FILE} found. Attempting to decompress it...")
                 try:
-                    with tarfile.open(LIB_FILE_PATH, 'r:xz') as tar:
+                    with tarfile.open(LIB_FILE_PATH, 'r:gz') as tar:
                         for member in tar.getmembers():
                             logging.info(f"Extracting {member.name}...")
                             tar.extract(member, path=THIS_DIR)

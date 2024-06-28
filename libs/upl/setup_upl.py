@@ -90,14 +90,14 @@ def main():
         download_file()
 
     try:
-        with tarfile.open(LIB_FILE_PATH, 'r:xz') as tar:
+        with tarfile.open(LIB_FILE_PATH, 'r:gz') as tar:
             tar.extractall()
     except Exception as e:
         logging.error(f"Failed to extract {LIB_FILE_PATH}: {e}")
         logging.info("Trying to download it again...")
         download_file(FILE_URL, LIB_FILE_PATH)
         try:
-            with tarfile.open(LIB_FILE_PATH, 'r:xz') as tar:
+            with tarfile.open(LIB_FILE_PATH, 'r:gz') as tar:
                 tar.extractall()
         except Exception as e:
             logging.error(f"Failed to extract {LIB_FILE_PATH} again: {e}")
