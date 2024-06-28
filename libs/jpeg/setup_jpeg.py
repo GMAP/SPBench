@@ -168,11 +168,6 @@ def configure_library():
         if not os.path.isfile("configure"):
             logging.info("The library does not have a configure file. Trying to run the previous steps...")
             extract_files()
-
-        # Remove existing Makefile
-        if os.path.isfile("Makefile"):
-            logging.info("Removing existing Makefile...")
-            os.remove("Makefile")  
         
         # Create a fresh build directory
         build_dir = os.path.join(LIB_PATH, "build")
