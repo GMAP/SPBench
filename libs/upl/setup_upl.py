@@ -40,10 +40,7 @@ def progress_hook(blocknum, blocksize, totalsize):
 def download_file():
     try:
         original_dir = os.getcwd()  # Store original directory
-        os.chdir(THIS_DIR)        
-        if os.path.isfile(LIB_FILE_PATH):
-            logging.info(f"{LIB_NAME} already exists at {LIB_FILE_PATH}.")
-            return
+        os.chdir(THIS_DIR)
         
         logging.info(f"Downloading {LIB_NAME} from {FILE_URL}...")
         urllib.request.urlretrieve(FILE_URL, LIB_FILE_PATH, reporthook=progress_hook)

@@ -43,10 +43,7 @@ def check_script_exists(script_dir, script_name):
 def download_file():
     try:
         original_dir = os.getcwd()  # Store original directory
-        os.chdir(THIS_DIR)        
-        if os.path.isfile(LIB_FILE_PATH):
-            logging.info(f"{LIB_NAME} already exists at {LIB_FILE_PATH}.")
-            return
+        os.chdir(THIS_DIR)
         
         logging.info(f"Downloading {LIB_NAME} from {FILE_URL}...")
         urllib.request.urlretrieve(FILE_URL, LIB_FILE_PATH, reporthook=progress_hook)
@@ -252,7 +249,7 @@ def prompt_user():
     print("Please select an option:")
     print(" 1) Do not reinstall (keep it as it is)")
     print(" 2) Download the library again, decompress the files, configure, build and install")
-    print(" 3) Decompress the downloaded files, configure, build, and install")
+    print(" 3) Decompress already downloaded files, configure, build, and install")
     print(" 4) Only configure, build and install")
     choice = input("Enter your choice (1-4): ")
     if choice == "1":

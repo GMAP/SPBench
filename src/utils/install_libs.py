@@ -133,8 +133,8 @@ def prompt_users():
 #                         mode = 'r:gz'
 #                     elif LIB_FILE_PATH.endswith('.tar.bz2'):
 #                         mode = 'r:bz2'
-#                     elif LIB_FILE_PATH.endswith('.tar.xz'):
-#                         mode = 'r:xz'
+#                     elif LIB_FILE_PATH.endswith('.tar.gz'):
+#                         mode = 'r:gz'
 #                     else:
 #                         mode = 'r'
 #                     with tarfile.open(LIB_FILE_PATH, mode) as tar:
@@ -165,7 +165,7 @@ def prompt_users():
 #     print("Please select an option:")
 #     print(" 1) Do not reinstall (keep it as it is)")
 #     print(" 2) Download the library again, decompress the files, configure, build and install")
-#     print(" 3) Decompress the downloaded files, configure, build, and install")
+#     print(" 3) Decompress already downloaded files, configure, build, and install")
 #     print(" 4) Only configure, build and install")
 #     choice = input("Enter your choice (1-4): ")
 #     if choice == "1":
@@ -221,6 +221,15 @@ def install_libraries(spbench_path, app_id):
     SPBENCH_LIBS_PATH = os.path.join(spbench_path, "libs")
 
     print("DEPENDENCIES LIST: ", dependencies_list)
+
+    # If opencv is in the dependencies list, check if cmake is available in the system
+    if "opencv" in dependencies_list:
+        if shutil.which("cmake") is None:
+            logging.error("CMake is required to install OpenCV.")
+            logging.error("Please install CMake and try again.")
+            if prompt_users() != 0:
+                os.chdir(SPBENCH_LIBS_PATH)
+                sys.exit(1)
 
     for dependency in dependencies_list:
 

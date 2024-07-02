@@ -175,7 +175,7 @@ prompt_user() {
     echo "Please select an option:"
     echo " 1) Do not reinstall (keep it as it is)"
     echo " 2) Download the library again, decompress the files, configure, build and install"
-    echo " 3) Decompress the downloaded files, configure, build, and install"
+    echo " 3) Decompress already downloaded files, configure, build, and install"
     echo " 4) Only configure, build and install"
     echo "Enter your choice (1-4): "
     read choice
