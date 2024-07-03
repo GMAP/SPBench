@@ -41,7 +41,7 @@ THIS_SCRIPT = "setup_bzlib.sh"
 LIB_FILE = "bzip2-1.0.8.tar.gz"
 LIB_NAME = "bzip2-1.0.8"
 HOST_URL = "https://gmap.pucrs.br"
-FILE_URL = f"{HOST_URL}/public_data/spbench/libs/bzlib/{LIB_FILE}"
+FILE_URL = f"{HOST_URL}/public_data/spbench/libs/bzip2/{LIB_FILE}"
 num_tries = 3
 
 def setup_logging():
