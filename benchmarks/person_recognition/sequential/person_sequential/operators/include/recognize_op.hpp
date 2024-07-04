@@ -20,10 +20,12 @@ void Recognize::op(Item &item){
 		num_item++;
 	}
 	
-	if(metrics.latency_is_enabled()){
-		//item.latency_op.push_back(current_time_usecs() - latency_op);
-		item.latency_op.push_back(current_time_usecs() - latency_op);
-	}
+	#if !defined NO_LATENCY
+		if(metrics.latency_is_enabled()){
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
+			item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(op_timestamp2 - op_timestamp1));
+		}
+	#endif
 }
 
 }
