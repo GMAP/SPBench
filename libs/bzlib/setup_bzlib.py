@@ -249,7 +249,7 @@ def install_library():
             build_library()
         os.chdir(LIB_PATH)
         print("Installing the library...")
-        result = subprocess.run(["make", "install", "-j"])
+        result = subprocess.run(["make", "install", f"PREFIX={LIB_PATH}/build", "-j"])
         if result.returncode == 0:
             print("The library was installed successfully.")
             return True
