@@ -35,6 +35,7 @@ import tarfile
 import logging
 import shutil
 import urllib.request
+import json
 
 THIS_SCRIPT = "setup_bzlib.sh"
 
@@ -183,39 +184,6 @@ def libdir_exists():
     finally:
         os.chdir(original_dir)  # Return to original directory
 
-# Function to build the libraryrary
-# def configure_library():
-#     if libdir_exists():
-#         original_dir = os.getcwd()
-#         os.chdir(LIB_PATH)
-        
-#         # Check if the library has a configure file
-#         if not os.path.isfile("configure"):
-#             logging.info("The library does not have a configure file. Trying to run the previous steps...")
-#             extract_files()
-        
-#         # Check if the build directory exists
-#         build_dir = os.path.join(LIB_PATH, "build")
-#         if not os.path.isdir(build_dir):
-#             logging.info("The build directory does not exist. Creating it...")
-#             os.mkdir(build_dir)
-        
-#         os.chdir(LIB_PATH)
-#         PREFIX = os.path.join(os.getcwd(), "build")
-#         os.environ["PATH"] = f"{PREFIX}/bin:{os.environ['PATH']}"
-#         os.environ["PKG_CONFIG_PATH"] = f"{PREFIX}/pkgconfig"
-#         logging.info("Configuring the library...")
-        
-#         try:
-#             result = subprocess.run(["./configure", f"--prefix={PREFIX}"], check=True, capture_output=True, text=True)
-#             logging.info(result.stdout)
-#             if result.stderr:
-#                 logging.error(result.stderr)
-#         except subprocess.CalledProcessError as e:
-#             logging.error(f"Configuration failed with error: {e}")
-#         finally:
-#             os.chdir(original_dir)
-
 def build_library():
     if libdir_exists():
         original_dir = os.getcwd()
@@ -229,7 +197,7 @@ def build_library():
             #configure_library()
         
         try:
-            result = subprocess.run(["make", "-j"], check=True, capture_output=True, text=True)
+            result = subprocess.run(["make", "-j"], check=True, capture_output=True, text=True, env=LIB_ENV_VARS)
             logging.info(result.stdout)
             if result.stderr:
                 logging.error(result.stderr)
@@ -332,6 +300,17 @@ def main():
     LIB_PATH = os.path.join(THIS_DIR, LIB_NAME)
 
     os.chdir(THIS_DIR)
+
+    global LIB_ENV_VARS
+    ENV_VARS_FILE = os.path.join(THIS_DIR, "../libraries_env_vars.json")
+
+    # Read the environment variables from the JSON file
+    with open(ENV_VARS_FILE) as f:
+        env_vars = json.load(f)
+
+    # Combine them with the current environment variables
+    LIB_ENV_VARS = os.environ.copy()
+    LIB_ENV_VARS.update(env_vars)
 
     # Check if the directory exists
     if os.path.isdir(LIB_PATH):

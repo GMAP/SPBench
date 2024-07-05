@@ -73,4 +73,4 @@ def setup_logging():
         format='%(asctime)s - %(levelname)s - %(message)s',  # Define log message format
         datefmt='%Y-%m-%d %H:%M:%S',  # Define date format
         handlers=[logging.StreamHandler()]  # Output logs to console
-    )
+    )    

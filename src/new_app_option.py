@@ -197,7 +197,7 @@ def new_app_func(spbench_path, args):
 
     # get the apps registry
     apps_registry_file = spbench_path + "/sys/apps/apps_registry.json"
-    apps_registry = getRegistry(apps_registry_file)
+    apps_registry = getDictFromJSON(apps_registry_file)
 
     # add the new app key to the apps registry
     apps_registry.update({new_app_id: {}})

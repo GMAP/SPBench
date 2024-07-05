@@ -35,6 +35,7 @@ import tarfile
 import logging
 import shutil
 import urllib.request
+import json
 
 THIS_SCRIPT = "setup_ffmpeg.sh"
 
@@ -235,7 +236,7 @@ def build_library():
             configure_library()
         
         try:
-            result = subprocess.run(["make", "-j"], check=True, capture_output=True, text=True)
+            result = subprocess.run(["make", "-j"], check=True, capture_output=True, text=True, env=LIB_ENV_VARS)
             logging.info(result.stdout)
             if result.stderr:
                 logging.error(result.stderr)
@@ -338,6 +339,17 @@ def main():
     LIB_PATH = os.path.join(THIS_DIR, LIB_NAME)
 
     os.chdir(THIS_DIR)
+
+    global LIB_ENV_VARS
+    ENV_VARS_FILE = os.path.join(THIS_DIR, "../libraries_env_vars.json")
+
+    # Read the environment variables from the JSON file
+    with open(ENV_VARS_FILE) as f:
+        env_vars = json.load(f)
+
+    # Combine them with the current environment variables
+    LIB_ENV_VARS = os.environ.copy()
+    LIB_ENV_VARS.update(env_vars)
 
     # Check if the directory exists
     if os.path.isdir(LIB_PATH):

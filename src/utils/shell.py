@@ -30,10 +30,11 @@ import hashlib
 import sys
 import os
 import subprocess
+import json
 
 from . import utils
 
-spbench_path_ = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
+spbench_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
 
 def programmExists(programm, err_msg):
     """check if a given programm exists in shell
@@ -78,9 +79,20 @@ def getTextEditor(user_editor):
 def runShellCmd(shell_cmd_line):
     """Run a shell command line
     """
+    # Prepare the environment variables
+    spbench_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
+    env_vars_file = spbench_path + "/libs/libraries_env_vars.json"
+
+    # Read the environment variables from the JSON file
+    with open(env_vars_file) as f:
+        env_vars = json.load(f)
+    # Combine them with the current environment variables
+    lib_env_vars = os.environ.copy()
+    lib_env_vars.update(env_vars)
+    
     if(utils.python_3 == 3):
         try:
-            retcode = subprocess.call(shell_cmd_line, shell=True)
+            retcode = subprocess.call(shell_cmd_line, shell=True, env=lib_env_vars)
             if -retcode < 0:
                 print(" Process was terminated by signal", -retcode, file=sys.stderr)
                 print("\n Unsuccessful execution\n")
@@ -99,10 +111,21 @@ def runShellCmd(shell_cmd_line):
 def runShellWithReturn(shell_cmd_line):
     """Run a shell command line and return the output from the command
     """
+    # Prepare the environment variables
+    spbench_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
+    env_vars_file = spbench_path + "/libs/libraries_env_vars.json"
+
+    # Read the environment variables from the JSON file
+    with open(env_vars_file) as f:
+        env_vars = json.load(f)
+    # Combine them with the current environment variables
+    lib_env_vars = os.environ.copy()
+    lib_env_vars.update(env_vars)
+
     if(utils.python_3 == 3):
         #success = False
         try:
-            output = subprocess.check_output(shell_cmd_line, stderr=subprocess.STDOUT, shell=True).decode()
+            output = subprocess.check_output(shell_cmd_line, stderr=subprocess.STDOUT, shell=True, env=lib_env_vars).decode()
             #success = True 
         except subprocess.CalledProcessError as e:
             output = e.output.decode() + "\n Unsuccessful execution\n"

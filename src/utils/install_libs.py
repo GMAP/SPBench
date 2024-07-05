@@ -52,6 +52,10 @@ def prompt_users():
         return 1
     return 0
 
+def getEnvVar(var_name):
+    if os.environ.get(var_name) is not None:
+        return os.environ.get(var_name)
+    return ""
 
 def install_libraries(spbench_path, app_id):
     # Initialize logging if needed
@@ -81,6 +85,27 @@ def install_libraries(spbench_path, app_id):
                 os.chdir(SPBENCH_LIBS_PATH)
                 sys.exit(1)
 
+    # Prepare the environment variables file
+    env_vars_file = os.path.join(SPBENCH_LIBS_PATH, "libraries_env_vars.json")
+
+    # Get the initial values of the environment variables
+    ENV_LD_LYBRARY_PATH = getEnvVar("LD_LIBRARY_PATH")
+    ENV_PATH = getEnvVar("PATH")
+    ENV_CPATH = getEnvVar("CPATH")
+    ENV_PKG_CONFIG_PATH = getEnvVar("PKG_CONFIG_PATH")
+
+    # Save the original environment variables
+    original_env_vars = {
+        "LD_LIBRARY_PATH": ENV_LD_LYBRARY_PATH,
+        "PATH": ENV_PATH,
+        "CPATH": ENV_CPATH,
+        "PKG_CONFIG_PATH": ENV_PKG_CONFIG_PATH
+    }
+
+    # Save the original environment variables to a file
+    with open(env_vars_file, 'w') as f:
+        json.dump(original_env_vars, f)
+
     for dependency in dependencies_list:
 
         print("---------------------------------------")
@@ -90,12 +115,16 @@ def install_libraries(spbench_path, app_id):
         dependency_dir = os.path.join(SPBENCH_LIBS_PATH, dependency)
         setup_script = os.path.join(dependency_dir, f"setup_{dependency}.py")
 
+        # The shell script to source the setup script and print environment variables
+        setup_vars_script = os.path.join(dependency_dir, f"setup_{dependency}_vars.sh")
+
         logging.info(f"Preparing {dependency}...")
         logging.info(f"Running > {sys.executable} {setup_script} {dependency_dir}")
 
         logging.info(f"Getting {dependency} data...")
 
         try:
+            
             # Change to the dependency directory
             os.chdir(dependency_dir)
 
@@ -119,6 +148,29 @@ def install_libraries(spbench_path, app_id):
             if prompt_users() != 0:
                 os.chdir(SPBENCH_LIBS_PATH)
                 sys.exit(1)
+
+        # Run the shell script and capture the output
+        setup_vars_output = subprocess.run(f"bash {setup_vars_script}", capture_output=True, text=True, shell=True)
+
+        # Parse the output to get environment variables
+        env_vars = {}
+        for line in setup_vars_output.stdout.splitlines():
+            key, _, value = line.partition('=')
+            env_vars[key] = value
+
+        # Get the variables from the environment variables file
+        env_vars_file_data = getDictFromJSON(env_vars_file)
+
+        # Update the environment variables with the new values, separated by :
+        for key, value in env_vars.items():
+            if key in env_vars_file_data:
+                env_vars_file_data[key] = f"{value.strip()}:{env_vars_file_data[key]}"
+            else:
+                env_vars_file_data[key] = value.strip()
+
+        # Save the updated environment variables to the file
+        with open(env_vars_file, 'w') as f:
+            json.dump(env_vars_file_data, f)
 
         os.chdir(SPBENCH_LIBS_PATH)
         print("DONE!")

@@ -67,7 +67,7 @@ def new_op_func(spbench_path, args):
         print("\n Error, file not found (operators list file): \n " + operators_list_file + "\n")
         sys.exit()
 
-    operators_dict = getRegistry(operators_list_file)
+    operators_dict = getDictFromJSON(operators_list_file)
 
     if(operator_id.lower() in operators_dict):
         print("\n Error, operator ID \'" + operator_id + "\' already exists!\n")

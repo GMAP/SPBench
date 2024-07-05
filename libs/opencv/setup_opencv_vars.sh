@@ -13,8 +13,13 @@ else
   exit 1
 fi
 
-BUILD_DIR=${LIB_DIR}/opencv-2.4.13.6
+BUILD_DIR=${LIB_DIR}/opencv-2.4.13.6/build
 export PATH=${BUILD_DIR}/bin:${PATH}
 export LD_LIBRARY_PATH=${BUILD_DIR}/lib:${LD_LIBRARY_PATH}
 export CPATH=${BUILD_DIR}/include:${CPATH}
 export PKG_CONFIG_PATH=${BUILD_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}
+
+echo "PATH=$BUILD_DIR/bin"
+echo "LD_LIBRARY_PATH=$BUILD_DIR/lib"
+echo "CPATH=$BUILD_DIR/include"
+echo "PKG_CONFIG_PATH=$BUILD_DIR/lib/pkgconfig"

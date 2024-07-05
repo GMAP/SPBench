@@ -53,7 +53,7 @@ def list_op_func(spbench_path, args):
         print("\n Run [ ./spbench reset-op --help ] for more info\n")
         sys.exit()
 
-    operators_dict = getRegistry(operators_list_file)
+    operators_dict = getDictFromJSON(operators_list_file)
 
     print("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
     print("-> Available operators for " + bench_id)

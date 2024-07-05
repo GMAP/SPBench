@@ -60,11 +60,13 @@ sys/apps/ferret/parsec/
 /ppis/fastflow/*
 /ppis/tbb/*
 /ppis/WindFlow/*
-/libs/*
+/libs/*/**/*
+#/libs/upl/*
+libs/libraries_env_vars.json
 
 !/libs/spbench/
 !./inputs/*.json
 !setup_*.sh
+!setup_*.py
 !./libs/*/*.sh
-
-
+!./libs/*/*.py

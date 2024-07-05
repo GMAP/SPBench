@@ -117,7 +117,8 @@ def compile_func(spbench_path, args):
         make_cmd = ("make -C " + programm_path + " -j$(nproc)")
         
         # compile the programm
-        if(os.WEXITSTATUS(os.system(make_cmd))):
+        #if(os.WEXITSTATUS(os.system(make_cmd))):
+        if(runShellCmd(make_cmd) != 0):
             print("\n ---------------------------------------")
             print(" Compilation failed!")
             print(" Version: " + bench_id)

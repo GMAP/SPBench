@@ -17,3 +17,8 @@ BUILD_DIR=${LIB_DIR}/bzip2-1.0.8/build
 export PATH=${BUILD_DIR}/bin:${PATH}
 export LD_LIBRARY_PATH=${BUILD_DIR}/lib:${LD_LIBRARY_PATH}
 export CPATH=${BUILD_DIR}/include:${CPATH}
+
+echo "PATH=$BUILD_DIR/bin"
+echo "LD_LIBRARY_PATH=$BUILD_DIR/lib"
+echo "CPATH=$BUILD_DIR/include"
+echo "PKG_CONFIG_PATH="
