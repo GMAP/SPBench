@@ -36,6 +36,7 @@ import logging
 import shutil
 import urllib.request
 import json
+import select
 
 THIS_SCRIPT = "setup_opencv.sh"
 
@@ -49,10 +50,20 @@ def setup_logging():
     """Configure logging for the script."""
     logging.basicConfig(
         level=logging.INFO,  # Set logging level to INFO
-        format='%(asctime)s - %(levelname)s - %(message)s',  # Define log message format
-        datefmt='%Y-%m-%d %H:%M:%S',  # Define date format
+        #format='%(asctime)s - %(levelname)s - %(message)s',  # Define log message format
+        #datefmt='%Y-%m-%d %H:%M:%S',  # Define date format
         handlers=[logging.StreamHandler()]  # Output logs to console
     )
+
+def get_log_level(line):
+    warning_keywords = ["warning", "deprecated", "note"]
+    error_keywords = ["error", "fatal", "failed"]
+    if any(keyword in line.lower() for keyword in error_keywords):
+        return logging.ERROR
+    elif any(keyword in line.lower() for keyword in warning_keywords):
+        return logging.WARNING
+    else:
+        return logging.INFO
     
 def get_script_dir():
     """Function to determine the directory of the currently executed or sourced script."""
@@ -184,6 +195,70 @@ def libdir_exists():
     finally:
         os.chdir(original_dir)  # Return to original directory
 
+
+def run_stuff(run_this):
+
+    # Configure logging
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+    # Use the provided environment variables or the current environment
+    env = LIB_ENV_VARS
+    
+    # Start the subprocess
+    process = subprocess.Popen(run_this, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+
+    # Function to determine the log level based on the output line
+    def get_log_level(line):
+        warning_keywords = ["warning", "deprecated", "note"]
+        error_keywords = ["error", "fatal", "failed"]
+        if any(keyword in line.lower() for keyword in error_keywords):
+            return logging.ERROR
+        elif any(keyword in line.lower() for keyword in warning_keywords):
+            return logging.WARNING
+        else:
+            return logging.INFO
+
+    try:
+        # Read stdout and stderr in real time
+        while True:
+            stdout_line = process.stdout.readline().strip()
+            stderr_line = process.stderr.readline().strip()
+
+            if stdout_line:
+                logging.info(stdout_line)
+                print(stdout_line)
+            if stderr_line:
+                log_level = get_log_level(stderr_line)
+                logging.log(log_level, stderr_line)
+                print(stderr_line, file=sys.stderr)
+
+            # Check if the process has terminated
+            if process.poll() is not None:
+                break
+
+        # Capture any remaining output
+        remaining_stdout, remaining_stderr = process.communicate()
+
+        if remaining_stdout:
+            logging.info(remaining_stdout.strip())
+            print(remaining_stdout)
+        if remaining_stderr:
+            log_level = get_log_level(remaining_stderr.strip())
+            logging.log(log_level, remaining_stderr.strip())
+            print(remaining_stderr, file=sys.stderr)
+
+    except Exception as e:
+        logging.error(f"Error reading output: {e}")
+
+    finally:
+        # Wait for the process to complete and get the return code
+        process.wait()
+
+
+
+    return process
+
+
 def configure_library():
     
     if libdir_exists():
@@ -222,10 +297,13 @@ def configure_library():
             ".."
         ]
         try:
-            result = subprocess.run(cmake_command, check=True, capture_output=True, text=True, env=LIB_ENV_VARS)
-            logging.info(result.stdout)
-            if result.stderr:
-                logging.error(result.stderr)
+            # Construct the shell command to run
+            command = ["sh", "-c", f"{' '.join(cmake_command)}"]
+            process = subprocess.run(cmake_command, env=LIB_ENV_VARS)
+            if process.returncode == 0:
+                logging.info("Configuration was successful.")
+            else:
+                logging.error("Configuration failed.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Configuration failed with error: {e}")
         finally:
@@ -244,13 +322,16 @@ def build_library():
             logging.info("Makefile not found. Trying to run the previous steps...")
             extract_files()
             configure_library()
-        
+
         try:
-            result = subprocess.run(["make", "-j"], check=True, capture_output=True, text=True, env=LIB_ENV_VARS)
-            logging.info(result.stdout)
-            if result.stderr:
-                logging.error(result.stderr)
-            logging.info("The library was built successfully.")
+            # Command to be executed
+            command = ["sh", "-c", "make -j"]
+            # Run the command
+            process = subprocess.run(command, env=LIB_ENV_VARS)
+            if process.returncode == 0:
+                logging.info("The library was built successfully.")
+            else:
+                logging.error("Building process has failed.")
         except subprocess.CalledProcessError as e:
             logging.error(f"Failed to build the library: {e}")
         finally:
@@ -268,12 +349,21 @@ def install_library():
         build_dir = os.path.join(LIB_PATH, "build")
         os.chdir(build_dir)
         print("Installing the library...")
-        result = subprocess.run(["make", "install", "-j"])
-        if result.returncode == 0:
-            print("The library was installed successfully.")
-            return True
-        else:
-            print("Failed to install the library.")
+
+        try:
+            # Command to be executed
+            command = ["sh", "-c", "make install -j"]
+            # Run the command
+            process = subprocess.run(command, env=LIB_ENV_VARS)
+            # Check the return code
+            if process.returncode == 0:
+                print("The library was installed successfully.")
+                return True
+            else:
+                print(f"Failed to install the library (return code: {process.returncode}).")
+                return False
+        except Exception as e:
+            print(f"Error during installation: {e}")
             return False
 
 def remove_directory(dir_path):
