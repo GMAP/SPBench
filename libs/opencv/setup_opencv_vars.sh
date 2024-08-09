@@ -13,7 +13,7 @@ else
   exit 1
 fi
 
-BUILD_DIR=${LIB_DIR}/opencv-2.4.13.6/build
+BUILD_DIR=${LIB_DIR}/opencv-2.4.13.6
 export PATH=${BUILD_DIR}/bin:${PATH}
 export LD_LIBRARY_PATH=${BUILD_DIR}/lib:${LD_LIBRARY_PATH}
 export CPATH=${BUILD_DIR}/include:${CPATH}

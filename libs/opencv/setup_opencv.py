@@ -289,11 +289,17 @@ def configure_library():
         cmake_command = [
             "cmake",
             "-DBUILD_PNG=ON",
-            "-DBUILD_EXAMPLES=OFF",
+            "-DCMAKE_CXX_FLAGS=-std=c++1y",
             "-DWITH_FFMPEG=ON",
             "-DOPENCV_FFMPEG_SKIP_BUILD_CHECK=ON",
             "-DWITH_CUDA=OFF",
             "-DCMAKE_INSTALL_PREFIX=../",
+            "-DOPENCV_GENERATE_PKGCONFIG=ON",
+            "-DBUILD_TESTS=OFF",
+            "-DBUILD_EXAMPLES=OFF",
+            "-DBUILD_PERF_TESTS=OFF",
+            "-DBUILD_EXAMPLES=OFF",
+            "-DBUILD_opencv_apps=OFF",
             ".."
         ]
         try:
