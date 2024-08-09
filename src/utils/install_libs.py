@@ -52,6 +52,33 @@ def prompt_users():
         return 1
     return 0
 
+import io
+import contextlib
+
+def run_script(script_path):
+    # Create a stream to capture the output
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+
+    # Redirect stdout and stderr
+    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        try:
+            # Run the script
+            runpy.run_path(script_path, run_name="__main__")
+        except SystemExit as e:
+            # Handle scripts that call sys.exit()
+            pass
+
+    # Get the captured output
+    output = stdout.getvalue()
+    error_output = stderr.getvalue()
+
+    # Close the streams
+    stdout.close()
+    stderr.close()
+
+    return output, error_output
+
 def getEnvVar(var_name):
     if os.environ.get(var_name) is not None:
         return os.environ.get(var_name)
@@ -135,7 +162,37 @@ def install_libraries(spbench_path, app_id):
             sys.argv = [setup_script, dependency_dir]
 
             # Run the setup script as a module
-            runpy.run_path(setup_script, run_name="__main__")
+            #runpy.run_path(setup_script, run_name="__main__")
+            #runShellWithReturn(f"{sys.executable} {setup_script} {dependency_dir}")
+
+            # Run the script and get the output
+            #output, error_output = run_script(setup_script)
+
+            # Print the captured output in real-time
+            #for line in output.splitlines():
+            #    print(line)
+
+            # Print the captured error output in real-time
+            #for line in error_output.splitlines():
+            #    print(line, file=sys.stderr)
+
+
+            # Create the subprocess and run the script using the current Python interpreter
+            process = subprocess.Popen([sys.executable, '-u', setup_script], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+            # Read the output in real time
+            while True:
+                output = process.stdout.readline()
+                if output == '' and process.poll() is not None:
+                    break
+                if output:
+                    print(output.strip())
+
+            # Capture and print any error messages
+            stderr_output, _ = process.communicate()
+            if stderr_output:
+                print(stderr_output)
+
 
             # Restore the original sys.argv
             sys.argv = original_argv
