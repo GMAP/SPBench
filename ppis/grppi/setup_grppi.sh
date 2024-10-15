@@ -3,14 +3,14 @@
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 cd $THIS_DIR
 
-FILE=grppi_instal_pkg.tar.gz
+FILE=grppi_install_pkg.tar.gz
 
 if [ ! -f "$FILE" ]; then
     echo "Downloading $FILE..."
     wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/grppi/$FILE
 fi
 
-tar -xzvf grppi_install_pkg.tar.gz
+tar -xzvf $FILE
 
 ## FF export
 export PATH=$PATH:$THIS_DIR/fastflow-2.2.0/
