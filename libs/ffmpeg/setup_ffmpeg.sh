@@ -3,7 +3,7 @@
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 cd $THIS_DIR
 
-FILE=ffmpeg-3.4.8.tar.xz
+FILE=ffmpeg-3.4.8.tar.gz
 
 if [ ! -f "$FILE" ]; then
     echo "Downloading $FILE..."
