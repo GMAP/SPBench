@@ -10,7 +10,7 @@ if [ ! -f "$FILE" ]; then
     wget -c --read-timeout=5 --tries=10 https://gmap.pucrs.br/public_data/spbench/libs/grppi/$FILE
 fi
 
-tar -xzvf grppi_instal_pkg.tar.gz
+tar -xzvf grppi_install_pkg.tar.gz
 
 ## FF export
 export PATH=$PATH:$THIS_DIR/fastflow-2.2.0/
