@@ -70,14 +70,20 @@ def install_func(spbench_path, args):
         print(f" This will install {BZLIB_VERSION}, {YASM_VERSION}, {FFMPEG_VERSION}, {OPENCV_VERSION}, {GSL_VERSION}, and {JPEG_VERSION}.\n")
         print(" >> It may take several minutes. <<")
         
-    # user input support for python 2 and 3
-    if(python_3 == 3):
-        answer = input(color.BOLD + "\n Do you want to proceed with the installation? [yes/no]\n " + color.END)
-    else:
-        answer = raw_input(color.BOLD + "\n Do you want to proceed with the installation? [yes/no]\n " + color.END)
+    try:
+    # Check Python version and prompt user
+        if sys.version_info[0] >= 3:
+            answer = input("\033[1m\n Do you want to proceed with the installation? [yes/no]\n\033[0m ")
+        else:
+            answer = raw_input("\033[1m\n Do you want to proceed with the installation? [yes/no]\n\033[0m ")
 
-    if(answer.lower() not in ["y","yes"]):
-        print("Installation canceled!\n")
+        # Validate response
+        if answer.strip().lower() not in ("y", "yes"):
+            print(" Installation canceled by user!\n")
+            sys.exit()
+
+    except KeyboardInterrupt:
+        print("\n Installation canceled by user!\n")
         sys.exit()
 
     print(" ---------------------------------------------------------------\n")
@@ -89,28 +95,42 @@ def install_func(spbench_path, args):
     print("\n Aproximated size of all inputs: 1.3 GB.")
 
     download_inputs_flag = True
-    # user input support for python 2 and 3
-    if(python_3 == 3):
-        answer = input(color.BOLD + "\n Do you want to download all benchmark inputs now? [yes/no]\n " + color.END)
-    else:
-        answer = raw_input(color.BOLD + "\n Do you want to download all benchmark inputs now? [yes/no]\n " + color.END)
 
-    if(answer.lower() not in ["y","yes"]):
-        download_inputs_flag = False
+    try:
+    # Check Python version and prompt user
+        if sys.version_info[0] >= 3:
+            answer = input("\033[1m\n Do you want to download all benchmark inputs now? [yes/no]\n\033[0m ")
+        else:
+            answer = raw_input("\033[1m\n Do you want to download all benchmark inputs now? [yes/no]\n\033[0m ")
+
+        # Validate response
+        if answer.strip().lower() not in ("y", "yes"):
+            download_inputs_flag = False
+
+    except KeyboardInterrupt:
+        print("\n Installation canceled by user!\n")
+        sys.exit()
 
     print(" ---------------------------------------------------------------\n")
 
     print(" For running the parallel benchmarks you must also install the\n parallelism libraries (FastFlow, TBB, GrPPI, SPar, WindFlow).")
     print(f"\n You can install them now or later, running the script in\n \'{spbench_path}/ppis/install_ppis.sh\'")
 
-     # user input support for python 2 and 3
-    if(python_3 == 3):
-        answer = input(color.BOLD + "\n Do you want to download and install the parallelism libraries now? [yes/no]\n " + color.END)
-    else:
-        answer = raw_input(color.BOLD + "\n Do you want to download and install the parallelism libraries now? [yes/no]\n " + color.END)
 
-    if(answer.lower() in ["y","yes"]):
-        runShellCmd('sh ' + spbench_path + '/ppis/install_ppis.sh')
+    try:
+    # Check Python version and prompt user
+        if sys.version_info[0] >= 3:
+            answer = input("\033[1m\n Do you want to download and install the parallelism libraries now? [yes/no]\n\033[0m ")
+        else:
+            answer = raw_input("\033[1m\n Do you want to download and install the parallelism libraries now? [yes/no]\n\033[0m ")
+
+        # Validate response
+        if answer.strip().lower() in ("y", "yes"):
+            runShellCmd('sh ' + spbench_path + '/ppis/install_ppis.sh')
+
+    except KeyboardInterrupt:
+        print("\n Installation canceled by user!\n")
+        sys.exit()
     
     #runShellCmd('sh ' + spbench_path + '/libs/install_libs.sh ' + args.app_id)
     install_libraries(spbench_path, args.app_id)
