@@ -32,7 +32,8 @@ import os
 import sys
 import logging
 import shutil
-import runpy
+
+import asyncio
 
 from src.utils.dict import *
 from src.utils.utils import *
@@ -43,47 +44,110 @@ def prompt_users():
     print(" 2) Stop the libraries installation.")
     choice = input("Enter your choice: ")
     if choice == '1':
-        print("Trying to install the remaining libraries...")
+        logging.info("Trying to install the remaining libraries...")
     elif choice == '2':
-        print("Exiting the installation...")
+        logging.info("Exiting the installation...")
         sys.exit(1)
     else:
-        print("\n ERROR: INVALID CHOICE!\n")
+        logging.error("\n ERROR: INVALID CHOICE!\n")
         return 1
     return 0
 
-import io
-import contextlib
-
-def run_script(script_path):
-    # Create a stream to capture the output
-    stdout = io.StringIO()
-    stderr = io.StringIO()
-
-    # Redirect stdout and stderr
-    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-        try:
-            # Run the script
-            runpy.run_path(script_path, run_name="__main__")
-        except SystemExit as e:
-            # Handle scripts that call sys.exit()
-            pass
-
-    # Get the captured output
-    output = stdout.getvalue()
-    error_output = stderr.getvalue()
-
-    # Close the streams
-    stdout.close()
-    stderr.close()
-
-    return output, error_output
-
 def getEnvVar(var_name):
+    """Get the value of an environment variable."""
     if os.environ.get(var_name) is not None:
         return os.environ.get(var_name)
     return ""
 
+def updateEnvVarFile(setup_vars_script, env_vars_file):
+    """Update the environment variables file with the new values."""
+    # Run the shell script and capture the output
+    setup_vars_output = subprocess.run(f"bash {setup_vars_script}", capture_output=True, text=True, shell=True)
+
+    subprocess.run(f"bash {setup_vars_script}", capture_output=True, text=True, shell=True)
+
+    # Parse the output to get environment variables
+    env_vars = {}
+    for line in setup_vars_output.stdout.splitlines():
+        key, _, value = line.partition('=')
+        env_vars[key] = value
+
+    # Get the variables from the environment variables file
+    env_vars_file_data = getDictFromJSON(env_vars_file)
+
+    # Update the environment variables with the new values, separated by :
+    for key, value in env_vars.items():
+        if key in env_vars_file_data:
+            env_vars_file_data[key] = f"{value.strip()}:{env_vars_file_data[key]}"
+        else:
+            env_vars_file_data[key] = value.strip()
+
+    # Save the updated environment variables to the file
+    with open(env_vars_file, 'w') as f:
+        json.dump(env_vars_file_data, f)
+
+def write_to_log_file(log_file, message):
+    """Write the message to the log file."""
+    with open(log_file, 'a') as f:
+        f.write(message + '\n')
+
+async def run_script(setup_script, log_file_path):
+    """Run the setup script asynchronously and capture the output."""
+    try:
+        # Open the log file for writing
+        with open(log_file_path, 'w', encoding='utf-8') as log_file:
+            
+            # Start the subprocess
+            process = await asyncio.create_subprocess_exec(
+                sys.executable, '-u', setup_script,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+
+            async def read_stream(stream, log_prefix):
+                """
+                Reads a stream, logs its content, and prints it in real time.
+                :param stream: The stream to read from.
+                :param log_prefix: A prefix for the log entries (e.g., 'STDOUT', 'STDERR').
+                """
+                while True:
+                    chunk = await stream.read(1024)  # Read in chunks of 1024 bytes
+                    if not chunk:
+                        break
+                    decoded_chunk = chunk.decode('utf-8', errors='replace').strip()
+                    log_file.write(f"{log_prefix}: {decoded_chunk}\n")  # Write to the log file
+                    log_file.flush()  # Ensure content is written immediately
+                    print(decoded_chunk)  # Print to console
+
+            # Run both stdout and stderr reader tasks concurrently
+            await asyncio.gather(
+                read_stream(process.stdout, "STDOUT"),
+                read_stream(process.stderr, "STDERR")
+            )
+
+            # Wait for the process to complete
+            return_code = await process.wait()
+            if return_code != 0:
+                raise RuntimeError(f"Subprocess exited with error code {return_code}")
+    
+    except asyncio.exceptions.CancelledError:
+        print("Process was cancelled.")
+
+    except asyncio.CancelledError:
+        print("Script execution was cancelled.")
+
+    except RuntimeError as e:
+        if str(e) == "Event loop is closed":
+            print("The event loop has been closed.")
+        else:
+            logging.exception("Unexpected runtime error occurred.")
+            print("An unexpected error occurred while running the script.")
+            raise  # Re-raise the error if it's not the specific case we want to handle
+
+    except Exception as e:
+        logging.exception(f"An error occurred while running the script: {e}")
+        print("An error occurred while running the script. Please check the logs for more details.")
+    
 def install_libraries(spbench_path, app_id):
     # Initialize logging if needed
 
@@ -150,84 +214,41 @@ def install_libraries(spbench_path, app_id):
 
         logging.info(f"Getting {dependency} data...")
 
+        # Update the environment variables file with the new values
+        updateEnvVarFile(setup_vars_script, env_vars_file)
+
+        original_argv = sys.argv
+
+        log_file_path = os.path.join(SPBENCH_LIBS_PATH, f"{dependency}/installation.log")
+
         try:
-            
             # Change to the dependency directory
             os.chdir(dependency_dir)
-
-            # Save the original sys.argv
-            original_argv = sys.argv
 
             # Set sys.argv to the required arguments for the script
             sys.argv = [setup_script, dependency_dir]
 
-            # Run the setup script as a module
-            #runpy.run_path(setup_script, run_name="__main__")
-            #runShellWithReturn(f"{sys.executable} {setup_script} {dependency_dir}")
+            # Run the setup script
+            asyncio.run(run_script(setup_script, log_file_path))
 
-            # Run the script and get the output
-            #output, error_output = run_script(setup_script)
-
-            # Print the captured output in real-time
-            #for line in output.splitlines():
-            #    print(line)
-
-            # Print the captured error output in real-time
-            #for line in error_output.splitlines():
-            #    print(line, file=sys.stderr)
-
-
-            # Create the subprocess and run the script using the current Python interpreter
-            process = subprocess.Popen([sys.executable, '-u', setup_script], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-            # Read the output in real time
-            while True:
-                output = process.stdout.readline()
-                if output == '' and process.poll() is not None:
-                    break
-                if output:
-                    print(output.strip())
-
-            # Capture and print any error messages
-            stderr_output, _ = process.communicate()
-            if stderr_output:
-                print(stderr_output)
-
-
-            # Restore the original sys.argv
-            sys.argv = original_argv
-
-            # Change back to the original directory
-            os.chdir(SPBENCH_LIBS_PATH)
-
+        except KeyboardInterrupt:
+            print("Execution was interrupted.")
+            sys.exit(1)
+        except RuntimeError as e:
+            if str(e) == "Event loop is closed":
+                print("The event loop has been closed.")
+            else:
+                logging.exception("Unexpected runtime error occurred.")
+                raise
         except Exception as e:
-            logging.exception(f"Exception occurred while installing {dependency}.")
+            logging.exception(f"Exception occurred while installing {dependency}: {e}")
             if prompt_users() != 0:
                 os.chdir(SPBENCH_LIBS_PATH)
                 sys.exit(1)
 
-        # Run the shell script and capture the output
-        setup_vars_output = subprocess.run(f"bash {setup_vars_script}", capture_output=True, text=True, shell=True)
-
-        # Parse the output to get environment variables
-        env_vars = {}
-        for line in setup_vars_output.stdout.splitlines():
-            key, _, value = line.partition('=')
-            env_vars[key] = value
-
-        # Get the variables from the environment variables file
-        env_vars_file_data = getDictFromJSON(env_vars_file)
-
-        # Update the environment variables with the new values, separated by :
-        for key, value in env_vars.items():
-            if key in env_vars_file_data:
-                env_vars_file_data[key] = f"{value.strip()}:{env_vars_file_data[key]}"
-            else:
-                env_vars_file_data[key] = value.strip()
-
-        # Save the updated environment variables to the file
-        with open(env_vars_file, 'w') as f:
-            json.dump(env_vars_file_data, f)
+        finally:
+            # Restore the original sys.argv
+            sys.argv = original_argv
 
         os.chdir(SPBENCH_LIBS_PATH)
         print("DONE!")
