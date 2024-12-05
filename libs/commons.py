@@ -29,6 +29,8 @@
 ##
 
 import urllib.request
+import urllib.error
+import time
 import logging
 import sys
 import os
@@ -37,7 +39,24 @@ import shutil
 import json
 import subprocess
 
+from pathlib import Path
+# Add ../src/utils to the Python module search path
+utils_path = Path(__file__).resolve().parent.parent / 'src' / 'utils'
+sys.path.append(str(utils_path))
+
 num_tries = 3
+
+def setup_logging():
+    """Configure logging for the script."""
+    logging.basicConfig(
+        level=logging.INFO,  # Set logging level to INFO
+        format='%(asctime)s | %(levelname)s: %(message)s',  # Define log message format
+        datefmt='%Y-%m-%d %H:%M:%S',  # Define date format
+        #handlers=[logging.StreamHandler()],  # Output logs to console
+        #format='%(message)s',  # Define log message format
+        stream=sys.stdout, 
+        force=True,
+    )
 
 def get_script_dir():
     """Function to determine the directory of the currently executed or sourced script."""
@@ -45,20 +64,41 @@ def get_script_dir():
     script_dir = os.path.dirname(script)
     return script_dir
 
-def download_file(lib_name, file_url, abs_lib_file_path):
-    try: 
-        logging.info(f"Downloading {lib_name} from {file_url}...")
-        urllib.request.urlretrieve(file_url, abs_lib_file_path, reporthook=progress_hook)
-        logging.info(f"Download of {lib_name} completed.")
-    
-    except urllib.error.URLError as e:
-        logging.error(f"Failed to download {lib_name}: {e}")
-        sys.exit(1)
-    
-    except Exception as e:
-        logging.error(f"Error during download process: {e}")
-        sys.exit(1)
-    
+   
+def download_file(lib_name, file_url, abs_lib_file_path, retries=3, delay=5):
+    """
+    Downloads a file with retry logic.
+
+    :param lib_name: Name of the library to download.
+    :param file_url: URL of the file to download.
+    :param abs_lib_file_path: Absolute path where the file should be saved.
+    :param retries: Number of retry attempts.
+    :param delay: Delay in seconds between retries.
+    """
+    for attempt in range(1, retries + 1):
+        try:
+            logging.info(f"Attempt {attempt}: Downloading {lib_name} from {file_url}...")
+            urllib.request.urlretrieve(file_url, abs_lib_file_path, reporthook=progress_hook)
+            logging.info(f"Download of {lib_name} completed.")
+            return  # Exit the function if download succeeds
+
+        except urllib.error.URLError as e:
+            logging.error(f"Attempt {attempt} failed to download {lib_name}: {e}")
+            if attempt < retries:
+                logging.info(f"Retrying in {delay} seconds...")
+                time.sleep(delay)
+            else:
+                logging.error(f"Exceeded maximum retries. Failed to download {lib_name}.")
+                sys.exit(1)
+
+        except Exception as e:
+            logging.error(f"Attempt {attempt} encountered an error: {e}")
+            if attempt < retries:
+                logging.info(f"Retrying in {delay} seconds...")
+                time.sleep(delay)
+            else:
+                logging.error(f"Exceeded maximum retries. Failed to download {lib_name}.")
+                sys.exit(1)
 
 def progress_hook(block_num, block_size, total_size):
     downloaded = block_num * block_size
@@ -199,6 +239,7 @@ def run_configure_command(configure_command, lib_env_vars):
             logging.info("Configuration was successful.")
         else:
             logging.error("Configuration failed.")
+            sys.exit(1)
     except subprocess.CalledProcessError as e:
         logging.error(f"Configuration failed with error: {e}")
         sys.exit(1)
@@ -210,6 +251,7 @@ def run_build_command(build_command, lib_env_vars):
             logging.info("The library was built successfully.")
         else:
             logging.error("Building process has failed.")
+            sys.exit(1)
     except subprocess.CalledProcessError as e:
         logging.error(f"Failed to build the library: {e}")
         sys.exit(1)
@@ -226,3 +268,4 @@ def run_install_command(install_command, lib_env_vars):
     except Exception as e:
         logging.error(f"Error during installation: {e}")
         return False
+    

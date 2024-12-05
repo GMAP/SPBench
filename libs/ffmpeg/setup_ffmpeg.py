@@ -139,7 +139,7 @@ def prompt_user():
     elif choice == "3":
         logging.info("Removing the current installation...")
         commons.remove_directory(LIB_EXTRACTING_PATH)
-        commons.extract_files()
+        commons.extract_files(TAR_LIB_FILE, ABS_LIB_FILE_PATH, THIS_DIR)
         configure_library()
         build_library()
         if not install_library():

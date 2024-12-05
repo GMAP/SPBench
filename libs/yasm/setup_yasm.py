@@ -41,27 +41,13 @@ TAR_LIB_FILE = "yasm-1.3.0.tar.gz"
 LIB_NAME = "yasm-1.3.0"
 HOST_URL = "https://gmap.pucrs.br"
 FILE_URL = f"{HOST_URL}/public_data/spbench/libs/yasm/{TAR_LIB_FILE}"
-num_tries = 3
-
-def setup_logging():
-    """Configure logging for the script."""
-    logging.basicConfig(
-        level=logging.INFO,  # Set logging level to INFO
-        format='%(asctime)s | %(levelname)s: %(message)s',  # Define log message format
-        datefmt='%Y-%m-%d %H:%M:%S',  # Define date format
-        #handlers=[logging.StreamHandler()],  # Output logs to console
-        #format='%(message)s',  # Define log message format
-        stream=sys.stdout, 
-        force=True,
-    )
-    
+   
 def get_script_dir():
     """Function to determine the directory of the currently executed or sourced script."""
     script = os.path.realpath(sys.argv[0])
     script_dir = os.path.dirname(script)
     return script_dir
 
-# Function to build the libraryrary
 def configure_library():
     if commons.libdir_exists(LIB_EXTRACTING_PATH):
         original_dir = os.getcwd()
@@ -153,7 +139,7 @@ def prompt_user():
     elif choice == "3":
         logging.info("Removing the current installation...")
         commons.remove_directory(LIB_EXTRACTING_PATH)
-        commons.extract_files()
+        commons.extract_files(TAR_LIB_FILE, ABS_LIB_FILE_PATH, THIS_DIR)
         configure_library()
         build_library()
         if not install_library():
@@ -171,7 +157,7 @@ def prompt_user():
 
 def main():
 
-    setup_logging()
+    commons.setup_logging()
 
     global THIS_DIR
     global ABS_LIB_FILE_PATH

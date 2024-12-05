@@ -7,7 +7,7 @@ elif [ -n "$BASH_VERSION" ]; then
 elif [ -n "$KSH_VERSION" ]; then
   LIB_DIR="$(cd "$(dirname "$(realpath "${.sh.file}")")" &> /dev/null && pwd)"
 elif [ -n "$FISH_VERSION" ]; then
-  LIB_DIR="$(cd (dirname (status -f)) &> /dev/null && pwd)"
+  LIB_DIR="$(cd $(dirname $(status -f)) &> /dev/null && pwd)"
 else
   echo "Unsupported shell"
   exit 1
