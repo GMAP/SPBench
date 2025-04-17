@@ -123,6 +123,7 @@ def prompt_user():
     print("2) Download the library again, decompress the files, configure, build, and install")
     print("3) Decompress already downloaded files, configure, build, and install")
     print("4) Only configure, build, and install")
+    print("5) Only load the library")
     print("\nEnter your choice (1-4): ")
     choice = input("")
     if choice == "1":
@@ -149,6 +150,8 @@ def prompt_user():
         build_library()
         if not install_library():
             return False
+    elif choice == "5":
+        logging.info("Library loaded!")
     else:
         logging.error("\nERROR: INVALID CHOICE!\n")
         if not prompt_user():
