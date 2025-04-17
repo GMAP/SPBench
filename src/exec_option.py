@@ -54,6 +54,8 @@ def execute_func(spbench_path, args):
     for sub_list in args.input_id:
         for input_id in sub_list:
             inputs_ID_list.append(input_id)
+
+    checkEnvVarsJSON()
             
     # run each of the selected benchmarks
     for benchmark in benchmarks_to_run:
