@@ -31,6 +31,7 @@ import os
 
 from src.utils.dict import *
 from src.utils.shell import *
+from src.utils.utils import *
 from src.codeGenerators.make_gen import *
 #from register_option import *
 
@@ -54,6 +55,13 @@ def compile_func(spbench_path, args):
         print('-> Compiling ' + bench_id + '...')
         print("-------------------------------------------")
 
+        # check if there are missing dependencies in the environment
+
+        #dependencies = getDependenciesRegistry(spbench_path)
+        #print(list(dependencies[app_id].values()))
+
+        addEnvVars(app_id)
+        
         # search for a programm name or run for them all
         bin_path = spbench_path + "/bin/" + app_id + "/" + ppi_id
         if not dirExists(bin_path):     #if there is not a /bin directory, create one
@@ -71,49 +79,10 @@ def compile_func(spbench_path, args):
             print("Error!!\n-> Directory [" + programm_path + "] not found.\n-> Check if it exists or try to register it again!")
             sys.exit()
         
+        # First, run the clean command if the user requested it
         if args.clean:
             runShellCmd("make -C " + programm_path + " clean")
 
-        #else:
-        #    if app_id == 'ferret':
-        #        # temporary (or not) solution to solve ferret compiling problem
-        #        bin_file = spbench_path + '/bin/' + app_id + "/" + ppi_id + "/" + bench_id
-        #        if fileExists(bin_file):
-        #            runShellCmd("make -C " + programm_path + " clean")
-
-        #exec(open("setup_vars.sh").read())
-
-        # def shell_source(script):
-        #     """Sometime you want to emulate the action of "source" in bash,
-        #     settings some environment variables. Here is a way to do it."""
-        #     print(script)
-        #     import subprocess, os
-        #     pipe = subprocess.Popen(". %s; env" % script, stdout=subprocess.PIPE, shell=True)
-        #     output = pipe.communicate()[0]#.split('\x00')
-        #     env = {}
-        #     for line in output.splitlines():
-        #         print(line.split("=", 1))
-        #         env.update(dict(line.split("=", 1)))
-        #     #os.environ.clear()
-        #     print(env)
-        #     #os.environ.update(env)
-
-        #shell_source(spbench_path + "/setup_vars.sh")
-
-        # source_file = spbench_path + "/setup_vars.sh"
-
-        # with open(source_file, "r") as setup_vars:
-        #     for line in setup_vars:
-        #         if line and line.split()[0] == "source":
-        #             #with open((spbench_path + "/" + line.split()[1]), "r") as subsource_file:
-        #             #    shell_source(subsource_file)
-        #             shell_source(spbench_path + "/" + line.split()[1])
-
-        # Avoid using -j for ferret, because it is already used by its submake routine
-        make_cmd = ""
-        #if app_id == "ferret":
-        #    make_cmd = ("make -C " + programm_path)
-        #else:
         make_cmd = ("make -C " + programm_path + " -j$(nproc)")
         
         # compile the programm
