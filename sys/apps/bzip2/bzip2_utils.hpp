@@ -257,7 +257,7 @@ public:
 
 class Source{
 public:
-	static long source_item_timestamp;
+	static std::chrono::high_resolution_clock::time_point source_item_timestamp;
 	static bool op(Item &item);
 	Source(){}
 	virtual ~Source(){}
@@ -272,7 +272,7 @@ public:
 
 class Source_d{
 public:
-	static long source_item_timestamp;
+	static std::chrono::high_resolution_clock::time_point source_item_timestamp;
 	static bool op(Item &item);
 	Source_d(){}
 	virtual ~Source_d(){}

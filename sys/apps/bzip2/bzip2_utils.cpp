@@ -192,7 +192,7 @@ void set_operators_name() {
 	}
 }
 
-long Source::source_item_timestamp = current_time_usecs();
+std::chrono::high_resolution_clock::time_point Source::source_item_timestamp = std::chrono::high_resolution_clock::now();
 
 bool Source::op(Item &item){
 
@@ -204,19 +204,21 @@ bool Source::op(Item &item){
 	// frequency control mechanism
 	SPBench::item_frequency_control(source_item_timestamp);
 
-	item.timestamp = source_item_timestamp = current_time_usecs();
-	unsigned long batch_elapsed_time = source_item_timestamp;
+	std::chrono::high_resolution_clock::time_point batch_opening_time = item.timestamp = source_item_timestamp = std::chrono::high_resolution_clock::now();
 	
-	unsigned long latency_op;
-	if(Metrics::latency_is_enabled()){
-		latency_op = source_item_timestamp;
-	}
+	#if !defined NO_LATENCY
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+  			op_timestamp1 = item.timestamp;
+		}
+	#endif
 
 	while(1) { //main source loop
 		// batching management routines
 		if(SPBench::getBatchInterval()){
 			// Check if the interval of this batch is higher than the batch interval defined by the user
-			if(((current_time_usecs() - batch_elapsed_time) / 1000.0) >= SPBench::getBatchInterval()) break;
+			std::chrono::duration<float, std::milli> batch_elapsed_time_ms = std::chrono::high_resolution_clock::now() - batch_opening_time;
+			if(batch_elapsed_time_ms.count() >= SPBench::getBatchInterval()) break;
 		} else {
 			// If no batch interval is set, than try to close it by size
 			if(item.batch_size >= SPBench::getBatchSize()) break;
@@ -276,8 +278,8 @@ bool Source::op(Item &item){
 			bytesLeft -= rret;
 		}
 		if (stream_end) break;
+		item_data.index = Metrics::items_at_source_counter;
 		item.item_batch.resize(item.batch_size + 1);
-		//item_data.index = Metrics::items_at_source_counter;
 		item.item_batch[item.batch_size] = item_data;
 		item.batch_size++;
 		Metrics::items_at_source_counter++;
@@ -288,21 +290,28 @@ bool Source::op(Item &item){
 		return false;
 	}
 
-	if (Metrics::latency_is_enabled()) {
-		item.latency_op.push_back(current_time_usecs() - latency_op);
-	}
+	#if !defined NO_LATENCY
+		if(Metrics::latency_is_enabled()){
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
+			item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<float>>(op_timestamp2 - op_timestamp1));
+		}
+	#endif
 
 	item.batch_index = Metrics::batch_counter;
 	Metrics::batch_counter++;	// sent batches
+
 	return true;
 }
 
 void Sink::op(Item& item) {
 
-	unsigned long latency_op;
-	if (Metrics::latency_is_enabled()) {
-		latency_op = current_time_usecs();
-	}
+	//metrics computation
+	#if !defined NO_LATENCY
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+			op_timestamp1 = std::chrono::high_resolution_clock::now();
+		}
+	#endif
 
 	unsigned int num_item = 0;
 	while (num_item < item.batch_size) { //batch loop
@@ -358,22 +367,36 @@ void Sink::op(Item& item) {
 
 	Metrics::batches_at_sink_counter++;
 
-	if(Metrics::latency_is_enabled()){
-		double current_time_sink = current_time_usecs();
-		item.latency_op.push_back(current_time_sink - latency_op);
+	//metrics computation
+	#if !defined NO_LATENCY
+		if(Metrics::latency_is_enabled()){
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
 
-		unsigned long total_item_latency = (current_time_sink - item.timestamp);
-		Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
+			std::chrono::duration<float, std::milli> elapsed_time_since_last_sample = op_timestamp2 - Metrics::latency_last_sample_time;
 
-		auto latency = Metrics::Latency_t();
-		latency.local_latency = item.latency_op;
-		latency.total_latency = total_item_latency;
-		latency.item_timestamp = item.timestamp;
-		latency.item_sink_timestamp = current_time_sink;
-		latency.batch_size = item.batch_size;
-		Metrics::latency_vector.push_back(latency);
-		item.latency_op.clear();
-	}
+			if(elapsed_time_since_last_sample.count() >= Metrics::latency_sample_interval){
+				Metrics::latency_last_sample_time = op_timestamp2;
+
+				item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<float>>(op_timestamp2 - op_timestamp1));
+
+				std::chrono::duration<float, std::milli> total_item_latency = op_timestamp2 - item.timestamp;
+
+				if(total_item_latency.count() > 0.0){
+					Metrics::global_latency_acc.total += total_item_latency; // to compute real time average latency
+					Metrics::global_latency_acc.count++;
+
+					auto latency = Metrics::Latency_t();
+					latency.local_latency = item.latency_op;
+					latency.total_latency = total_item_latency;
+					latency.item_timestamp = item.timestamp;
+					latency.item_sink_timestamp = op_timestamp2;
+					latency.batch_size = item.batch_size;
+					Metrics::latency_vector.push_back(latency);
+					item.latency_op.clear();
+				}
+			}
+		}
+	#endif
 	if(Metrics::monitoring_is_enabled()){
 		Metrics::monitor_metrics();
 	}
@@ -517,7 +540,8 @@ int direct_compress(char* OutFilename)
 *********************************************************
 */
 
-long Source_d::source_item_timestamp = current_time_usecs();
+std::chrono::high_resolution_clock::time_point Source_d::source_item_timestamp = std::chrono::high_resolution_clock::now();
+
 
 bool Source_d::op(Item &item){
 
@@ -529,19 +553,21 @@ bool Source_d::op(Item &item){
 	// frequency control mechanism
 	SPBench::item_frequency_control(source_item_timestamp);
 
-	item.timestamp = source_item_timestamp = current_time_usecs();
-	unsigned long batch_elapsed_time = source_item_timestamp;
+	std::chrono::high_resolution_clock::time_point batch_opening_time = item.timestamp = source_item_timestamp = std::chrono::high_resolution_clock::now();
 	
-	unsigned long latency_op;
-	if(Metrics::latency_is_enabled()){
-		latency_op = source_item_timestamp;
-	}
+	#if !defined NO_LATENCY
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+  			op_timestamp1 = item.timestamp;
+		}
+	#endif
 
 	while(1) { //main source loop
 		// batching management routines
 		if(SPBench::getBatchInterval()){
 			// Check if the interval of this batch is higher than the batch interval defined by the user
-			if(((current_time_usecs() - batch_elapsed_time) / 1000.0) >= SPBench::getBatchInterval()) break;
+			std::chrono::duration<float, std::milli> batch_elapsed_time_ms = std::chrono::high_resolution_clock::now() - batch_opening_time;
+			if(batch_elapsed_time_ms.count() >= SPBench::getBatchInterval()) break;
 		} else {
 			// If no batch interval is set, than try to close it by size
 			if(item.batch_size >= SPBench::getBatchSize()) break;
@@ -550,7 +576,7 @@ bool Source_d::op(Item &item){
 		if(SPBench::getBatchSize() > 1){
 			if(item.batch_size >= SPBench::getBatchSize()) break;
 		}
-
+		
 		item_data item_data;
 
 		// go to start of block position in file
@@ -642,8 +668,8 @@ bool Source_d::op(Item &item){
 				exit(-1);
 			}
 		}
+		item_data.index = Metrics::items_at_source_counter;
 		item.item_batch.resize(item.batch_size + 1);
-		//item_data.index = Metrics::items_at_source_counter;
 		item.item_batch[item.batch_size] = item_data;
 		item.batch_size++;
 		Metrics::items_at_source_counter++;
@@ -653,9 +679,12 @@ bool Source_d::op(Item &item){
 		return false;
 	}
 
-	if (Metrics::latency_is_enabled()) {
-		item.latency_op.push_back(current_time_usecs() - latency_op);
-	}
+	#if !defined NO_LATENCY
+		if(Metrics::latency_is_enabled()){
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
+			item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<float>>(op_timestamp2 - op_timestamp1));
+		}
+	#endif
 
 	item.batch_index = Metrics::batch_counter;
 	Metrics::batch_counter++;	// sent batches
@@ -664,10 +693,14 @@ bool Source_d::op(Item &item){
 
 void Sink_d::op(Item& item) {
 
-	unsigned long latency_op;
-	if (Metrics::latency_is_enabled()) {
-		latency_op = current_time_usecs();
-	}
+	//metrics computation
+	#if !defined NO_LATENCY
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+			op_timestamp1 = std::chrono::high_resolution_clock::now();
+		}
+	#endif
+
 	unsigned int num_item = 0;
 	while (num_item < item.batch_size) { //batch loop
 		item_data item_data;
@@ -718,22 +751,36 @@ void Sink_d::op(Item& item) {
 	}
 	Metrics::batches_at_sink_counter++;
 
-	if(Metrics::latency_is_enabled()){
-		double current_time_sink = current_time_usecs();
-		item.latency_op.push_back(current_time_sink - latency_op);
+	//metrics computation
+	#if !defined NO_LATENCY
+		if(Metrics::latency_is_enabled()){
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
 
-		unsigned long total_item_latency = (current_time_sink - item.timestamp);
-		Metrics::global_latency_acc += total_item_latency; // to compute real time average latency
+			std::chrono::duration<float, std::milli> elapsed_time_since_last_sample = op_timestamp2 - Metrics::latency_last_sample_time;
 
-		auto latency = Metrics::Latency_t();
-		latency.local_latency = item.latency_op;
-		latency.total_latency = total_item_latency;
-		latency.item_timestamp = item.timestamp;
-		latency.item_sink_timestamp = current_time_sink;
-		latency.batch_size = item.batch_size;
-		Metrics::latency_vector.push_back(latency);
-		item.latency_op.clear();
-	}
+			if(elapsed_time_since_last_sample.count() >= Metrics::latency_sample_interval){
+				Metrics::latency_last_sample_time = op_timestamp2;
+
+				item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<float>>(op_timestamp2 - op_timestamp1));
+
+				std::chrono::duration<float, std::milli> total_item_latency = op_timestamp2 - item.timestamp;
+
+				if(total_item_latency.count() > 0.0){
+					Metrics::global_latency_acc.total += total_item_latency; // to compute real time average latency
+					Metrics::global_latency_acc.count++;
+
+					auto latency = Metrics::Latency_t();
+					latency.local_latency = item.latency_op;
+					latency.total_latency = total_item_latency;
+					latency.item_timestamp = item.timestamp;
+					latency.item_sink_timestamp = op_timestamp2;
+					latency.batch_size = item.batch_size;
+					Metrics::latency_vector.push_back(latency);
+					item.latency_op.clear();
+				}
+			}
+		}
+	#endif
 	if(Metrics::monitoring_is_enabled()){
 		Metrics::monitor_metrics();
 	}
@@ -1685,7 +1732,62 @@ int bzip2_main(int argc, char* argv[])
 					fprintf(stderr, "-F%d\n", items_reading_frequency);
 #endif
 					break;
-					// Frequency pattern
+
+				case 'l': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					
+					//if (!isNumber(optarg) || atof(optarg) < 0.0) {
+					//	fprintf(stderr, "\n ARGUMENT ERROR (-l <latency_sample_interval_ms>)\n--> Sample interval must be a number equal or higher than zero!\n");
+					//	return 1;
+					//}
+
+					if (Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)) {
+						printf("\n Warning: there is already a latency sample interval set as %.2f milliseconds.\n", Metrics::get_latency_sample_interval());
+						printf("          The new latency sample interval will be set as %.2f milliseconds, set by the '-latency' argument.\n", atof(optarg));
+					}
+					Metrics::enable_print_latency(atof(optarg));
+
+					j += cmdLineTempCount;
+#ifdef PBZIP_DEBUG
+					fprintf(stderr, "-F%d\n", items_reading_frequency);
+#endif
+					break;
+
+				case 'L': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
+					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
+					{
+						// no more numbers, finish
+						if ((argv[i][k] < '0') || (argv[i][k] > '9'))
+							break;
+						k++;
+						cmdLineTempCount++;
+					}
+					/*
+					if (!isNumber(optarg) || atof(optarg) < 0.0) {
+						fprintf(stderr, "\n ARGUMENT ERROR (-L <latency_sample_interval_ms>)\n--> Sample interval must be a number equal or higher than zero!\n");
+						exit(EXIT_FAILURE);
+					}
+
+					if (Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)) {
+						printf("\n Warning: there is already a latency sample interval set as %.2f milliseconds.\n", Metrics::get_latency_sample_interval());
+						printf("          The new latency sample interval will be set as %.2f milliseconds,\n          set by the '-latency-monitor' argument.\n", atof(optarg));
+					}
+					Metrics::enable_latency_to_file(atof(optarg));*/
+
+					j += cmdLineTempCount;
+#ifdef PBZIP_DEBUG
+					fprintf(stderr, "-F%d\n", items_reading_frequency);
+#endif
+					break;
+
+				// Frequency pattern
 				case 'F': k = j + 1; cmdLineTempCount = 0; strcpy(cmdLineTemp, "2");
 					while (argv[i][k] != '\0' && k < sizeof(cmdLineTemp))
 					{
@@ -1792,8 +1894,7 @@ int bzip2_main(int argc, char* argv[])
 				case 'I': optimized_memory = true; SPBench::enable_memory_source(); break;
 					//case 'm': monitoring_sample_interval = atoi(optarg); enable_monitoring = true; break;
 					//case 'o': optimized_memory = true; memory_source = true; break;
-				case 'l': Metrics::enable_print_latency(); break;
-				case 'L': Metrics::enable_latency_to_file(); break;
+		
 				case 'T': Metrics::enable_throughput(); break;
 				case 'r': Metrics::enable_upl(); break;
 				case 'c': OutputStdOut = 1; break;
@@ -1833,7 +1934,7 @@ int bzip2_main(int argc, char* argv[])
 	} /* for */
 
 	set_operators_name();
-	Metrics::enable_latency();
+	//Metrics::enable_latency();
 
 	if (FileListCount == 0)
 	{
