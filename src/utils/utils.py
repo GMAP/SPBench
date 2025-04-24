@@ -131,7 +131,6 @@ def addEnvVars(app_id):
     """
 
     dependencies = getDependenciesRegistry(spbench_path)[app_id]
-
     env_vars_file = spbench_path + "/libs/libraries_env_vars.json"
 
     for lib_name in dependencies.values():
@@ -147,28 +146,24 @@ def addEnvVars(app_id):
             key, _, value = line.partition('=')
             env_vars[key] = value
 
-        # check if the environment variables file exists, if it exists, check if it is a valid JSON file
-        if not fileExists(env_vars_file):
-            with open(env_vars_file, 'w') as f:
-                json.dump(env_vars, f, indent=4)
-        
-        # Get the variables from the environment variables file
-        env_vars_file_data = getDictFromJSON(env_vars_file)
+        env_vars_dict = getEnvVarsJSON() # initialize the env_vars_file_data variable with an empty dictionary
 
         # Update the environment variables with the new values, separated by :
         for key, value in env_vars.items():
             # Check if the key already exists in the file
-            if key in env_vars_file_data:
+            if key in env_vars_dict:
                 # check if the dependency string is already on the value of the env var on the file and add it if it is not
-                if value.strip() not in env_vars_file_data[key]:
-                    env_vars_file_data[key] = f"{value.strip()}:{env_vars_file_data[key]}"
+                if value.strip() not in env_vars_dict[key]:
+                    env_vars_dict[key] = f"{value.strip()}:{env_vars_dict[key]}"
             # if the key does not exist, add it to the file
             else:
-                env_vars_file_data[key] = value.strip()
+                env_vars_dict[key] = value.strip()
 
         # Save the updated environment variables to the file
         with open(env_vars_file, 'w') as f:
-            json.dump(env_vars_file_data, f, indent=4)
+            json.dump(env_vars_dict, f, indent=4)
+
+
 
 # get environment variables from the libs/libraries_env_vars.json file
 def getEnvVarsJSON():

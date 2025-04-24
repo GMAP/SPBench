@@ -84,12 +84,7 @@ def updateEnvVarFile(setup_vars_script, env_vars_file):
 
     # Save the updated environment variables to the file
     with open(env_vars_file, 'w') as f:
-        json.dump(env_vars_file_data, f)
-
-def write_to_log_file(log_file, message):
-    """Write the message to the log file."""
-    with open(log_file, 'a') as f:
-        f.write(message + '\n')
+        json.dump(env_vars_file_data, f, indent=4)
 
 async def run_script(setup_script, log_file_path):
     """Run the setup script asynchronously and capture the output."""
@@ -129,6 +124,8 @@ async def run_script(setup_script, log_file_path):
             return_code = await process.wait()
             if return_code != 0:
                 raise RuntimeError(f"Subprocess exited with error code {return_code}")
+        
+        logging.info(f"A log file containg the above output was created: {log_file_path}")
     
     except asyncio.exceptions.CancelledError:
         print("Process was cancelled.")

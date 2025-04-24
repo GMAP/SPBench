@@ -37,7 +37,8 @@ from difflib import SequenceMatcher
 spbench_path_ = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
 
 def getBenchRegistry(spbench_path):
-    """return a dictionay with the benchmarks registered data
+    """
+    return a dictionay with the benchmarks registered data
     """
     registry_file = spbench_path + "/benchmarks/benchmarks_registry.json"
     #check if the registry exists
@@ -47,7 +48,8 @@ def getBenchRegistry(spbench_path):
     return getDictFromJSON(registry_file)
 
 def getInputsRegistry(spbench_path):
-    """return a dictionay with the inputs registered data
+    """
+    return a dictionay with the inputs registered data
     """
     registry_file = spbench_path + "/inputs/inputs_registry.json"
     #check if the registry exists
@@ -67,7 +69,8 @@ def getDependenciesRegistry(spbench_path):
     return getDictFromJSON(registry_file)
 
 def getAppsRegistry(spbench_path):
-    """return a dictionay with the apps registered data
+    """
+    return a dictionay with the apps registered data
     """
     registry_file = spbench_path + "/sys/apps/apps_registry.json"
     #check if the registry exists
@@ -77,7 +80,8 @@ def getAppsRegistry(spbench_path):
     return getDictFromJSON(registry_file)
 
 def getAppsList(spbench_path):
-    """return a list with the apps in the json registry
+    """
+    return a list with the apps in the json registry
     """
     registry_dic = getAppsRegistry(spbench_path)
     apps_list = []
@@ -86,7 +90,8 @@ def getAppsList(spbench_path):
     return apps_list
 
 def getAppsListAll(spbench_path):
-    """return a list with the allowed apps names
+    """
+    return a list with the allowed apps names
     """
     apps_list = getAppsList(spbench_path)
     apps_list_all = list(apps_list)
@@ -94,7 +99,8 @@ def getAppsListAll(spbench_path):
     return apps_list_all
 
 def deleteAppFromRegistry(spbench_path, app_id):
-    """delete a app from the registry and sys/apps/ folder
+    """
+    delete a app from the registry and sys/apps/ folder
     """
     # delete app key from the app registry
     apps_registry = getAppsRegistry(spbench_path)
@@ -104,18 +110,35 @@ def deleteAppFromRegistry(spbench_path, app_id):
     return
 
 def getDictFromJSON(registry_file):
-    """read the content of the json registry and store into a dictionary
     """
-    registry = open(registry_file, 'r')
-    registry_dic = {}
-    with registry as f:
-        registry_dic = json.load(f)
-    registry.close()
-    return registry_dic
+    Reads the content of a JSON file and returns its content as a dictionary.
+
+    Args:
+        registry_file (str): Path to the JSON file.
+
+    Returns:
+        dict: Dictionary representation of the JSON file's content.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        json.JSONDecodeError: If the file content is not valid JSON.
+        Exception: For any other errors that might occur.
+    """
+    try:
+        with open(registry_file, 'r') as f:
+            registry_dic = json.load(f)
+        return registry_dic
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File not found: {registry_file}")
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Error decoding JSON from file {registry_file}: {e}")
+    except Exception as e:
+        raise RuntimeError(f"An unexpected error occurred while reading the file {registry_file}: {e}")
 
 # check if a given app exists
 def appExists(spbench_path, selected_app):
-    """check if a given app exists
+    """
+    check if a given app exists
     """
     registry_dic = getBenchRegistry(spbench_path)
 
@@ -127,7 +150,8 @@ def appExists(spbench_path, selected_app):
 
 # check if a given benchmark exists
 def benchmarkExists(spbench_path, selected_bench):
-    """check if a given benchmark exists
+    """
+    check if a given benchmark exists
     """
     registry_dic = getBenchRegistry(spbench_path)
 
@@ -140,28 +164,32 @@ def benchmarkExists(spbench_path, selected_bench):
     return False
 
 def writeDicTo(registry_file, registry_dic):
-    """write dictionary to JSON registry file
+    """
+    write dictionary to JSON registry file
     """
     with open(registry_file, 'w') as f:
         json.dump(registry_dic, f, indent=4)
     f.close()
 
 def writeDicToBenchRegistry(spbench_path, registry_dic):
-    """write dictionary to JSON registry file
+    """
+    write dictionary to JSON registry file
     """
     with open(spbench_path + "/benchmarks/benchmarks_registry.json", 'w') as f:
         json.dump(registry_dic, f, indent=4)
     f.close()
 
 def writeDicToInputRegistry(spbench_path, registry_dic):
-    """write dictionary to JSON inputs registry file
+    """
+    write dictionary to JSON inputs registry file
     """
     with open(spbench_path + "/inputs/inputs_registry.json", 'w') as f:
         json.dump(registry_dic, f, indent=4)
     f.close()
 
 def filterBenchRegByApp(registry_dic, selected_app, runDoYouMean = True):
-    """Filter from a dictionary all keys that do not contain the given app
+    """
+    Filter from a dictionary all keys that do not contain the given app
     """
     filtered_registry = {}
     benchmark_found = False
@@ -266,7 +294,8 @@ def filterRegistry(inputDictionary, args, copy_from = False):
     return selected_benchmarks
 
 def registryDicToList(benchs_dic):
-    """Convert a benchmark dictionary to a list
+    """
+    Convert a benchmark dictionary to a list
     """
     benchmarks_list = [] # list of selected benchmarks to run
 
@@ -288,14 +317,16 @@ def registryDicToList(benchs_dic):
     return benchmarks_list
 
 def print_dic(registry_dic):
-    """It prints a dictionary as a structured json
+    """
+    It prints a dictionary as a structured json
     """
     aux = json.dumps(registry_dic, indent=3)
     print(aux)
     return
 
 def doYouMeanBench(benchmark):
-    """check if there is a benchmark with similar name
+    """
+    check if there is a benchmark with similar name
     """
     registry_dic = getBenchRegistry(spbench_path_)
 
@@ -315,7 +346,8 @@ def doYouMeanBench(benchmark):
     return ''
 
 def doYouMeanApp(app_name):
-    """check if there is an application with similar name
+    """
+    check if there is an application with similar name
     """
     registry_dic = getBenchRegistry(spbench_path_)
 
@@ -333,7 +365,8 @@ def doYouMeanApp(app_name):
     return ''
 
 def doYouMeanPPI(ppi_name):
-    """check if there is a PPI with similar name
+    """
+    check if there is a PPI with similar name
     """
     registry_dic = getBenchRegistry(spbench_path_)
 
