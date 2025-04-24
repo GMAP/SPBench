@@ -76,23 +76,40 @@ def getTextEditor(user_editor):
         text_editor = user_editor
     return text_editor
 
+def getMergedEnvVars():
+    """
+    The function reads the environment variables from the libs/libraries_env_vars.json file and merges them with the current system environment variables.
+    It does not modify the system environment variables. It just makes a copy of them and adds the new variables to the copy.
+    The function returns a dictionary with the merged environment variables.
+    """
+    # get the environment variables from the libs/libraries_env_vars.json file
+    spbench_env_vars = utils.getEnvVarsJSON()
+
+    sys_env_vars = os.environ.copy() # get a copy of the current system environment variables
+
+    # add the values of the spbench libraries variables to the current system environment, without overwriting them
+    for key, value in spbench_env_vars.items():
+        if key in sys_env_vars:
+            # Append to the system PATH
+            sys_env_vars[key] = sys_env_vars[key] + os.pathsep + value
+        else:
+            # Create a new PATH
+            sys_env_vars[key] = value
+
+    return sys_env_vars
+
 def runShellCmd(shell_cmd_line):
     """Run a shell command line
     """
     # Prepare the environment variables
     spbench_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
-    env_vars_file = spbench_path + "/libs/libraries_env_vars.json"
-
-    # Read the environment variables from the JSON file
-    with open(env_vars_file) as f:
-        env_vars = json.load(f)
-    # Combine them with the current environment variables
-    lib_env_vars = os.environ.copy()
-    lib_env_vars.update(env_vars)
     
+    # get merged environment variables
+    env_vars = getMergedEnvVars()
+
     if(utils.python_3 == 3):
         try:
-            retcode = subprocess.call(shell_cmd_line, shell=True, env=lib_env_vars)
+            retcode = subprocess.call(shell_cmd_line, shell=True, env=env_vars)
             if -retcode < 0:
                 print(" Process was terminated by signal", -retcode, file=sys.stderr)
                 print("\n Unsuccessful execution\n")
@@ -113,14 +130,9 @@ def runShellWithReturn(shell_cmd_line):
     """
     # Prepare the environment variables
     spbench_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../")
-    env_vars_file = spbench_path + "/libs/libraries_env_vars.json"
 
-    # Read the environment variables from the JSON file
-    with open(env_vars_file) as f:
-        env_vars = json.load(f)
-    # Combine them with the current environment variables
-    lib_env_vars = os.environ.copy()
-    lib_env_vars.update(env_vars)
+    # get merged environment variables
+    lib_env_vars = getMergedEnvVars()
 
     if(utils.python_3 == 3):
         #success = False
@@ -143,6 +155,7 @@ def runShellWithReturn(shell_cmd_line):
         return(output)
     else:
         os.system(shell_cmd_line)
+
 
 # compute and return the md5 value of a file
 def md5(file_name):
