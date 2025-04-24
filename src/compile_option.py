@@ -33,7 +33,6 @@ from src.utils.dict import *
 from src.utils.shell import *
 from src.utils.utils import *
 from src.codeGenerators.make_gen import *
-#from register_option import *
 
 from sys import version_info 
 python_3 = version_info[0]
@@ -54,11 +53,6 @@ def compile_func(spbench_path, args):
         print("-------------------------------------------")
         print('-> Compiling ' + bench_id + '...')
         print("-------------------------------------------")
-
-        # check if there are missing dependencies in the environment
-
-        #dependencies = getDependenciesRegistry(spbench_path)
-        #print(list(dependencies[app_id].values()))
 
         addEnvVars(app_id)
         
@@ -86,7 +80,6 @@ def compile_func(spbench_path, args):
         make_cmd = ("make -C " + programm_path + " -j$(nproc)")
         
         # compile the programm
-        #if(os.WEXITSTATUS(os.system(make_cmd))):
         if(runShellCmd(make_cmd) != 0):
             print("\n ---------------------------------------")
             print(" Compilation failed!")
@@ -99,17 +92,10 @@ def compile_func(spbench_path, args):
             print(" - Missing or wrong compiling parameters.")
             print("   You can use the command \'configure\' \n   to check and modify compiling dependencies.")
             print("   Run: ./spbench configure -benchmark " + bench_id)
-            #else:
-            #    print("\n---------------------------------------")
-            #    print(" Compilation succeed!")
-            #    print(" Version: " + bench_id)
             print(" ---------------------------------------\n")
             
         compilation_succeed = True
 
-        # if it is compiling a single benchmark, ends here
-        #if (args.benchmark_id.lower() != 'all'):
-        #    sys.exit()
     print("")
     if not compilation_succeed:
         print("Compilation failed. \'" + args.benchmark_id + "\' not found!!\n")
