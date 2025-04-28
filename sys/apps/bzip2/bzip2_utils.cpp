@@ -1743,16 +1743,17 @@ int bzip2_main(int argc, char* argv[])
 						cmdLineTempCount++;
 					}
 					
-					//if (!isNumber(optarg) || atof(optarg) < 0.0) {
-					//	fprintf(stderr, "\n ARGUMENT ERROR (-l <latency_sample_interval_ms>)\n--> Sample interval must be a number equal or higher than zero!\n");
-					//	return 1;
-					//}
-
-					if (Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)) {
-						printf("\n Warning: there is already a latency sample interval set as %.2f milliseconds.\n", Metrics::get_latency_sample_interval());
-						printf("          The new latency sample interval will be set as %.2f milliseconds, set by the '-latency' argument.\n", atof(optarg));
+					if (!isNumber(argv[i] + j + 1) || atof(argv[i] + j + 1) < 0.0) {
+						fprintf(stderr, "\n ARGUMENT ERROR (-l <latency_sample_interval_ms>)\n--> Sample interval must be a number equal or higher than zero!\n");
+						return 1;
 					}
-					Metrics::enable_print_latency(atof(optarg));
+
+					if (Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(argv[i] + j + 1)) {
+						printf("\n Warning: there is already a latency sample interval set as %.2f milliseconds.\n", Metrics::get_latency_sample_interval());
+						printf("          The new latency sample interval will be set as %.2f milliseconds, set by the '-latency' argument.\n", atof(argv[i] + j + 1));
+					}
+					
+					Metrics::enable_print_latency(atof(argv[i] + j + 1));
 
 					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
@@ -1769,17 +1770,17 @@ int bzip2_main(int argc, char* argv[])
 						k++;
 						cmdLineTempCount++;
 					}
-					/*
-					if (!isNumber(optarg) || atof(optarg) < 0.0) {
+					
+					if (!isNumber(argv[i] + j + 1) || atof(argv[i] + j + 1) < 0.0) {
 						fprintf(stderr, "\n ARGUMENT ERROR (-L <latency_sample_interval_ms>)\n--> Sample interval must be a number equal or higher than zero!\n");
 						exit(EXIT_FAILURE);
 					}
 
-					if (Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)) {
+					if (Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(argv[i] + j + 1)) {
 						printf("\n Warning: there is already a latency sample interval set as %.2f milliseconds.\n", Metrics::get_latency_sample_interval());
-						printf("          The new latency sample interval will be set as %.2f milliseconds,\n          set by the '-latency-monitor' argument.\n", atof(optarg));
+						printf("          The new latency sample interval will be set as %.2f milliseconds,\n          set by the '-latency-monitor' argument.\n", atof(argv[i] + j + 1));
 					}
-					Metrics::enable_latency_to_file(atof(optarg));*/
+					Metrics::enable_latency_to_file(atof(argv[i] + j + 1));
 
 					j += cmdLineTempCount;
 #ifdef PBZIP_DEBUG
