@@ -400,14 +400,14 @@ def execute_func(spbench_path, args):
                     print("  #        #            #        #                    ")
                     print("             #        #            #        #          ")
                     print("                #  #                  #  # - - -> Minimum: " + min_freq + " items per second")
-                    print("                        |____________________| -> Periods: " + period + " seconds")
+                    print("                        |____________________| -> Period:  " + period + " seconds")
                 elif(pattern == 'binary'):
                     print("\n Frequency pattern: binary\n")
                     print("         # # # # #       # # # #  - -> Maximum: " + max_freq + " items per second")
                     print("         #       #       #           ")
                     print("         #       #       #           ")
                     print(" # # # # #       # # # # #  - - - - -> Minimum: " + min_freq + " items per second")
-                    print("                 |______________| - -> Periods: " + period + " seconds")
+                    print("                 |______________| - -> Period:  " + period + " seconds")
                 elif(pattern == 'spike'):
                     print("\n Frequency pattern: spike\n")
                     print("            #            #  - -> Maximum: " + max_freq + " items per second")
@@ -415,7 +415,7 @@ def execute_func(spbench_path, args):
                     print("          # #          # #   ")
                     print(" # # # # #  # # # # # #  # # #-> Minimum: " + min_freq + " items per second")
                     print("                     |____| - -> Spikes:  " + str(spike_p) + " seconds")
-                    print("            |_____________| - -> Periods: " + period + " seconds")
+                    print("            |_____________| - -> Period:  " + period + " seconds")
                 elif(pattern == 'increasing'):
                     print("\n Frequency pattern: increasing\n")
                     print("          # # # # # # # ...  -> Maximum: " + max_freq + " items per second")
@@ -444,7 +444,7 @@ def execute_func(spbench_path, args):
         #print('\n')
 
         if not args.debug:
-            print("\n TIP: If you added execution logs to this benchmark\n      (prints) and want it to print the logs on-the-fly,\n      you should add \'-debug\' to the exec command.")
+            print("\n TIP: If you expect this benchmark to show any output in the screen\n      on-the-fly, you should add \'-debug\' flag to the exec command.")
             print("      Run: \'./spbench exec -h\' for more details!\n")
 
         latencies = []
