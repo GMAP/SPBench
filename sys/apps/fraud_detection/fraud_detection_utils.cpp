@@ -231,42 +231,18 @@ std::chrono::high_resolution_clock::time_point Source::source_item_timestamp = s
  */
 bool Source::op(Item &item){
 
-	//if last batch included the last item, ends computation
-	//if(stream_end == true){
-	//	return false;
-	//}
-
 	// frequency control mechanism
 	SPBench::item_frequency_control(source_item_timestamp);
 
 	item.timestamp = source_item_timestamp = std::chrono::high_resolution_clock::now();
-	//unsigned long batch_elapsed_time = source_item_timestamp;
 	
 	//unsigned long op_timestamp1;
-	std::chrono::high_resolution_clock::time_point op_timestamp1;
-	if(Metrics::latency_is_enabled()){
-  		op_timestamp1 = item.timestamp;
-	}
-
-	//while(1) { //main source loop
-		// batching management routines
-		/*if(SPBench::getBatchInterval()){
-			// Check if the interval of this batch is higher than the batch interval defined by the user
-			if(((current_time_usecs() - batch_elapsed_time) / 1000.0) >= SPBench::getBatchInterval()) break;
-		} else {
-			// If no batch interval is set, than try to close it by size
-			if(item.batch_size >= SPBench::getBatchSize()) break;
+	#if !defined NO_LATENCY
+		std::chrono::high_resolution_clock::time_point op_timestamp1;
+		if(Metrics::latency_is_enabled()){
+  			op_timestamp1 = item.timestamp;
 		}
-		// This couples with batching interval to close the batch by size if a size higher than one is defined
-		if(SPBench::getBatchSize() > 1){
-			if(item.batch_size >= SPBench::getBatchSize()) break;
-		}*/
-
-		//if(Metrics::items_at_source_counter >= parsed_file.size() * iteractions){
-		//	stream_end = true;
-		//	return false;
-			//break;
-		//}
+	#endif
 
 	std::chrono::duration<float> source_elapsed_time = std::chrono::duration_cast<std::chrono::duration<float>>(item.timestamp - Metrics::metrics.start_throughput_clock);
 
@@ -285,27 +261,15 @@ bool Source::op(Item &item){
 	}
 	next_tuple_idx = (next_tuple_idx + 1) % parsed_file.size();	
 
-//	item.index = Metrics::items_at_source_counter;
-	//item.item_batch.resize(item.batch_size+1);
-	//item.item_batch[item.batch_size] = item_data;
 	item.batch_size++;
-	//Metrics::items_at_source_counter++;
 
-	//}
+	#if !defined NO_LATENCY
+		if(Metrics::latency_is_enabled()){
+			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
+			item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<float>>(op_timestamp2 - op_timestamp1));
+		}
+	#endif
 
-	//if this batch has size 0, ends computation
-	//if(item.batch_size == 0){
-	//	return false;
-	//}
-
-	if(Metrics::latency_is_enabled()){
-		//item.latency_op.push_back(current_time_usecs() - latency_op);
-		std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
-		item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<float>>(op_timestamp2 - op_timestamp1));
-	}
-
-	//item.batch_index = Metrics::batch_counter;
-	//Metrics::batch_counter++;	// sent batches
 	Metrics::items_at_source_counter++;
 	return true;
 }
@@ -339,17 +303,10 @@ void Sink::op(Item &item){
 		}
 	#endif		
 
-	
-		//if(item.isOutlier) {
-		//	Metrics::items_at_sink_counter++;
-		//}
-		
-	//	num_item++;
 	Metrics::items_at_sink_counter++;
-	//} 
-	
 	Metrics::batches_at_sink_counter++;
 
+	// metrics computation
 	#if !defined NO_LATENCY
 		if(Metrics::latency_is_enabled()){
 			std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();

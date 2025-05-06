@@ -34,25 +34,6 @@ class Sink;
 void init_bench(int argc, char* argv[]);
 void end_bench();
 
-/*
-struct item_data {
-
-	size_t key;
-	std::string record;
-	double score;
-	unsigned int index;
-	bool isOutlier;
-
-	item_data():
-		key(0),
-		index(0),
-		score(0),
-		isOutlier(false)
-	{};
-
-	~item_data(){}
-};
-*/
 /* This class implements an Item */
 class Item : public Batch{
 public:
@@ -77,11 +58,6 @@ public:
 	explicit operator bool() const
     { return isOutlier; }
 
-	// Safe aproach to convert the class to kind of bool
-	//void some_function () {}
-	//typedef void (Item:: * safe_bool_type) ();
-  	//operator safe_bool_type () const
-  	//{ return isOutlier ? &Item::some_function : 0;}
 };
 
 class Source{

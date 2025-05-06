@@ -21,11 +21,11 @@ class Predictor;
 
 class Predictor{
 private:
-	static inline void predictor_op(item_data &item);
+	static inline void predictor_op(Item &item, Markov_Model_Predictor &predictor);
 public:
-	static void op(Item &item);
-	Predictor(Item &item){
-		op(item);
+	static void op(Item &item, Markov_Model_Predictor &predictor);
+	Predictor(Item &item, Markov_Model_Predictor &predictor){
+		op(item, predictor);
 	}
 	Predictor(){};
 

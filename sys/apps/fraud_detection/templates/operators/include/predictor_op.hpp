@@ -4,7 +4,6 @@ namespace spb{
 
 void Predictor::op(Item &item, Markov_Model_Predictor &predictor){
 
-	
 	#if !defined NO_LATENCY
 		Metrics metrics;
 		std::chrono::high_resolution_clock::time_point op_timestamp1;
