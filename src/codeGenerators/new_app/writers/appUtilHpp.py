@@ -26,8 +26,11 @@
 
 from src.utils.shell import *
 from src.utils.dict import *
+from string import Template
 
-
+    # ******************************************************************************************
+    # create and write the header of the system-side headers of the application
+    # ******************************************************************************************
 def writeAppUtilsHpp(file_path, app_id, list_of_operators):
     """ !@brief Function for writing the header of the system-side headers of the application
 
@@ -37,79 +40,92 @@ def writeAppUtilsHpp(file_path, app_id, list_of_operators):
     @param app_id Name of the application.
     @param list_of_operators List of operators.
     """
-    prog_name = app_id + "_utils"
-    # ******************************************************************************************
-    # create and write the header of the system-side headers of the application
-    # ******************************************************************************************
+    
+    prog_name = f"{app_id}_utils"
+    num_operators = len(list_of_operators)
 
-    # write the code for app_id.cpp
-    app_hpp_utils_file = open(file_path, 'a')
+    template = Template("""
+#ifndef ${prog_name_upper}_HPP
+#define ${prog_name_upper}_HPP
 
-    app_hpp_utils_file.write("\n#ifndef " + prog_name.upper() + "_HPP\n")
-    app_hpp_utils_file.write("#define " + prog_name.upper() + "_HPP\n")
-    app_hpp_utils_file.write("\n/** Includes **/\n")
-    app_hpp_utils_file.write("#include <spbench.hpp>\n")
-    app_hpp_utils_file.write("\nnamespace spb{\n")
-    app_hpp_utils_file.write("\n#define NUMBER_OF_OPERATORS " + str(len(list_of_operators)) + "\n")
-    app_hpp_utils_file.write("\nstruct item_data;\n")
-    app_hpp_utils_file.write("class Item;\n")
-    app_hpp_utils_file.write("class Source;\n")
-    app_hpp_utils_file.write("class Sink;\n")
-    app_hpp_utils_file.write("\nextern int some_external_variable;\n")
-    app_hpp_utils_file.write("\nvoid init_bench(int argc, char* argv[]);\n")
-    app_hpp_utils_file.write("void end_bench();\n")
-    app_hpp_utils_file.write("\n/* Data from external input */\n")
-    app_hpp_utils_file.write("struct workload_data {\n")
-    app_hpp_utils_file.write("\tstd::string some_input_file;\n")
-    app_hpp_utils_file.write("\tint some_integer;\n")
-    app_hpp_utils_file.write("\tstd::string id;\n")
-    app_hpp_utils_file.write("};\n")
-    app_hpp_utils_file.write("extern workload_data input_data;\n")
-    app_hpp_utils_file.write("\n/* All the data communicated between operators */\n")
-    app_hpp_utils_file.write("struct item_data {\n")
-    app_hpp_utils_file.write("\tstd::string *some_pointer;\n")
-    app_hpp_utils_file.write("\tstd::string some_string;\n")
-    app_hpp_utils_file.write("\tunsigned int some_unsigned_integer;\n")
-    app_hpp_utils_file.write("\tstd::vector<std::string> some_vector;\n")
-    app_hpp_utils_file.write("\tunsigned int index;\n")
-    app_hpp_utils_file.write("\n")
-    app_hpp_utils_file.write("\titem_data():\n")
-    app_hpp_utils_file.write("\t\tsome_pointer(NULL),\n")
-    app_hpp_utils_file.write("\t\tsome_unsigned_integer(0)\n")
-    app_hpp_utils_file.write("\t{};\n")
-    app_hpp_utils_file.write("\n")
-    app_hpp_utils_file.write("\t~item_data(){\n")
-    app_hpp_utils_file.write("\t\tsome_vector.clear();\n")
-    app_hpp_utils_file.write("\t}\n")
-    app_hpp_utils_file.write("};\n")
-    app_hpp_utils_file.write("\n")
-    app_hpp_utils_file.write("/* This class implements an Item */\n")
-    app_hpp_utils_file.write("class Item : public Batch{\n")
-    app_hpp_utils_file.write("public:\n")
-    app_hpp_utils_file.write("\tstd::vector<item_data> item_batch;\n")
-    app_hpp_utils_file.write("\n")
-    app_hpp_utils_file.write("\tItem():Batch(NUMBER_OF_OPERATORS){};\n")
-    app_hpp_utils_file.write("\n")
-    app_hpp_utils_file.write("\t~Item(){}\n")
-    app_hpp_utils_file.write("};\n")
-    app_hpp_utils_file.write("\n")
-    app_hpp_utils_file.write("class Source{\n")
-    app_hpp_utils_file.write("public:\n")
-    app_hpp_utils_file.write("\tstatic long source_item_timestamp;\n")
-    app_hpp_utils_file.write("\tstatic bool op(Item &item);\n")
-    app_hpp_utils_file.write("\tSource(){}\n")
-    app_hpp_utils_file.write("\tvirtual ~Source(){}\n")
-    app_hpp_utils_file.write("};\n")
-    app_hpp_utils_file.write("\n")
-    app_hpp_utils_file.write("class Sink{\n")
-    app_hpp_utils_file.write("public:\n")
-    app_hpp_utils_file.write("\tstatic void op(Item &item);\n")
-    app_hpp_utils_file.write("\tSink(){}\n")
-    app_hpp_utils_file.write("\tvirtual ~Sink(){}\n")
-    app_hpp_utils_file.write("};\n")
-    app_hpp_utils_file.write("\n")
-    app_hpp_utils_file.write("} //end of namespace spb\n")
-    app_hpp_utils_file.write("\n#endif\n")
-   
-    app_hpp_utils_file.close()
+/** Includes **/
+#include <spbench.hpp>
+
+namespace spb {
+
+#define NUMBER_OF_OPERATORS ${num_operators}
+
+struct item_data;
+class Item;
+class Source;
+class Sink;
+
+extern int some_external_variable;
+
+void init_bench(int argc, char* argv[]);
+void end_bench();
+
+/* Data from external input */
+struct workload_data {
+    std::string some_input_file;
+    int some_integer;
+    std::string id;
+};
+extern workload_data input_data;
+
+/* All the data communicated between operators */
+struct item_data {
+    std::string *some_pointer;
+    std::string some_string;
+    unsigned int some_unsigned_integer;
+    std::vector<std::string> some_vector;
+    unsigned int index;
+
+    item_data():
+        some_pointer(NULL),
+        some_unsigned_integer(0)
+    {};
+
+    ~item_data(){
+        some_vector.clear();
+    }
+};
+
+/* This class implements an Item */
+class Item : public Batch {
+public:
+    std::vector<item_data> item_batch;
+
+    Item():Batch(NUMBER_OF_OPERATORS){};
+
+    ~Item(){}
+};
+
+class Source {
+public:
+    static std::chrono::high_resolution_clock::time_point source_item_timestamp;
+    static bool op(Item &item);
+    Source(){}
+    virtual ~Source(){}
+};
+
+class Sink {
+public:
+    static void op(Item &item);
+    Sink(){}
+    virtual ~Sink(){}
+};
+
+} // end of namespace spb
+
+#endif
+""")
+
+    content = template.substitute(
+        prog_name_upper=prog_name.upper(),
+        num_operators=num_operators
+    )
+
+    with open(file_path, 'a') as app_hpp_utils_file:
+        app_hpp_utils_file.write(content)
     # ******************************************************************************************

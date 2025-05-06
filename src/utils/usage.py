@@ -1,8 +1,8 @@
 ## 
  ##############################################################################
- #  File  : utils.py
+ #  File  : usage.py
  #
- #  Title : SPBench makefile generator
+ #  Title : Usage script for SPBench
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #

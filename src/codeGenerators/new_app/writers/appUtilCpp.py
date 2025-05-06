@@ -76,7 +76,16 @@ def writeAppUtilsCpp(spbench_path, file_path, app_id, operators_list):
         operators_list[i] = operators_list[i] + " " * (max_size - len(operators_list[i]) + 2)
 
     # write the set_operators_name() function
-    app_util_cpp_file.write("void set_operators_name(){\n")
+    set_op_func_header = """
+/**
+* @brief This method sets the operators name.
+* 
+* @param None
+* @return None
+*/
+void set_operators_name(){
+"""
+    app_util_cpp_file.write(set_op_func_header)
     for operator in operators_list:
         app_util_cpp_file.write("\tSPBench::addOperatorName(\"" + operator + "\");\n")
     app_util_cpp_file.write("}\n")

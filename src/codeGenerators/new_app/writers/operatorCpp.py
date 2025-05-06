@@ -26,6 +26,7 @@
 
 from src.utils.shell import *
 from src.utils.dict import *
+from string import Template
 
 
 def writeOperatorCpp(file_path, operator_id):
@@ -40,43 +41,50 @@ def writeOperatorCpp(file_path, operator_id):
     # ******************************************************************************************
     # create and write an example code for a operator
     # ******************************************************************************************
+    template = Template("""
+#include <../include/${operator_id}_op.hpp>
 
-    # write the code for app_id.cpp
-    op_cpp_file = open(file_path, 'a')
+/**
+ * @brief This function implements the ${operator_id} operator.
+ * 
+ * @param item (&item) 
+ */
+inline void spb::${operator_id}::${operator_id}_op(spb::item_data &item){
 
-    op_cpp_file.write("\n#include <../include/" + operator_id + "_op.hpp>\n")
-    op_cpp_file.write("\n")
-    op_cpp_file.write("/**\n")
-    op_cpp_file.write(" * @brief This function implements the " + operator_id + " operator.\n")
-    op_cpp_file.write(" * \n")
-    op_cpp_file.write(" * @param item (&item) \n")
-    op_cpp_file.write(" */")
-    op_cpp_file.write("\ninline void spb::" + operator_id + "::" + operator_id + "_op(spb::item_data &item){\n")
-    op_cpp_file.write("\n")
+    // All the code inside this function is only an usage example.
+    // Here we are just using the data item to do some basic and nonsense operations.
+    // You can delete it and write your own operator as you wish.
 
-    op_cpp_file.write("\t// All the code inside this function is only an usage example.\n")
-    op_cpp_file.write("\t// Here we are just using the data item to do some basic and nonsense operations.\n")
-    op_cpp_file.write("\t// You can delete it and write your own operator as you wish.\n")
+    double some_double = 0.0;
+    bool some_bool = true;
 
-    op_cpp_file.write("\tdouble some_double = 0.0;\n")
-    op_cpp_file.write("\tbool some_bool = true;\n")
-    op_cpp_file.write("\n")
-    op_cpp_file.write("\titem.some_vector.push_back(std::to_string(some_double));\n")
-    op_cpp_file.write("\n")
-    op_cpp_file.write("\tfor (std::vector<std::string>::const_iterator iterator = item.some_vector.begin() ; iterator != item.some_vector.end() ; iterator++, item.some_unsigned_integer++){\n")
-    op_cpp_file.write("\t\tsome_double = spb::Metrics::items_counter / some_external_variable;\n")
-    op_cpp_file.write("\t\tif(some_bool){\n")
-    op_cpp_file.write("\t\t\t\titem.some_unsigned_integer += some_external_variable;\n")
-    op_cpp_file.write("\t\t}\n")
-    op_cpp_file.write("\t}\n")
-    op_cpp_file.write("\tif(item.some_unsigned_integer % 2 == 0){\n")
-    op_cpp_file.write("\t\tstd::cout << spb::Metrics::items_counter <<  \" - This is a debug print. It will not be printed in execution time, unless you use the -debug flag.\" << std::endl;\n")
-    op_cpp_file.write("\t}\n")
-    op_cpp_file.write("\tusleep(100000);\n")
-    op_cpp_file.write("\titem.some_vector.push_back(std::to_string(some_double));\n")
-    op_cpp_file.write("}\n")
+    item.some_vector.push_back(std::to_string(some_double));
 
-    op_cpp_file.close()
+    for (std::vector<std::string>::const_iterator iterator = item.some_vector.begin();
+         iterator != item.some_vector.end(); iterator++, item.some_unsigned_integer++) {
+        some_double = spb::Metrics::items_at_source_counter / some_external_variable;
+        if (some_bool) {
+            item.some_unsigned_integer += some_external_variable;
+        }
+    }
+
+    if (item.some_unsigned_integer % 2 == 0) {
+        std::cout << spb::Metrics::items_at_source_counter 
+                  << " - This is a debug print. It will not be printed in execution time, unless you use the -debug flag."
+                  << std::endl;
+    }
+
+    usleep(100000);
+    item.some_vector.push_back(std::to_string(some_double));
+}
+""")
+
+    content = template.substitute(operator_id=operator_id)
+
+    with open(file_path, 'a') as op_cpp_file:
+        op_cpp_file.write(content)
+
+
     # ******************************************************************************************
 
 

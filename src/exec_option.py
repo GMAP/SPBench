@@ -111,11 +111,8 @@ def execute_func(spbench_path, args):
         for input in input_list: # generate a list of input files
             if(app_id == 'bzip2'):
                 input_id += " " + os.path.abspath(input) # bzip2 does not require -i flag
-            elif(app_id == 'ferret' or app_id == 'person_recognition' or app_id == 'fraud_detection'):
+            else:
                 input_id += " -i \"" + input + "\""   # ferret and person receive multiple files as workload
-            else: # generate a '-i input_id_list' argument
-                input_id += " -i " + os.path.abspath(input)
-
 
         # Check for errors in nthreads
         if args.nthreads:

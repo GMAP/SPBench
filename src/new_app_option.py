@@ -253,7 +253,7 @@ def new_app_func(spbench_path, args):
             def __init__(self):
                 self.app_id = new_app_id
                 self.input_id = "test"
-                self.input = inputs_file_path + " 20"
+                self.input = "$SPB_HOME/inputs/" + new_app_id + "/input.txt 20"
                 self.md5_hash = ""
 
         # register the test input for the new application using the new_input_func() function

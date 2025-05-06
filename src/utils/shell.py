@@ -1,8 +1,8 @@
 ## 
  ##############################################################################
- #  File  : utils.py
+ #  File  : shell.py
  #
- #  Title : SPBench makefile generator
+ #  Title : Script with functions to manage the shell commands
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #

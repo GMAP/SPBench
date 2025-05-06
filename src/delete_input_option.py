@@ -38,7 +38,7 @@ def del_input_func(spbench_path, args, continue_execution = False):
 
     # Check if the chosen app exists
     if args.app_id not in inputs_registry:
-        print("\n Application \'" + args.app_id + "\' not found!\n")
+        print("\n There is no entry for application \'" + args.app_id + "\' in the inputs registry!\n")
         return None if continue_execution else sys.exit()
 
     # check if this input is already registered for this application

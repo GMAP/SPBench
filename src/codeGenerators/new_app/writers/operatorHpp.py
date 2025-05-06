@@ -26,8 +26,11 @@
 
 from src.utils.shell import *
 from src.utils.dict import *
+from string import Template
 
-
+# ******************************************************************************************
+# create and write the header of a given operator
+# ******************************************************************************************
 def writeOperatorHpp(file_path, operator_id, app_id):
     """ !@brief Function for writing the header of a given operator
 
@@ -38,52 +41,59 @@ def writeOperatorHpp(file_path, operator_id, app_id):
     @param app_id Name of the application.
     """
 
-    # ******************************************************************************************
-    # create and write the header of a given operator
-    # ******************************************************************************************
+    tmpl = Template("""
+#ifndef ${guard}_OP_HPP
+#define ${guard}_OP_HPP
 
-    # write the code for app_id.cpp
-    op_hpp_file = open(file_path, 'a')
+#include <${app}.hpp>
 
-    op_hpp_file.write("\n#ifndef " + operator_id.upper() + "_OP_HPP\n")
-    op_hpp_file.write("#define " + operator_id.upper() + "_OP_HPP\n")
-    op_hpp_file.write("\n#include <" + app_id + ".hpp>\n")
-    op_hpp_file.write("\nnamespace spb{\n")
-    op_hpp_file.write("\n")
+namespace spb{
 
-    op_hpp_file.write("/**\n")
-    op_hpp_file.write(" * @brief This method implements the encapsulation of the " + operator_id + " operator.\n")
-    op_hpp_file.write(" * \n")
-    op_hpp_file.write(" * @param item (&item) \n")
-    op_hpp_file.write(" */\n")
+/**
+* @brief This method implements the encapsulation of the ${op} operator.
+* 
+* @param item (&item) 
+*/
+void ${op}::op(Item &item){
 
-    op_hpp_file.write("void " + operator_id + "::op(Item &item){\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("\tMetrics metrics;\n")
-    op_hpp_file.write("\tvolatile unsigned long latency_op;\n")
-    op_hpp_file.write("\tif(metrics.latency_is_enabled()){\n")
-    op_hpp_file.write("\t\tlatency_op = current_time_usecs();\n")
-    op_hpp_file.write("\t}\n")
-    op_hpp_file.write("\tunsigned int num_item = 0;\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("\twhile(num_item < item.batch_size){ //batch loop\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("\t\t" + operator_id + "_op(item.item_batch[num_item]);\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("\t\tnum_item++;\n")
-    op_hpp_file.write("\t}\n")
-    op_hpp_file.write("\t\n")
-    op_hpp_file.write("\tif(metrics.latency_is_enabled()){\n")
-    op_hpp_file.write("\t\titem.latency_op.push_back(current_time_usecs() - latency_op);\n")
-    op_hpp_file.write("\t}\n")
-    op_hpp_file.write("}\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("} // end of namespace spb\n")
-    op_hpp_file.write("\n")
-    op_hpp_file.write("#endif /* " + operator_id.upper() + "_OP_HPP */\n")
+    #if !defined NO_LATENCY
+        Metrics metrics;
+        std::chrono::high_resolution_clock::time_point op_timestamp1;
+        if(Metrics::latency_is_enabled()){
+            op_timestamp1 = std::chrono::high_resolution_clock::now();
+        }
+    #endif
 
-    op_hpp_file.close()
-    # ******************************************************************************************
+    unsigned int num_item = 0;
 
+    while(num_item < item.batch_size){ //batch loop
+        ${op}_op(item.item_batch[num_item]);
+        num_item++;
+    }
+
+    #if !defined NO_LATENCY
+        if(metrics.latency_is_enabled()){
+            std::chrono::high_resolution_clock::time_point op_timestamp2 = std::chrono::high_resolution_clock::now();
+            item.latency_op.push_back(std::chrono::duration_cast<std::chrono::duration<double>>(op_timestamp2 - op_timestamp1));
+        }
+    #endif
+}
+
+} // end of namespace spb
+
+#endif /* ${guard}_OP_HPP */
+""")
+
+    output = tmpl.substitute(
+        guard=operator_id.upper(),
+        app=app_id,
+        op=operator_id,
+    )
+
+    with open(file_path, 'a') as f:
+        f.write(output)
+        f.write("\n")
+
+# ******************************************************************************************
 
 

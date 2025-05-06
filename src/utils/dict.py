@@ -1,8 +1,8 @@
 ## 
  ##############################################################################
- #  File  : utils.py
+ #  File  : dict.py
  #
- #  Title : SPBench makefile generator
+ #  Title : SPBench dictionary utils
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -382,3 +382,27 @@ def doYouMeanPPI(ppi_name):
     if most_similar_score > 0.25:
         return "Do you mean \"" + most_similar_key + "\"?"
     return ''
+
+# get environment variables from the libs/libraries_env_vars.json file
+def getEnvVarsJSON():
+    """
+    Get the environment variables from the libraries_env_vars.json file
+
+    Returns:
+        dict: A dictionary with the environment variables
+        Or None if the file does not exist
+    """
+
+    env_vars_file = spbench_path + "/libs/libraries_env_vars.json"
+
+    # check if the file exists and is a valid json file
+    if not fileExists(env_vars_file): return {}
+    
+    # check if the file is empty
+    if os.stat(env_vars_file).st_size == 0: return {}
+    
+    # Read the environment variables from the JSON file
+    with open(env_vars_file) as f:
+        env_vars = json.load(f)
+
+    return env_vars

@@ -2,7 +2,7 @@
  ##############################################################################
  #  File  : utils.py
  #
- #  Title : SPBench makefile generator
+ #  Title : Script containing utility functions for SPBench
  #
  #  Author: Adriano Marques Garcia <adriano1mg@gmail.com> 
  #
@@ -130,7 +130,12 @@ def addEnvVars(app_id):
         app_id (str): The name of the base application
     """
 
-    dependencies = getDependenciesRegistry(spbench_path)[app_id]
+    dependencies_registry = getDependenciesRegistry(spbench_path)
+    dependencies = dependencies_registry.get(app_id, {})
+    if not dependencies:
+        logging.warning(f"Dependencies for '{getApplicationName(app_id)}' not found in the libs/dependecies.json file.")
+        logging.warning(f"SPBench will not load any libraries automatically for it.")
+        
     env_vars_file = spbench_path + "/libs/libraries_env_vars.json"
 
     for lib_name in dependencies.values():
@@ -163,32 +168,6 @@ def addEnvVars(app_id):
         with open(env_vars_file, 'w') as f:
             json.dump(env_vars_dict, f, indent=4)
 
-
-
-# get environment variables from the libs/libraries_env_vars.json file
-def getEnvVarsJSON():
-    """
-    Get the environment variables from the libraries_env_vars.json file
-
-    Returns:
-        dict: A dictionary with the environment variables
-        Or None if the file does not exist
-    """
-
-    env_vars_file = spbench_path + "/libs/libraries_env_vars.json"
-
-    # check if the file exists and is a valid json file
-    if not fileExists(env_vars_file): return {}
-    
-    # check if the file is empty
-    if os.stat(env_vars_file).st_size == 0: return {}
-    
-    # Read the environment variables from the JSON file
-    with open(env_vars_file) as f:
-        env_vars = json.load(f)
-
-    return env_vars
- 
 def checkEnvVarsJSON():
     """
     Check if the environment variables file exists and is not empty
@@ -214,3 +193,20 @@ def checkEnvVarsJSON():
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n")
 
     return
+
+def getApplicationName(app_id):
+    """
+    Get the name of the application registered in the sys/apps/apps_registry.json file
+    Args:
+        app_id (str): The name of the application
+    Returns:
+        str: The name of the application
+    """
+    apps_registry = getDictFromJSON(spbench_path + "/sys/apps/apps_registry.json")
+    app_name = apps_registry.get(app_id, {}).get("name", "")
+    if not app_name:
+        logging.warning(f"Application '{app_id}' not found in the sys/apps/apps_registry.json file.")
+        return app_id
+
+    return app_name
+

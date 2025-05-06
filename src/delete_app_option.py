@@ -38,24 +38,29 @@ def delete_app_func(spbench_path, args):
 
     # check if app_id is in apps list
     if args.app_id not in getAppsList(spbench_path):
-        print("\n Application \'" + args.app_id + "\' not found!\n")
-        sys.exit()
+        print("\n Application \'" + args.app_id + "\' not found in the registry!\n")
+        print(" Please, check if the application ID is correct and try again.\n")
+        print(" You can run \'./spbench list-apps\' to list all applications.\n")
+        # ask if the user wants to force the delete anyway
+        print(" Do you want to " + color.BOLD + "FORCE" + color.END + " the delete anyway?")
+        print(" This will delete the /spbench/sys/apps/" + args.app_id + " folder, if any.\n")
+        print(" Do you want to proceed?")
+    else:
+        print("\n This procedure will permanently remove the application from SPBench.\n")
+        print(" Take in mind that it will not delete the associated input files.\n")
+        print(" Please, double check the data to delete below before proceeding.\n")
+        print(" ---------------------------------------------")
+        print("    Application: " + color.BOLD + args.app_id + color.END)
+        print(" ---------------------------------------------")
 
-    print("\n This procedure will completely remove the application from registry.\n")
-    print(" Take in mind that it will not delete the associated input files.\n")
-    print(" Please, double check the data to delete below before proceeding.\n")
-    print(" ---------------------------------------------")
-    print("    Application: " + color.BOLD + args.app_id + color.END)
-    print(" ---------------------------------------------")
-
-    # get app registry and print info
-    app_registry = getAppsRegistry(spbench_path)[args.app_id]
-    print("           Name: " + app_registry["name"])
-    print("           Type: " + app_registry["type"])
-    print(" Num. operators: " + str(app_registry["num_operators"]))
-    print("    Description: " + app_registry["description"])
-    print("          Notes: " + app_registry["notes"])
-    print(" ---------------------------------------------")
+        # get app registry and print info
+        app_registry = getAppsRegistry(spbench_path)[args.app_id]
+        print("           Name: " + app_registry["name"])
+        print("           Type: " + app_registry["type"])
+        print(" Num. operators: " + str(app_registry["num_operators"]))
+        print("    Description: " + app_registry["description"])
+        print("          Notes: " + app_registry["notes"])
+        print(" ---------------------------------------------")
 
 
     if not askToProceed():
@@ -104,7 +109,8 @@ def delete_app_func(spbench_path, args):
     ##
 
     # delete app key from the app registry
-    deleteAppFromRegistry(spbench_path, args.app_id)
+    if args.app_id in getAppsList(spbench_path):
+        deleteAppFromRegistry(spbench_path, args.app_id)
 
     # delete app folder from sys/apps/
     app_dir = spbench_path + "/sys/apps/" + args.app_id
