@@ -85,6 +85,14 @@ std::vector<unsigned long> Metrics::timestamps_vec;
 // ns
 std::vector<data_metrics> metrics_vec;
 
+/*#define CHECK_NO_LATENCY_AND_BREAK \
+    do { \
+		std::cout << "\n Warning: All the latency metrics are disabled by the NO_LATENCY macro." << std::endl; \
+		std::cout << "          To enable it, recompile the benchmark without this macro." << std::endl; \
+		std::cout << "          You can run ./spbench configure -bench <benchmark_name>" << std::endl; \
+        break; \
+    } while (0)
+*/
 /**
  * Print help for generic SPBench parameters.
  * 
@@ -165,6 +173,9 @@ void SPBench::parseCMDLine(int opt, const char * optarg){
 			SPBench::setBatchInterval(atof(optarg));
 			break;
 		case 'm':
+			//#ifdef NO_LATENCY
+			//	CHECK_NO_LATENCY_AND_BREAK;
+			//#endif		
 			if (Metrics::monitoring_thread_is_enabled())
 				throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
 			if(!isNumber(optarg) || (atoi(optarg) < 0))
@@ -173,6 +184,9 @@ void SPBench::parseCMDLine(int opt, const char * optarg){
 			Metrics::enable_monitoring();
 			break;
 		case 'M':
+			//#ifdef NO_LATENCY
+			//	CHECK_NO_LATENCY_AND_BREAK;
+			//#endif
 			if(Metrics::monitoring_is_enabled())
 				throw std::invalid_argument("\n ARGUMENT ERROR --> You can not use both -m and -M parameters at once.\n");
 			if(!isNumber(optarg) || (atoi(optarg) < 0))
@@ -193,6 +207,9 @@ void SPBench::parseCMDLine(int opt, const char * optarg){
 			SPBench::enable_memory_source();
 			break;
 		case 'l':
+			//#ifdef NO_LATENCY
+			//	CHECK_NO_LATENCY_AND_BREAK;
+			//#endif
 			if(!isNumber(optarg) || (atof(optarg) < 0.0))
 				throw std::invalid_argument("\n ARGUMENT ERROR (-l <latency_sample_interval_ms>) \n--> Sample interval must be a number equal or higher than zero!\n");
 			if(Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)){
@@ -202,6 +219,9 @@ void SPBench::parseCMDLine(int opt, const char * optarg){
 			Metrics::enable_print_latency(atof(optarg));
 			break;
 		case 'L':
+			//#ifdef NO_LATENCY
+			//	CHECK_NO_LATENCY_AND_BREAK;
+			//#endif
 			if(!isNumber(optarg) || (atof(optarg) < 0.0))
 				throw std::invalid_argument("\n ARGUMENT ERROR (-L <latency_sample_interval_ms>) \n--> Sample interval must be a number equal or higher than zero!\n");
 			if(Metrics::get_latency_sample_interval() > 0 && Metrics::get_latency_sample_interval() != atof(optarg)){
