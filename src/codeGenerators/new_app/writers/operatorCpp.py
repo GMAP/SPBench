@@ -70,7 +70,7 @@ inline void spb::${operator_id}::${operator_id}_op(spb::item_data &item){
 
     if (item.some_unsigned_integer % 2 == 0) {
         std::cout << spb::Metrics::items_at_source_counter 
-                  << " - This is a debug print. It will not be printed in execution time, unless you use the -debug flag."
+                  << " - This is a print message. It will not be printed in real time during the execution, unless you use the -debug flag."
                   << std::endl;
     }
 
