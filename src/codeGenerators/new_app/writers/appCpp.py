@@ -26,6 +26,7 @@
 
 from src.utils.shell import *
 from src.utils.dict import *
+from string import Template
 
 def writeAppCpp(file_path, app_id, operators_list):
     """ !@brief Function for writing the main code of the application
@@ -41,26 +42,31 @@ def writeAppCpp(file_path, app_id, operators_list):
     # create and write a general header for the files
     # ******************************************************************************************
 
-    # write the code for app_id.cpp
-    app_cpp_file = open(file_path, 'a')
+    main_template = Template("""
+#include <${app_id}.hpp>
 
-    app_cpp_file.write("\n#include <" + app_id + ".hpp>\n")
-    app_cpp_file.write("\nint main (int argc, char* argv[]){\n")
-    app_cpp_file.write("\tspb::init_bench(argc, argv); // Initializations\n")
-    app_cpp_file.write("\tspb::Metrics::init();\n")
-    app_cpp_file.write("\twhile(1){\n")
-    app_cpp_file.write("\t\tspb::Item item;\n")
-    app_cpp_file.write("\t\tif(!spb::Source::op(item)) break;\n")
-    for operator in operators_list:
-        app_cpp_file.write("\t\tspb::" + operator + "::op(item);\n")
-    app_cpp_file.write("\t\tspb::Sink::op(item);\n")
-    app_cpp_file.write("\t}\n")
-    app_cpp_file.write("\tspb::Metrics::stop();\n")
-    app_cpp_file.write("\tspb::end_bench();\n")
-    app_cpp_file.write("\treturn 0;\n")
-    app_cpp_file.write("}\n")
+int main (int argc, char* argv[]) {
+    spb::init_bench(argc, argv); // Initializations
+    spb::Metrics::init();
+    while(1) {
+        spb::Item item;
+        if (!spb::Source::op(item)) break;
+$operator_calls
+        spb::Sink::op(item);
+    }
+    spb::Metrics::stop();
+    spb::end_bench();
+    return 0;
+}
+""")
 
-    app_cpp_file.close()
+    # Generate the operator call lines
+    operator_calls = "\n".join([f"\t\tspb::{op}::op(item);" for op in operators_list])
+
+    content = main_template.substitute(app_id=app_id, operator_calls=operator_calls)
+
+    with open(file_path, 'a') as app_cpp_file:
+        app_cpp_file.write(content)
     # ******************************************************************************************
 
 
