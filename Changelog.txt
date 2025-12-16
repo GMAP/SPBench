@@ -1,3 +1,14 @@
+* v0.6-alpha
+  - [CLI update] Bash scripts used for building the third-party libraries were migrated to Python scripts. Each library also includes a standalone script for building it individually.
+  - [CLI update] When building the third-party libraries using the SPBench CLI, it will save builiding log files.
+  - [CLI update] Improved libraries installation interface
+  - [New application] Added a new application: "Fraud Detection".
+  - [New feature] Added support for filter type Operators. Now the Item class may include a method for overwriting the operator bool(). 
+  - [Metrics update] Migrating the gettimeofday() function to the std::chrono library
+  - [Bug fixes] Fix of some errors in libraries installations when using newer compilers.
+  - [New feature] Now the required environment variables are set automatically by the SPBench CLI, no need to source the setup_vars.sh script anymore.
+  - [External library update] Solved some dependencies issues with the installation of the GSL library when building it with multiple threads.
+
 * v0.5.1-alpha
   - [New feature] Added the NO_LATENCY compiling macro support: now, users can compile the benchmarks with the NO_LATENCY macro completely disable latency monitoring. This can be useful for avoiding possible overheads when evaluating applications with massive data item throughput and when users are interested only in evaluating throughput.
   - [CLI update] The shell scripts used by the 'install' command to install the libraries were improved. Now they are more robust, more verbose, offer more options, and more portable. The commands now are supported for all the main shells (e.g. bash, ksh, zsh, and sh).

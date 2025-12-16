@@ -20,3 +20,6 @@ get_script_dir() {
 
 TBB_HOME=$(get_script_dir)/tbb
 export LD_LIBRARY_PATH=${TBB_HOME}:${TBB_HOME}/include:$LD_LIBRARY_PATH
+
+#echo "LD_LIBRARY_PATH=$TBB_HOME"
+#echo "CPATH=$TBB_HOME/include"
